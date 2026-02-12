@@ -2,47 +2,48 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // Conectamos con tu tabla real
+    protected $table = 'Empleados';
+    protected $primaryKey = 'id_emp';
+
+    // Tu dump no tiene created_at / updated_at
+    public $timestamps = false;
+
     protected $fillable = [
-        'name',
-        'email',
+        'nombre',
+        'direccion',
+        'telefono',
+        'id_ca',
+        'id_suc',
+        'nickName',
         'password',
+        'status',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Indicamos que el campo de login es nickName
      */
-    protected function casts(): array
+    public function username()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return 'nickName';
+    }
+
+    /**
+     * Para que Laravel reconozca tu columna de contraseña
+     */
+    public function getAuthPassword()
+    {
+        return $this->password;
     }
 }
