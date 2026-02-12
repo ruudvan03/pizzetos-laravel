@@ -9,41 +9,25 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    // Conectamos con tu tabla real
     protected $table = 'Empleados';
     protected $primaryKey = 'id_emp';
-
-    // Tu dump no tiene created_at / updated_at
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre',
-        'direccion',
-        'telefono',
-        'id_ca',
-        'id_suc',
-        'nickName',
-        'password',
-        'status',
+        'nombre', 'direccion', 'telefono', 'id_ca', 'id_suc', 'nickName', 'password', 'status'
     ];
 
-    protected $hidden = [
-        'password',
-    ];
+    protected $hidden = ['password'];
 
-    /**
-     * Indicamos que el campo de login es nickName
-     */
-    public function username()
+    // Relación con el Cargo
+    public function cargo()
     {
-        return 'nickName';
+        return $this->belongsTo(Cargo::class, 'id_ca', 'id_ca');
     }
 
-    /**
-     * Para que Laravel reconozca tu columna de contraseña
-     */
-    public function getAuthPassword()
+    // Relación con la Sucursal
+    public function sucursal()
     {
-        return $this->password;
+        return $this->belongsTo(Sucursal::class, 'id_suc', 'id_suc');
     }
 }
