@@ -10,7 +10,6 @@ use App\Http\Controllers\EmpleadoController;
 |--------------------------------------------------------------------------
 */
 
-// Redirección inicial
 Route::get('/', function () {
     return auth()->check() ? redirect('/dashboard') : redirect('/login');
 });
@@ -20,8 +19,6 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-
-// --- RUTAS PROTEGIDAS (Requieren inicio de sesión) ---
 Route::middleware(['auth'])->group(function () {
     
     // Dashboard Principal
@@ -34,19 +31,22 @@ Route::middleware(['auth'])->group(function () {
     // 1. Listado principal (Index)
     Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
 
-    // 2. Formulario de creación (Create) - IMPORTANTE: Debe ir antes de rutas con {id}
+    // 2.Crear
     Route::get('/empleados/crear', [EmpleadoController::class, 'create'])->name('empleados.create');
 
-    // 3. Guardar en base de datos (Store)
+    // 3. Guardar
     Route::post('/empleados', [EmpleadoController::class, 'store'])->name('empleados.store');
 
-    // 1. Mostrar formulario de edición
+    // 4. Mostrar formulario de edición
     Route::get('/empleados/{id}/editar', [EmpleadoController::class, 'edit'])->name('empleados.edit');
 
-    // 2. Actualizar datos en BD (Put)
+    // 5. Actualizar
     Route::put('/empleados/{id}', [EmpleadoController::class, 'update'])->name('empleados.update');
 
-    // 3. Eliminar registro (Delete)
+    // 6. Eliminar registro
     Route::delete('/empleados/{id}', [EmpleadoController::class, 'destroy'])->name('empleados.destroy');
+
+    // 7. Cambiar Estado Activo/Inactivo
+    Route::patch('/empleados/{id}/estado', [EmpleadoController::class, 'toggleStatus'])->name('empleados.status');
 
 });

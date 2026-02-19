@@ -83,20 +83,25 @@
 
                         <td class="px-8 py-8">
                             <div class="flex justify-center">
-                                @if($empleado->status == 1)
-                                    <span class="flex items-center gap-2 text-green-600 font-black text-[9px] uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-                                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Activo
-                                    </span>
-                                @else
-                                    <span class="flex items-center gap-2 text-gray-300 font-black text-[9px] uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                                        <span class="w-1.5 h-1.5 bg-gray-200 rounded-full"></span> Inactivo
-                                    </span>
-                                @endif
+                                <form action="{{ route('empleados.status', $empleado->id_emp) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" onchange="this.form.submit()" {{ $empleado->status == 1 ? 'checked' : '' }}>
+                                        
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 shadow-sm"></div>
+                                        
+                                        <span class="ml-3 inline-block w-16 text-left text-[10px] font-black uppercase tracking-widest {{ $empleado->status == 1 ? 'text-green-600' : 'text-gray-400' }}">
+                                            {{ $empleado->status == 1 ? 'Activo' : 'Inactivo' }}
+                                        </span>
+                                    </label>
+                                </form>
                             </div>
                         </td>
 
                         <td class="px-8 py-8 text-right">
-                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <div class="flex justify-end gap-2 transition-all">
                                 
                                 <a href="{{ route('empleados.edit', $empleado->id_emp) }}" 
                                    class="p-3 bg-white text-gray-400 hover:text-black hover:bg-[#eab308] rounded-xl shadow-sm border border-gray-100 transition-all flex items-center justify-center"

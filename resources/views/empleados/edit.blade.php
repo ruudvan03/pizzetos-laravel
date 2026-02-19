@@ -11,6 +11,7 @@
     </div>
 
     <div class="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden p-12">
+        
         @if ($errors->any())
             <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl">
                 <ul>@foreach ($errors->all() as $error) <li>• {{ $error }}</li> @endforeach</ul>
@@ -19,7 +20,10 @@
 
         <form action="{{ route('empleados.update', $empleado->id_emp) }}" method="POST">
             @csrf
-            @method('PUT') <div class="grid grid-cols-2 gap-x-12 gap-y-8">
+            @method('PUT') 
+            
+            <div class="grid grid-cols-2 gap-x-12 gap-y-8">
+                
                 <div class="col-span-2">
                     <label class="block text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">Nombre Completo</label>
                     <input type="text" name="nombre" value="{{ old('nombre', $empleado->nombre) }}" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#eab308]" required>
@@ -33,6 +37,13 @@
                 <div>
                     <label class="block text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">Teléfono</label>
                     <input type="text" name="telefono" value="{{ old('telefono', $empleado->telefono) }}" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#eab308]" required>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">
+                        Nueva Contraseña <span class="text-gray-300 normal-case tracking-normal">(Opcional: Deja en blanco para mantener la actual)</span>
+                    </label>
+                    <input type="password" name="password" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#eab308] transition-all" placeholder="Escribe para cambiar la contraseña...">
                 </div>
 
                 <div class="col-span-2">

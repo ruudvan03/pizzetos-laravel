@@ -59,6 +59,11 @@
                 </div>
 
                 <div class="col-span-2">
+                    <label class="block text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">Contraseña</label>
+                    <input type="password" name="password" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#eab308] transition-all" placeholder="Escribe una contraseña segura" required>
+                </div>
+
+                <div class="col-span-2">
                     <label class="block text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">Dirección</label>
                     <input type="text" name="direccion" value="{{ old('direccion') }}" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#eab308]" placeholder="Calle Principal #123">
                 </div>
