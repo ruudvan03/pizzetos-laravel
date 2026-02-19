@@ -10,7 +10,7 @@ use App\Http\Controllers\EmpleadoController;
 |--------------------------------------------------------------------------
 */
 
-// Redirección inicial: Si está logueado al dashboard, si no al login
+// Redirección inicial
 Route::get('/', function () {
     return auth()->check() ? redirect('/dashboard') : redirect('/login');
 });
@@ -30,22 +30,23 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     // --- MÓDULO DE EMPLEADOS ---
-    Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
-    // Aquí puedes ir agregando las demás (create, store, edit, update, etc.) conforme las necesites
-
-
-    // --- PRÓXIMOS MÓDULOS (Espacios reservados) ---
     
-    // Módulo de Clientes
-    // Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
+    // 1. Listado principal (Index)
+    Route::get('/empleados', [EmpleadoController::class, 'index'])->name('empleados.index');
 
-    // Módulo de Productos (Pizzas, Alitas, Hamburguesas, etc.)
-    // Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
+    // 2. Formulario de creación (Create) - IMPORTANTE: Debe ir antes de rutas con {id}
+    Route::get('/empleados/crear', [EmpleadoController::class, 'create'])->name('empleados.create');
 
-    // Módulo de Punto de Venta (POS)
-    // Route::get('/pos', [VentaController::class, 'index'])->name('pos.index');
+    // 3. Guardar en base de datos (Store)
+    Route::post('/empleados', [EmpleadoController::class, 'store'])->name('empleados.store');
 
-    // Módulo de Caja
-    // Route::get('/caja', [CajaController::class, 'index'])->name('caja.index');
+    // 1. Mostrar formulario de edición
+    Route::get('/empleados/{id}/editar', [EmpleadoController::class, 'edit'])->name('empleados.edit');
+
+    // 2. Actualizar datos en BD (Put)
+    Route::put('/empleados/{id}', [EmpleadoController::class, 'update'])->name('empleados.update');
+
+    // 3. Eliminar registro (Delete)
+    Route::delete('/empleados/{id}', [EmpleadoController::class, 'destroy'])->name('empleados.destroy');
 
 });
