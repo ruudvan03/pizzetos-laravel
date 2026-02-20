@@ -6,6 +6,9 @@ use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\CorteController;
 use App\Http\Controllers\PizzaController;
 use App\Http\Controllers\AlitasController;
+use App\Http\Controllers\CostillasController;
+use App\Http\Controllers\HamburguesasController;
+use App\Http\Controllers\MagnoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,4 +65,28 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/productos/alitas/{id}/editar', [AlitasController::class, 'edit'])->name('alitas.edit');
     Route::put('/productos/alitas/{id}', [AlitasController::class, 'update'])->name('alitas.update');
     Route::delete('/productos/alitas/{id}', [AlitasController::class, 'destroy'])->name('alitas.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: COSTILLAS ---
+    Route::get('/productos/costillas', [CostillasController::class, 'index'])->name('costillas.index');
+    Route::get('/productos/costillas/crear', [CostillasController::class, 'create'])->name('costillas.create');
+    Route::post('/productos/costillas', [CostillasController::class, 'store'])->name('costillas.store');
+    Route::get('/productos/costillas/{id}/editar', [CostillasController::class, 'edit'])->name('costillas.edit');
+    Route::put('/productos/costillas/{id}', [CostillasController::class, 'update'])->name('costillas.update');
+    Route::delete('/productos/costillas/{id}', [CostillasController::class, 'destroy'])->name('costillas.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: HAMBURGUESAS ---
+    Route::get('/productos/hamburguesas', [HamburguesasController::class, 'index'])->name('hamburguesas.index');
+    Route::get('/productos/hamburguesas/crear', [HamburguesasController::class, 'create'])->name('hamburguesas.create');
+    Route::post('/productos/hamburguesas', [HamburguesasController::class, 'store'])->name('hamburguesas.store');
+    Route::get('/productos/hamburguesas/{id}/editar', [HamburguesasController::class, 'edit'])->name('hamburguesas.edit');
+    Route::put('/productos/hamburguesas/{id}', [HamburguesasController::class, 'update'])->name('hamburguesas.update');
+    Route::delete('/productos/hamburguesas/{id}', [HamburguesasController::class, 'destroy'])->name('hamburguesas.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: MAGNO ---
+    Route::get('/productos/magno', [MagnoController::class, 'index'])->name('magno.index');
+    Route::get('/productos/magno/crear', [MagnoController::class, 'create'])->name('magno.create');
+    Route::post('/productos/magno', [MagnoController::class, 'store'])->name('magno.store');
+    Route::get('/productos/magno/{id}/editar', [MagnoController::class, 'edit'])->name('magno.edit');
+    Route::put('/productos/magno/{id}', [MagnoController::class, 'update'])->name('magno.update');
+    Route::delete('/productos/magno/{id}', [MagnoController::class, 'destroy'])->name('magno.destroy');
 });

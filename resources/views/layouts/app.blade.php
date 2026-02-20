@@ -86,16 +86,16 @@
                             <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('alitas.*') ? 'font-black' : 'font-bold' }} italic">Alitas</span>
                         </a>
 
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Costillas</span>
+                        <a href="{{ route('costillas.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('costillas.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('costillas.*') ? 'font-black' : 'font-bold' }} italic">Costillas</span>
                         </a>
 
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Hamburguesas</span>
+                        <a href="{{ route('hamburguesas.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('hamburguesas.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('hamburguesas.*') ? 'font-black' : 'font-bold' }} italic">Hamburguesas</span>
                         </a>
 
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Magno</span>
+                        <a href="{{ route('magno.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('magno.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('magno.*') ? 'font-black' : 'font-bold' }} italic">Magno</span>
                         </a>
 
                         <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
