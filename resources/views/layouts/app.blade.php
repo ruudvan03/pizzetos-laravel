@@ -45,8 +45,13 @@
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all {{ request()->routeIs('dashboard') ? 'bg-black text-white shadow-xl' : 'hover:bg-black/10 font-black' }}">
                     <span class="text-xs uppercase tracking-[0.3em] font-black italic">Dashboard</span>
                 </a>
+                
                 <a href="{{ route('empleados.index') }}" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all {{ request()->routeIs('empleados.*') ? 'bg-black text-white shadow-xl' : 'hover:bg-black/10 font-black' }}">
                     <span class="text-xs uppercase tracking-[0.3em] font-black italic">Empleados</span>
+                </a>
+
+                <a href="{{ route('corte.index') }}" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all {{ request()->routeIs('corte.*') ? 'bg-black text-white shadow-xl' : 'hover:bg-black/10 font-black' }}">
+                    <span class="text-xs uppercase tracking-[0.3em] font-black italic">Corte Mensual</span>
                 </a>
             </nav>
 
@@ -73,7 +78,7 @@
                     </button>
                     <div>
                         <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] mb-1 italic">By Ollintem</h2>
-                        <p class="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Pizzetos POS</p>
+                        <p class="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none"></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-6">
