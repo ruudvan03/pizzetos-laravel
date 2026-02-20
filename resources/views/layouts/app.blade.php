@@ -29,9 +29,9 @@
             x-transition:enter-end="translate-x-0"
             x-transition:leave="sidebar-transition translate-x-0"
             x-transition:leave-end="-translate-x-full"
-            class="w-80 bg-amber-400 text-black flex flex-col fixed h-full z-50 shadow-2xl">
+            class="w-80 bg-amber-400 text-black flex flex-col fixed h-full z-50 shadow-2xl overflow-y-auto">
             
-            <div class="p-10 text-center border-b border-black/10 relative">
+            <div class="p-10 text-center border-b border-black/10 relative shrink-0">
                 <button @click="sidebarOpen = false" class="absolute top-4 right-4 p-2 hover:bg-black/10 rounded-full">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -53,9 +53,83 @@
                 <a href="{{ route('corte.index') }}" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all {{ request()->routeIs('corte.*') ? 'bg-black text-white shadow-xl' : 'hover:bg-black/10 font-black' }}">
                     <span class="text-xs uppercase tracking-[0.3em] font-black italic">Corte Mensual</span>
                 </a>
+
+                <div x-data="{ productosOpen: {{ request()->is('productos/*') ? 'true' : 'false' }} }" class="w-full">
+                    <button @click="productosOpen = !productosOpen" 
+                            class="w-full flex items-center justify-between px-6 py-5 rounded-[2rem] transition-all hover:bg-black/10 font-black">
+                        <div class="flex items-center gap-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span class="text-xs uppercase tracking-[0.3em] font-black italic">Productos</span>
+                        </div>
+                        <svg :class="{'rotate-180': productosOpen}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <div x-show="productosOpen" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-4"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 -translate-y-4"
+                         x-cloak 
+                         class="mt-2 px-2 flex flex-col space-y-1 pb-4">
+                        
+                        <a href="{{ route('pizzas.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('pizzas.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('pizzas.*') ? 'font-black' : 'font-bold' }} italic">Pizzas</span>
+                        </a>
+                        
+                        <a href="{{ route('alitas.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('alitas.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('alitas.*') ? 'font-black' : 'font-bold' }} italic">Alitas</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Costillas</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Hamburguesas</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Magno</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Papas</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Mariscos</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Rectangular</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Refrescos</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Spaguetty</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Especialidad</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Barra</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
-            <div class="p-8 border-t border-black/10">
+            <div class="p-8 border-t border-black/10 shrink-0">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full flex items-center justify-center gap-4 px-6 py-5 rounded-[2rem] bg-black text-white hover:bg-white hover:text-black transition-all font-black text-xs uppercase tracking-[0.3em] italic shadow-xl">
