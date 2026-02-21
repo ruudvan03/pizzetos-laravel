@@ -9,6 +9,13 @@ use App\Http\Controllers\AlitasController;
 use App\Http\Controllers\CostillasController;
 use App\Http\Controllers\HamburguesasController;
 use App\Http\Controllers\MagnoController;
+use App\Http\Controllers\PapasController;
+use App\Http\Controllers\MariscosController;
+use App\Http\Controllers\RectangularController;
+use App\Http\Controllers\RefrescosController;
+use App\Http\Controllers\SpaguettyController;
+use App\Http\Controllers\EspecialidadesController;
+use App\Http\Controllers\BarraController;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,4 +96,60 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/productos/magno/{id}/editar', [MagnoController::class, 'edit'])->name('magno.edit');
     Route::put('/productos/magno/{id}', [MagnoController::class, 'update'])->name('magno.update');
     Route::delete('/productos/magno/{id}', [MagnoController::class, 'destroy'])->name('magno.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: PAPAS ---
+    Route::get('/productos/papas', [PapasController::class, 'index'])->name('papas.index');
+    Route::get('/productos/papas/crear', [PapasController::class, 'create'])->name('papas.create');
+    Route::post('/productos/papas', [PapasController::class, 'store'])->name('papas.store');
+    Route::get('/productos/papas/{id}/editar', [PapasController::class, 'edit'])->name('papas.edit');
+    Route::put('/productos/papas/{id}', [PapasController::class, 'update'])->name('papas.update');
+    Route::delete('/productos/papas/{id}', [PapasController::class, 'destroy'])->name('papas.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: MARISCOS ---
+    Route::get('/productos/mariscos', [MariscosController::class, 'index'])->name('mariscos.index');
+    Route::get('/productos/mariscos/crear', [MariscosController::class, 'create'])->name('mariscos.create');
+    Route::post('/productos/mariscos', [MariscosController::class, 'store'])->name('mariscos.store');
+    Route::get('/productos/mariscos/{id}/editar', [MariscosController::class, 'edit'])->name('mariscos.edit');
+    Route::put('/productos/mariscos/{id}', [MariscosController::class, 'update'])->name('mariscos.update');
+    Route::delete('/productos/mariscos/{id}', [MariscosController::class, 'destroy'])->name('mariscos.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: RECTANGULAR ---
+    Route::get('/productos/rectangular', [RectangularController::class, 'index'])->name('rectangular.index');
+    Route::get('/productos/rectangular/crear', [RectangularController::class, 'create'])->name('rectangular.create');
+    Route::post('/productos/rectangular', [RectangularController::class, 'store'])->name('rectangular.store');
+    Route::get('/productos/rectangular/{id}/editar', [RectangularController::class, 'edit'])->name('rectangular.edit');
+    Route::put('/productos/rectangular/{id}', [RectangularController::class, 'update'])->name('rectangular.update');
+    Route::delete('/productos/rectangular/{id}', [RectangularController::class, 'destroy'])->name('rectangular.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: REFRESCOS ---
+    Route::get('/productos/refrescos', [RefrescosController::class, 'index'])->name('refrescos.index');
+    Route::get('/productos/refrescos/crear', [RefrescosController::class, 'create'])->name('refrescos.create');
+    Route::post('/productos/refrescos', [RefrescosController::class, 'store'])->name('refrescos.store');
+    Route::get('/productos/refrescos/{id}/editar', [RefrescosController::class, 'edit'])->name('refrescos.edit');
+    Route::put('/productos/refrescos/{id}', [RefrescosController::class, 'update'])->name('refrescos.update');
+    Route::delete('/productos/refrescos/{id}', [RefrescosController::class, 'destroy'])->name('refrescos.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: SPAGUETTY ---
+    Route::get('/productos/spaguetty', [SpaguettyController::class, 'index'])->name('spaguetty.index');
+    Route::get('/productos/spaguetty/crear', [SpaguettyController::class, 'create'])->name('spaguetty.create');
+    Route::post('/productos/spaguetty', [SpaguettyController::class, 'store'])->name('spaguetty.store');
+    Route::get('/productos/spaguetty/{id}/editar', [SpaguettyController::class, 'edit'])->name('spaguetty.edit');
+    Route::put('/productos/spaguetty/{id}', [SpaguettyController::class, 'update'])->name('spaguetty.update');
+    Route::delete('/productos/spaguetty/{id}', [SpaguettyController::class, 'destroy'])->name('spaguetty.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: ESPECIALIDADES ---
+    Route::get('/productos/especialidades', [EspecialidadesController::class, 'index'])->name('especialidades.index');
+    Route::get('/productos/especialidades/crear', [EspecialidadesController::class, 'create'])->name('especialidades.create');
+    Route::post('/productos/especialidades', [EspecialidadesController::class, 'store'])->name('especialidades.store');
+    Route::get('/productos/especialidades/{id}/editar', [EspecialidadesController::class, 'edit'])->name('especialidades.edit');
+    Route::put('/productos/especialidades/{id}', [EspecialidadesController::class, 'update'])->name('especialidades.update');
+    Route::delete('/productos/especialidades/{id}', [EspecialidadesController::class, 'destroy'])->name('especialidades.destroy');
+
+    // --- MÓDULO DE PRODUCTOS: BARRA ---
+    Route::get('/productos/barra', [BarraController::class, 'index'])->name('barra.index');
+    Route::get('/productos/barra/crear', [BarraController::class, 'create'])->name('barra.create');
+    Route::post('/productos/barra', [BarraController::class, 'store'])->name('barra.store');
+    Route::get('/productos/barra/{id}/editar', [BarraController::class, 'edit'])->name('barra.edit');
+    Route::put('/productos/barra/{id}', [BarraController::class, 'update'])->name('barra.update');
+    Route::delete('/productos/barra/{id}', [BarraController::class, 'destroy'])->name('barra.destroy');
 });
