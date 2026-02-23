@@ -142,17 +142,17 @@
                         </svg>
                     </button>
                     <div x-show="recursosOpen" x-transition x-cloak class="mt-2 px-2 flex flex-col space-y-1 pb-4">
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                        <a href="{{ route('categorias.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('categorias.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M160 16H32C14.3 16 0 30.3 0 48v128c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V48c0-17.7-14.3-32-32-32zm320 0H352c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V48c0-17.7-14.3-32-32-32zM160 304H32c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V336c0-17.7-14.3-32-32-32zm320 0H352c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V336c0-17.7-14.3-32-32-32z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Categorias</span>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('categorias.*') ? 'font-black' : 'font-bold' }} italic">Categorías</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                        <a href="{{ route('sucursales.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('sucursales.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 384 512"><path d="M384 144c0-44.2-35.8-80-80-80s-80 35.8-80 80c0 36.4 24.3 67.1 57.5 76.8-.6 16.1-4.2 28.5-11 36.9-15.4 19.2-49.3 22.4-85.2 25.7-28.2 2.6-57.4 5.4-81.3 16.9v-144c32.5-10.2 56-40.5 56-76.3 0-44.2-35.8-80-80-80S0 35.8 0 80c0 35.8 23.5 66.1 56 76.3v199.3C23.5 365.9 0 396.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-34-21.2-63.1-51.2-74.6 3.1-5.2 7.8-9.8 14.9-13.4 16.2-8.2 40.4-10.4 66.1-12.8 42.2-3.9 90-8.4 118.2-43.4 14-17.4 21.1-39.8 21.6-67.9 31.6-10.8 54.4-41.2 54.4-75.9zM80 64c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16zm0 384c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm224-320c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Sucursales</span>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('sucursales.*') ? 'font-black' : 'font-bold' }} italic">Sucursales</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                        <a href="{{ route('cargos.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('cargos.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M208 48v64c0 26.5 21.5 48 48 48h16v32H112c-26.5 0-48 21.5-48 48v32H32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32v-64c0-17.7-14.3-32-32-32H64v-32c0-8.8 7.2-16 16-16h160v48c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48v-48h160c8.8 0 16 7.2 16 16v32h-32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32v-64c0-17.7-14.3-32-32-32h-32v-32c0-26.5-21.5-48-48-48H288v-32h16c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48h-64c-26.5 0-48 21.5-48 48z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Cargos</span>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('cargos.*') ? 'font-black' : 'font-bold' }} italic">Cargos</span>
                         </a>
                     </div>
                 </div>

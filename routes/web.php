@@ -16,6 +16,9 @@ use App\Http\Controllers\RefrescosController;
 use App\Http\Controllers\SpaguettyController;
 use App\Http\Controllers\EspecialidadesController;
 use App\Http\Controllers\BarraController;
+use App\Http\Controllers\CategoriasController;
+use App\Http\Controllers\SucursalesController;
+use App\Http\Controllers\CargosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,4 +155,28 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/productos/barra/{id}/editar', [BarraController::class, 'edit'])->name('barra.edit');
     Route::put('/productos/barra/{id}', [BarraController::class, 'update'])->name('barra.update');
     Route::delete('/productos/barra/{id}', [BarraController::class, 'destroy'])->name('barra.destroy');
+
+    // --- MÓDULO DE RECURSOS:  CATEGORÍAS ---
+    Route::get('/recursos/categorias', [CategoriasController::class, 'index'])->name('categorias.index');
+    Route::get('/recursos/categorias/crear', [CategoriasController::class, 'create'])->name('categorias.create');
+    Route::post('/recursos/categorias', [CategoriasController::class, 'store'])->name('categorias.store');
+    Route::get('/recursos/categorias/{id}/editar', [CategoriasController::class, 'edit'])->name('categorias.edit');
+    Route::put('/recursos/categorias/{id}', [CategoriasController::class, 'update'])->name('categorias.update');
+    Route::delete('/recursos/categorias/{id}', [CategoriasController::class, 'destroy'])->name('categorias.destroy');
+
+    // --- SUCURSALES ---
+    Route::get('/recursos/sucursales', [SucursalesController::class, 'index'])->name('sucursales.index');
+    Route::get('/recursos/sucursales/crear', [SucursalesController::class, 'create'])->name('sucursales.create');
+    Route::post('/recursos/sucursales', [SucursalesController::class, 'store'])->name('sucursales.store');
+    Route::get('/recursos/sucursales/{id}/editar', [SucursalesController::class, 'edit'])->name('sucursales.edit');
+    Route::put('/recursos/sucursales/{id}', [SucursalesController::class, 'update'])->name('sucursales.update');
+    Route::delete('/recursos/sucursales/{id}', [SucursalesController::class, 'destroy'])->name('sucursales.destroy');
+
+    // --- CARGOS ---
+    Route::get('/recursos/cargos', [CargosController::class, 'index'])->name('cargos.index');
+    Route::get('/recursos/cargos/crear', [CargosController::class, 'create'])->name('cargos.create');
+    Route::post('/recursos/cargos', [CargosController::class, 'store'])->name('cargos.store');
+    Route::get('/recursos/cargos/{id}/editar', [CargosController::class, 'edit'])->name('cargos.edit');
+    Route::put('/recursos/cargos/{id}', [CargosController::class, 'update'])->name('cargos.update');
+    Route::delete('/recursos/cargos/{id}', [CargosController::class, 'destroy'])->name('cargos.destroy');
 });
