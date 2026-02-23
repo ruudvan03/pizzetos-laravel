@@ -157,7 +157,7 @@
                     </div>
                 </div>
 
-                <a href="#" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all hover:bg-black/10 font-black">
+                <a href="{{ route('clientes.index') }}" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all {{ request()->routeIs('clientes.*') ? 'bg-black text-white shadow-xl' : 'hover:bg-black/10 font-black' }}">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 512 512"><path d="M192 208c0-17.7-14.3-32-32-32h-16c-35.3 0-64 28.7-64 64v48c0 35.3 28.7 64 64 64h16c17.7 0 32-14.3 32-32V208zm176 144c35.3 0 64-28.7 64-64v-48c0-35.3-28.7-64-64-64h-16c-17.7 0-32 14.3-32 32v112c0 17.7 14.3 32 32 32h16zM256 0C114.6 0 0 114.6 0 256v120c0 13.3 10.7 24 24 24h16c13.3 0 24-10.7 24-24v-40c0-48.6 39.4-88 88-88h16c26.5 0 48-21.5 48-48V160c0-26.5-21.5-48-48-48H121.6C153.5 56.7 201 32 256 32c106 0 192 86 192 192v24c0 26.5-21.5 48-48 48h-16c-26.5 0-48 21.5-48 48v40c0 26.5 21.5 48 48 48h16c48.6 0 88-39.4 88-88v-40c0-141.4-114.6-256-256-256z"/></svg>
                     <span class="text-xs uppercase tracking-[0.3em] font-black italic">Clientes</span>
                 </a>

@@ -19,6 +19,7 @@ use App\Http\Controllers\BarraController;
 use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\SucursalesController;
 use App\Http\Controllers\CargosController;
+use App\Http\Controllers\ClientesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,4 +180,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/recursos/cargos/{id}/editar', [CargosController::class, 'edit'])->name('cargos.edit');
     Route::put('/recursos/cargos/{id}', [CargosController::class, 'update'])->name('cargos.update');
     Route::delete('/recursos/cargos/{id}', [CargosController::class, 'destroy'])->name('cargos.destroy');
+
+    // --- CLIENTES ---
+    Route::get('/clientes', [ClientesController::class, 'index'])->name('clientes.index');
+    Route::get('/clientes/crear', [ClientesController::class, 'create'])->name('clientes.create');
+    Route::post('/clientes', [ClientesController::class, 'store'])->name('clientes.store');
+    Route::get('/clientes/{id}/editar', [ClientesController::class, 'edit'])->name('clientes.edit');
+    Route::put('/clientes/{id}', [ClientesController::class, 'update'])->name('clientes.update');
+    
+    // Rutas para Activar / Desactivar
+    Route::put('/clientes/{id}/desactivar', [ClientesController::class, 'destroy'])->name('clientes.destroy'); 
+    Route::put('/clientes/{id}/activar', [ClientesController::class, 'activar'])->name('clientes.activar'); 
+    
+    // Rutas para Direcciones desde el Modal
+    Route::post('/clientes/{id}/direcciones', [ClientesController::class, 'storeDireccion'])->name('clientes.storeDireccion');
+    Route::delete('/direcciones/{id}', [ClientesController::class, 'destroyDireccion'])->name('clientes.destroyDireccion');
 });
