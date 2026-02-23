@@ -7,33 +7,41 @@ use Illuminate\Support\Facades\DB;
 
 class MariscosController extends Controller
 {
+    /**
+     * Mostrar la lista de pizzas de mariscos.
+     * Tablas corregidas: 'PizzasMariscos', 'CategoriasProd' y 'TamanosPizza'.
+     */
     public function index()
     {
-        // Unimos con categorias_prod y tamanos_pizza
-        $mariscos = DB::table('pizzas_mariscos')
-            ->join('categorias_prod', 'pizzas_mariscos.id_cat', '=', 'categorias_prod.id_cat')
-            ->join('tamanos_pizza', 'pizzas_mariscos.id_tamañop', '=', 'tamanos_pizza.id_tamañop')
+        $mariscos = DB::table('PizzasMariscos')
+            ->join('CategoriasProd', 'PizzasMariscos.id_cat', '=', 'CategoriasProd.id_cat')
+            ->join('TamanosPizza', 'PizzasMariscos.id_tamañop', '=', 'TamanosPizza.id_tamañop')
             ->select(
-                'pizzas_mariscos.id_maris', 
-                'pizzas_mariscos.nombre', 
-                'pizzas_mariscos.descripcion', 
-                'tamanos_pizza.tamano', 
-                'categorias_prod.descripcion as categoria'
+                'PizzasMariscos.id_maris', 
+                'PizzasMariscos.nombre', 
+                'PizzasMariscos.descripcion', 
+                'TamanosPizza.tamano', 
+                'CategoriasProd.descripcion as categoria'
             )
             ->get();
 
-        return view('mariscos.index', compact('mariscos'));
+        return view('Mariscos.index', compact('mariscos'));
     }
 
+    /**
+     * Formulario para crear una nueva pizza de mariscos.
+     */
     public function create()
     {
-        // Traemos categorías y tamaños para los select
-        $categorias = DB::table('categorias_prod')->get();
-        $tamanos = DB::table('tamanos_pizza')->get();
+        $categorias = DB::table('CategoriasProd')->get();
+        $tamanos = DB::table('TamanosPizza')->get();
         
-        return view('mariscos.create', compact('categorias', 'tamanos'));
+        return view('Mariscos.create', compact('categorias', 'tamanos'));
     }
 
+    /**
+     * Guardar en la tabla 'PizzasMariscos'.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -43,7 +51,7 @@ class MariscosController extends Controller
             'id_cat' => 'required|integer'
         ]);
 
-        DB::table('pizzas_mariscos')->insert([
+        DB::table('PizzasMariscos')->insert([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'id_tamañop' => $request->id_tamañop,
@@ -53,15 +61,26 @@ class MariscosController extends Controller
         return redirect()->route('mariscos.index')->with('success', 'Pizza de Mariscos añadida correctamente.');
     }
 
+    /**
+     * Editar registro usando 'id_maris'.
+     */
     public function edit($id)
     {
-        $marisco = DB::table('pizzas_mariscos')->where('id_maris', $id)->first();
-        $categorias = DB::table('categorias_prod')->get();
-        $tamanos = DB::table('tamanos_pizza')->get();
+        $marisco = DB::table('PizzasMariscos')->where('id_maris', $id)->first();
+        
+        if (!$marisco) {
+            return redirect()->route('mariscos.index')->with('error', 'Registro no encontrado.');
+        }
 
-        return view('mariscos.edit', compact('marisco', 'categorias', 'tamanos'));
+        $categorias = DB::table('CategoriasProd')->get();
+        $tamanos = DB::table('TamanosPizza')->get();
+
+        return view('Mariscos.edit', compact('marisco', 'categorias', 'tamanos'));
     }
 
+    /**
+     * Actualizar registro en 'PizzasMariscos'.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -71,7 +90,7 @@ class MariscosController extends Controller
             'id_cat' => 'required|integer'
         ]);
         
-        DB::table('pizzas_mariscos')->where('id_maris', $id)->update([
+        DB::table('PizzasMariscos')->where('id_maris', $id)->update([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'id_tamañop' => $request->id_tamañop,
@@ -81,9 +100,12 @@ class MariscosController extends Controller
         return redirect()->route('mariscos.index')->with('success', 'Pizza de Mariscos actualizada correctamente.');
     }
 
+    /**
+     * Eliminar registro de 'PizzasMariscos'.
+     */
     public function destroy($id)
     {
-        DB::table('pizzas_mariscos')->where('id_maris', $id)->delete();
+        DB::table('PizzasMariscos')->where('id_maris', $id)->delete();
         return redirect()->route('mariscos.index')->with('success', 'Pizza de Mariscos eliminada correctamente.');
     }
 }

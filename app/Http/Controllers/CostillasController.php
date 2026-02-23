@@ -7,22 +7,32 @@ use Illuminate\Support\Facades\DB;
 
 class CostillasController extends Controller
 {
+    /**
+     * Mostrar la lista de costillas.
+     * Tablas corregidas a 'Costillas' y 'CategoriasProd'.
+     */
     public function index()
     {
-        $costillas = DB::table('costillas')
-            ->join('categorias_prod', 'costillas.id_cat', '=', 'categorias_prod.id_cat')
-            ->select('costillas.id_cos', 'costillas.orden', 'costillas.precio', 'categorias_prod.descripcion as categoria')
+        $costillas = DB::table('Costillas')
+            ->join('CategoriasProd', 'Costillas.id_cat', '=', 'CategoriasProd.id_cat')
+            ->select('Costillas.id_cos', 'Costillas.orden', 'Costillas.precio', 'CategoriasProd.descripcion as categoria')
             ->get();
 
-        return view('costillas.index', compact('costillas'));
+        return view('Costillas.index', compact('costillas'));
     }
 
+    /**
+     * Formulario para crear una nueva orden.
+     */
     public function create()
     {
-        $categorias = DB::table('categorias_prod')->get();
-        return view('costillas.create', compact('categorias'));
+        $categorias = DB::table('CategoriasProd')->get();
+        return view('Costillas.create', compact('categorias'));
     }
 
+    /**
+     * Guardar en la tabla 'Costillas'.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -31,7 +41,7 @@ class CostillasController extends Controller
             'id_cat' => 'required|integer'
         ]);
 
-        DB::table('costillas')->insert([
+        DB::table('Costillas')->insert([
             'orden' => $request->orden,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -40,14 +50,24 @@ class CostillasController extends Controller
         return redirect()->route('costillas.index')->with('success', 'Costillas añadidas correctamente.');
     }
 
+    /**
+     * Editar registro usando 'id_cos'.
+     */
     public function edit($id)
     {
-        $costilla = DB::table('costillas')->where('id_cos', $id)->first();
-        $categorias = DB::table('categorias_prod')->get();
+        $costilla = DB::table('Costillas')->where('id_cos', $id)->first();
+        $categorias = DB::table('CategoriasProd')->get();
 
-        return view('costillas.edit', compact('costilla', 'categorias'));
+        if (!$costilla) {
+            return redirect()->route('costillas.index')->with('error', 'Registro no encontrado.');
+        }
+
+        return view('Costillas.edit', compact('costilla', 'categorias'));
     }
 
+    /**
+     * Actualizar registro en 'Costillas'.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -56,7 +76,7 @@ class CostillasController extends Controller
             'id_cat' => 'required|integer'
         ]);
         
-        DB::table('costillas')->where('id_cos', $id)->update([
+        DB::table('Costillas')->where('id_cos', $id)->update([
             'orden' => $request->orden,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -65,9 +85,12 @@ class CostillasController extends Controller
         return redirect()->route('costillas.index')->with('success', 'Costillas actualizadas correctamente.');
     }
 
+    /**
+     * Eliminar registro de 'Costillas'.
+     */
     public function destroy($id)
     {
-        DB::table('costillas')->where('id_cos', $id)->delete();
+        DB::table('Costillas')->where('id_cos', $id)->delete();
         return redirect()->route('costillas.index')->with('success', 'Costillas eliminadas correctamente.');
     }
 }

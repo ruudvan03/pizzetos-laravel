@@ -7,31 +7,41 @@ use Illuminate\Support\Facades\DB;
 
 class RefrescosController extends Controller
 {
+    /**
+     * Mostrar la lista de refrescos.
+     * Tablas corregidas: 'Refrescos', 'TamanosRefrescos' y 'CategoriasProd'.
+     */
     public function index()
     {
-        $refrescos = DB::table('refrescos')
-            ->join('tamanos_refrescos', 'refrescos.id_tamano', '=', 'tamanos_refrescos.id_tamano')
-            ->join('categorias_prod', 'refrescos.id_cat', '=', 'categorias_prod.id_cat')
+        $refrescos = DB::table('Refrescos')
+            ->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')
+            ->join('CategoriasProd', 'Refrescos.id_cat', '=', 'CategoriasProd.id_cat')
             ->select(
-                'refrescos.id_refresco', 
-                'refrescos.nombre', 
-                'tamanos_refrescos.tamano', 
-                'tamanos_refrescos.precio', 
-                'categorias_prod.descripcion as categoria'
+                'Refrescos.id_refresco', 
+                'Refrescos.nombre', 
+                'TamanosRefrescos.tamano', 
+                'TamanosRefrescos.precio', 
+                'CategoriasProd.descripcion as categoria'
             )
             ->get();
 
-        return view('refrescos.index', compact('refrescos'));
+        return view('Refrescos.index', compact('refrescos'));
     }
 
+    /**
+     * Formulario para crear un nuevo refresco.
+     */
     public function create()
     {
-        $tamanos = DB::table('tamanos_refrescos')->get();
-        $categorias = DB::table('categorias_prod')->get();
+        $tamanos = DB::table('TamanosRefrescos')->get();
+        $categorias = DB::table('CategoriasProd')->get();
         
-        return view('refrescos.create', compact('tamanos', 'categorias'));
+        return view('Refrescos.create', compact('tamanos', 'categorias'));
     }
 
+    /**
+     * Guardar en la tabla 'Refrescos'.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -40,7 +50,7 @@ class RefrescosController extends Controller
             'id_cat' => 'required|integer'
         ]);
 
-        DB::table('refrescos')->insert([
+        DB::table('Refrescos')->insert([
             'nombre' => $request->nombre,
             'id_tamano' => $request->id_tamano,
             'id_cat' => $request->id_cat
@@ -49,15 +59,26 @@ class RefrescosController extends Controller
         return redirect()->route('refrescos.index')->with('success', 'Refresco añadido correctamente.');
     }
 
+    /**
+     * Editar registro usando 'id_refresco'.
+     */
     public function edit($id)
     {
-        $refresco = DB::table('refrescos')->where('id_refresco', $id)->first();
-        $tamanos = DB::table('tamanos_refrescos')->get();
-        $categorias = DB::table('categorias_prod')->get();
+        $refresco = DB::table('Refrescos')->where('id_refresco', $id)->first();
+        
+        if (!$refresco) {
+            return redirect()->route('refrescos.index')->with('error', 'Registro no encontrado.');
+        }
 
-        return view('refrescos.edit', compact('refresco', 'tamanos', 'categorias'));
+        $tamanos = DB::table('TamanosRefrescos')->get();
+        $categorias = DB::table('CategoriasProd')->get();
+
+        return view('Refrescos.edit', compact('refresco', 'tamanos', 'categorias'));
     }
 
+    /**
+     * Actualizar registro en 'Refrescos'.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -66,7 +87,7 @@ class RefrescosController extends Controller
             'id_cat' => 'required|integer'
         ]);
         
-        DB::table('refrescos')->where('id_refresco', $id)->update([
+        DB::table('Refrescos')->where('id_refresco', $id)->update([
             'nombre' => $request->nombre,
             'id_tamano' => $request->id_tamano,
             'id_cat' => $request->id_cat
@@ -75,9 +96,12 @@ class RefrescosController extends Controller
         return redirect()->route('refrescos.index')->with('success', 'Refresco actualizado correctamente.');
     }
 
+    /**
+     * Eliminar registro de 'Refrescos'.
+     */
     public function destroy($id)
     {
-        DB::table('refrescos')->where('id_refresco', $id)->delete();
+        DB::table('Refrescos')->where('id_refresco', $id)->delete();
         return redirect()->route('refrescos.index')->with('success', 'Refresco eliminado correctamente.');
     }
 }

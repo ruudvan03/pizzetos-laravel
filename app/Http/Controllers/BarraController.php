@@ -7,30 +7,40 @@ use Illuminate\Support\Facades\DB;
 
 class BarraController extends Controller
 {
+    /**
+     * Mostrar la lista de productos de la barra.
+     * Tablas corregidas: 'Barra', 'Especialidades' y 'CategoriasProd'.
+     */
     public function index()
     {
-        $barras = DB::table('barra')
-            ->join('especialidades', 'barra.id_especialidad', '=', 'especialidades.id_esp')
-            ->join('categorias_prod', 'barra.id_cat', '=', 'categorias_prod.id_cat')
+        $barras = DB::table('Barra')
+            ->join('Especialidades', 'Barra.id_especialidad', '=', 'Especialidades.id_esp')
+            ->join('CategoriasProd', 'Barra.id_cat', '=', 'CategoriasProd.id_cat')
             ->select(
-                'barra.id_barr', 
-                'especialidades.nombre as especialidad', 
-                'barra.precio', 
-                'categorias_prod.descripcion as categoria'
+                'Barra.id_barr', 
+                'Especialidades.nombre as especialidad', 
+                'Barra.precio', 
+                'CategoriasProd.descripcion as categoria'
             )
             ->get();
 
-        return view('barra.index', compact('barras'));
+        return view('Barra.index', compact('barras'));
     }
 
+    /**
+     * Formulario para añadir un nuevo producto.
+     */
     public function create()
     {
-        $especialidades = DB::table('especialidades')->get();
-        $categorias = DB::table('categorias_prod')->get();
+        $especialidades = DB::table('Especialidades')->get();
+        $categorias = DB::table('CategoriasProd')->get();
         
-        return view('barra.create', compact('especialidades', 'categorias'));
+        return view('Barra.create', compact('especialidades', 'categorias'));
     }
 
+    /**
+     * Guardar en la tabla 'Barra'.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -39,7 +49,7 @@ class BarraController extends Controller
             'id_cat' => 'required|integer'
         ]);
 
-        DB::table('barra')->insert([
+        DB::table('Barra')->insert([
             'id_especialidad' => $request->id_especialidad,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -48,15 +58,26 @@ class BarraController extends Controller
         return redirect()->route('barra.index')->with('success', 'Producto de Barra añadido correctamente.');
     }
 
+    /**
+     * Editar registro usando 'id_barr'.
+     */
     public function edit($id)
     {
-        $barra = DB::table('barra')->where('id_barr', $id)->first();
-        $especialidades = DB::table('especialidades')->get();
-        $categorias = DB::table('categorias_prod')->get();
+        $barra = DB::table('Barra')->where('id_barr', $id)->first();
+        
+        if (!$barra) {
+            return redirect()->route('barra.index')->with('error', 'Registro no encontrado.');
+        }
 
-        return view('barra.edit', compact('barra', 'especialidades', 'categorias'));
+        $especialidades = DB::table('Especialidades')->get();
+        $categorias = DB::table('CategoriasProd')->get();
+
+        return view('Barra.edit', compact('barra', 'especialidades', 'categorias'));
     }
 
+    /**
+     * Actualizar registro en 'Barra'.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -65,7 +86,7 @@ class BarraController extends Controller
             'id_cat' => 'required|integer'
         ]);
         
-        DB::table('barra')->where('id_barr', $id)->update([
+        DB::table('Barra')->where('id_barr', $id)->update([
             'id_especialidad' => $request->id_especialidad,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -74,9 +95,12 @@ class BarraController extends Controller
         return redirect()->route('barra.index')->with('success', 'Producto de Barra actualizado correctamente.');
     }
 
+    /**
+     * Eliminar registro de 'Barra'.
+     */
     public function destroy($id)
     {
-        DB::table('barra')->where('id_barr', $id)->delete();
+        DB::table('Barra')->where('id_barr', $id)->delete();
         return redirect()->route('barra.index')->with('success', 'Producto de Barra eliminado correctamente.');
     }
 }

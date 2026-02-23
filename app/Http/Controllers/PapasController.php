@@ -7,23 +7,32 @@ use Illuminate\Support\Facades\DB;
 
 class PapasController extends Controller
 {
+    /**
+     * Mostrar la lista de papas.
+     * Tablas corregidas: 'OrdenDePapas' y 'CategoriasProd'.
+     */
     public function index()
     {
-        // Cambiamos 'papas' por 'orden_de_papas'
-        $papas = DB::table('orden_de_papas')
-            ->join('categorias_prod', 'orden_de_papas.id_cat', '=', 'categorias_prod.id_cat')
-            ->select('orden_de_papas.id_papa', 'orden_de_papas.orden', 'orden_de_papas.precio', 'categorias_prod.descripcion as categoria')
+        $papas = DB::table('OrdenDePapas')
+            ->join('CategoriasProd', 'OrdenDePapas.id_cat', '=', 'CategoriasProd.id_cat')
+            ->select('OrdenDePapas.id_papa', 'OrdenDePapas.orden', 'OrdenDePapas.precio', 'CategoriasProd.descripcion as categoria')
             ->get();
 
-        return view('papas.index', compact('papas'));
+        return view('Papas.index', compact('papas'));
     }
 
+    /**
+     * Formulario para crear una nueva orden de papas.
+     */
     public function create()
     {
-        $categorias = DB::table('categorias_prod')->get();
-        return view('papas.create', compact('categorias'));
+        $categorias = DB::table('CategoriasProd')->get();
+        return view('Papas.create', compact('categorias'));
     }
 
+    /**
+     * Guardar en la tabla 'OrdenDePapas'.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -32,7 +41,7 @@ class PapasController extends Controller
             'id_cat' => 'required|integer'
         ]);
 
-        DB::table('orden_de_papas')->insert([
+        DB::table('OrdenDePapas')->insert([
             'orden' => $request->orden,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -41,14 +50,24 @@ class PapasController extends Controller
         return redirect()->route('papas.index')->with('success', 'Papas añadidas correctamente.');
     }
 
+    /**
+     * Editar registro usando 'id_papa'.
+     */
     public function edit($id)
     {
-        $papa = DB::table('orden_de_papas')->where('id_papa', $id)->first();
-        $categorias = DB::table('categorias_prod')->get();
+        $papa = DB::table('OrdenDePapas')->where('id_papa', $id)->first();
+        $categorias = DB::table('CategoriasProd')->get();
 
-        return view('papas.edit', compact('papa', 'categorias'));
+        if (!$papa) {
+            return redirect()->route('papas.index')->with('error', 'Registro no encontrado.');
+        }
+
+        return view('Papas.edit', compact('papa', 'categorias'));
     }
 
+    /**
+     * Actualizar registro en 'OrdenDePapas'.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -57,7 +76,7 @@ class PapasController extends Controller
             'id_cat' => 'required|integer'
         ]);
         
-        DB::table('orden_de_papas')->where('id_papa', $id)->update([
+        DB::table('OrdenDePapas')->where('id_papa', $id)->update([
             'orden' => $request->orden,
             'precio' => $request->precio,
             'id_cat' => $request->id_cat
@@ -66,9 +85,12 @@ class PapasController extends Controller
         return redirect()->route('papas.index')->with('success', 'Papas actualizadas correctamente.');
     }
 
+    /**
+     * Eliminar registro de 'OrdenDePapas'.
+     */
     public function destroy($id)
     {
-        DB::table('orden_de_papas')->where('id_papa', $id)->delete();
+        DB::table('OrdenDePapas')->where('id_papa', $id)->delete();
         return redirect()->route('papas.index')->with('success', 'Papas eliminadas correctamente.');
     }
 }
