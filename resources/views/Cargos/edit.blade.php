@@ -19,7 +19,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             
-            <div x-data="{ c: {{ $cargo->crear_producto ? 'true' : 'false' }}, m: {{ $cargo->modificar_producto ? 'true' : 'false' }}, e: {{ $cargo->eliminar_producto ? 'true' : 'false' }}, v: {{ $cargo->ver_producto ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-blue-200 border-t-4 border-t-blue-400 bg-blue-50/20 rounded-lg p-5">
+            <div x-data="{ c: {{ $cargo->crear_producto == 1 ? 'true' : 'false' }}, m: {{ $cargo->modificar_producto == 1 ? 'true' : 'false' }}, e: {{ $cargo->eliminar_producto == 1 ? 'true' : 'false' }}, v: {{ $cargo->ver_producto == 1 ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-blue-200 border-t-4 border-t-blue-400 bg-blue-50/20 rounded-lg p-5">
                 <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-800">Productos</h4><button type="button" @click="toggle" class="text-xs text-blue-500 hover:underline" x-text="(c && m && e && v) ? 'Desmarcar todos' : 'Marcar todos'"></button></div>
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="crear_producto" value="1" x-model="c" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"> Crear</label>
@@ -29,7 +29,7 @@
                 </div>
             </div>
 
-            <div x-data="{ c: {{ $cargo->crear_empleado ? 'true' : 'false' }}, m: {{ $cargo->modificar_empleado ? 'true' : 'false' }}, e: {{ $cargo->eliminar_empleado ? 'true' : 'false' }}, v: {{ $cargo->ver_empleado ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-green-200 border-t-4 border-t-green-400 bg-green-50/20 rounded-lg p-5">
+            <div x-data="{ c: {{ $cargo->crear_empleado == 1 ? 'true' : 'false' }}, m: {{ $cargo->modificar_empleado == 1 ? 'true' : 'false' }}, e: {{ $cargo->eliminar_empleado == 1 ? 'true' : 'false' }}, v: {{ $cargo->ver_empleado == 1 ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-green-200 border-t-4 border-t-green-400 bg-green-50/20 rounded-lg p-5">
                 <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-800">Empleados</h4><button type="button" @click="toggle" class="text-xs text-blue-500 hover:underline" x-text="(c && m && e && v) ? 'Desmarcar todos' : 'Marcar todos'"></button></div>
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="crear_empleado" value="1" x-model="c" class="rounded border-gray-300 text-green-600 focus:ring-green-500"> Crear</label>
@@ -39,7 +39,7 @@
                 </div>
             </div>
 
-            <div x-data="{ c: {{ $cargo->crear_venta ? 'true' : 'false' }}, m: {{ $cargo->modificar_venta ? 'true' : 'false' }}, e: {{ $cargo->eliminar_venta ? 'true' : 'false' }}, v: {{ $cargo->ver_venta ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-yellow-200 border-t-4 border-t-yellow-400 bg-yellow-50/20 rounded-lg p-5">
+            <div x-data="{ c: {{ $cargo->crear_venta == 1 ? 'true' : 'false' }}, m: {{ $cargo->modificar_venta == 1 ? 'true' : 'false' }}, e: {{ $cargo->eliminar_venta == 1 ? 'true' : 'false' }}, v: {{ $cargo->ver_venta == 1 ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-yellow-200 border-t-4 border-t-yellow-400 bg-yellow-50/20 rounded-lg p-5">
                 <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-800">Ventas</h4><button type="button" @click="toggle" class="text-xs text-blue-500 hover:underline" x-text="(c && m && e && v) ? 'Desmarcar todos' : 'Marcar todos'"></button></div>
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="crear_venta" value="1" x-model="c" class="rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"> Crear</label>
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <div x-data="{ c: {{ $cargo->crear_recurso ? 'true' : 'false' }}, m: {{ $cargo->modificar_recurso ? 'true' : 'false' }}, e: {{ $cargo->eliminar_recurso ? 'true' : 'false' }}, v: {{ $cargo->ver_recurso ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-purple-200 border-t-4 border-t-purple-400 bg-purple-50/20 rounded-lg p-5">
+            <div x-data="{ c: {{ $cargo->crear_recurso == 1 ? 'true' : 'false' }}, m: {{ $cargo->modificar_recurso == 1 ? 'true' : 'false' }}, e: {{ $cargo->eliminar_recurso == 1 ? 'true' : 'false' }}, v: {{ $cargo->ver_recurso == 1 ? 'true' : 'false' }}, toggle() { let st = !(this.c && this.m && this.e && this.v); this.c = st; this.m = st; this.e = st; this.v = st; } }" class="border border-purple-200 border-t-4 border-t-purple-400 bg-purple-50/20 rounded-lg p-5">
                 <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-gray-800">Recursos</h4><button type="button" @click="toggle" class="text-xs text-blue-500 hover:underline" x-text="(c && m && e && v) ? 'Desmarcar todos' : 'Marcar todos'"></button></div>
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="crear_recurso" value="1" x-model="c" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500"> Crear</label>

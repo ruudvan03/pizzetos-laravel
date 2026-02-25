@@ -20,6 +20,12 @@ use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\SucursalesController;
 use App\Http\Controllers\CargosController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\VentasController;
+use App\Http\Controllers\FlujoCajaController;
+use App\Http\Controllers\PedidosController;
+use App\Http\Controllers\AnticiposController;
+use App\Http\Controllers\GastosController;
+use App\Http\Controllers\ConfiguracionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +63,6 @@ Route::middleware(['auth'])->group(function () {
 
     // --- MÓDULO DE CORTE MENSUAL ---
     Route::get('/corte-mensual', [CorteController::class, 'index'])->name('corte.index');
-    
     //Actualizar
     Route::get('/corte-mensual/dia/{fecha}', [CorteController::class, 'getDetalleDia'])->name('corte.dia');
 
@@ -187,12 +192,33 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store'])->name('clientes.store');
     Route::get('/clientes/{id}/editar', [ClientesController::class, 'edit'])->name('clientes.edit');
     Route::put('/clientes/{id}', [ClientesController::class, 'update'])->name('clientes.update');
-    
-    // Rutas para Activar / Desactivar
     Route::put('/clientes/{id}/desactivar', [ClientesController::class, 'destroy'])->name('clientes.destroy'); 
     Route::put('/clientes/{id}/activar', [ClientesController::class, 'activar'])->name('clientes.activar'); 
-    
-    // Rutas para Direcciones desde el Modal
     Route::post('/clientes/{id}/direcciones', [ClientesController::class, 'storeDireccion'])->name('clientes.storeDireccion');
     Route::delete('/direcciones/{id}', [ClientesController::class, 'destroyDireccion'])->name('clientes.destroyDireccion');
+
+    // =====================================================================
+    // MÓDULO DE VENTAS
+    // =====================================================================
+    Route::get('/venta/resume', [VentasController::class, 'resume'])->name('ventas.resume');
+
+    // --- FLUJO DE CAJA ---
+    Route::get('/venta/flujo-caja', [FlujoCajaController::class, 'index'])->name('flujo.caja.index');
+    Route::post('/venta/flujo-caja/abrir', [FlujoCajaController::class, 'abrirCaja'])->name('flujo.caja.abrir');
+    Route::post('/venta/flujo-caja/cerrar/{id}', [FlujoCajaController::class, 'cerrarCaja'])->name('flujo.caja.cerrar');
+
+    // --- MONITOR DE PEDIDOS (COCINA/ENTREGA) ---
+    Route::get('/venta/pedidos', [PedidosController::class, 'index'])->name('ventas.pedidos');
+    Route::put('/venta/pedidos/{id}/status', [PedidosController::class, 'cambiarStatus'])->name('ventas.pedidos.status');
+
+    // --- PEDIDOS ESPECIALES / ANTICIPOS ---
+    Route::get('/venta/anticipos', [AnticiposController::class, 'index'])->name('ventas.anticipos');
+
+    // --- GASTOS ---
+    Route::get('/venta/gastos', [GastosController::class, 'index'])->name('gastos.index');
+    Route::post('/venta/gastos', [GastosController::class, 'store'])->name('gastos.store');
+    Route::delete('/venta/gastos/{id}', [GastosController::class, 'destroy'])->name('gastos.destroy');
+
+    // --- CONFIGURACIÓN POS ---
+    Route::get('/Conf/configuracion', [ConfiguracionController::class, 'index'])->name('ventas.configuracion');
 });

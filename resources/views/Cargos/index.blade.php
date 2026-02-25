@@ -40,7 +40,6 @@
                         <td class="px-6 py-4 text-left font-bold text-gray-900 border-r">{{ $cargo->nombre }}</td>
                         
                         @php 
-                            // Agrupamos las secciones para recorrerlas fácil con Blade
                             $bloques = [
                                 'producto' => 'bg-blue-50/10', 
                                 'empleado' => 'bg-green-50/10', 

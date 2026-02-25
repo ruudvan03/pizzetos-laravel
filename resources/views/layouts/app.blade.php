@@ -174,37 +174,37 @@
                         </svg>
                     </button>
                     <div x-show="ventaOpen" x-transition x-cloak class="mt-2 px-2 flex flex-col space-y-1 pb-4">
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                        <a href="{{ route('ventas.resume') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('ventas.resume') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zm64 64V416H224V160H64zm384 0H288V416H448V160z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Resumen</span>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('ventas.resume') ? 'font-black' : 'font-bold' }} italic">Resumen</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
+                        <a href="{{ route('flujo.caja.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('flujo.caja.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M0 168v-16c0-13.3 10.7-24 24-24h360V80c0-21.4 25.9-32.1 41-17l71 72c9.4 9.4 9.4 24.6 0 33.9l-71 72c-15.1 15.1-41 4.4-41-17v-48H24c-13.3 0-24-10.7-24-24zm488 152H128v-48c0-21.4-25.9-32.1-41-17l-71 72c-9.4 9.4-9.4 24.6 0 33.9l71 72c15.1 15.1 41 4.4 41-17v-48h360c13.3 0 24-10.7 24-24v-16c0-13.3-10.7-24-24-24z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Flujo de caja</span>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('flujo.caja.*') ? 'font-black' : 'font-bold' }} italic">Flujo de caja</span>
                         </a>
                         <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M256 0c-35.3 0-64 28.7-64 64H59.5c-20 0-37.4 14.5-40.8 34.3L0 352h512l-18.7-253.7c-3.4-19.8-20.8-34.3-40.8-34.3H320c0-35.3-28.7-64-64-64zM160 128h192c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64zM24 384L38.4 492.3c2.6 15.2 15.6 26.7 31 26.7H442.6c15.4 0 28.4-11.5 31-26.7L488 384H24z"/></svg>
                             <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Venta</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M480 256h-88c-13.3 0-24 10.7-24 24v24c0 26.5-21.5 48-48 48H192c-26.5 0-48-21.5-48-48v-24c0-13.3-10.7-24-24-24H32c-17.7 0-32 14.3-32 32v128c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64V288c0-17.7-14.3-32-32-32zM0 160v32c0 17.7 14.3 32 32 32h110c7.3 0 14-3.5 18.4-9.3L192 160h128l31.6 54.7c4.4 5.8 11.1 9.3 18.4 9.3H480c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64H64C28.7 96 0 124.7 0 160z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Pedidos</span>
+                        <a href="{{ route('ventas.pedidos') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('ventas.pedidos') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 448 512"><path d="M160 112c0-35.3 28.7-64 64-64s64 28.7 64 64v48H160v-48zm-48 48H48c-26.5 0-48 21.5-48 48V416c0 53 43 96 96 96H352c53 0 96-43 96-96V208c0-26.5-21.5-48-48-48H336v-48C336 50.1 285.9 0 224 0S112 50.1 112 112v48zm24 96c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24zm200-24c0 13.3-10.7 24-24 24s-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24z"/></svg>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('ventas.pedidos') ? 'font-black' : 'font-bold' }} italic">Pedidos</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 384 512"><path d="M320 48v48H192V48h128zm64 48c0-26.5-21.5-48-48-48H288C288 21.5 266.5 0 240 0s-48 21.5-48 48H144c-26.5 0-48 21.5-48 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V96h-48zm-64 304H192v-32h128v32zm0-96H192v-32h128v32z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Anticipos</span>
+                        <a href="{{ route('ventas.anticipos') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('ventas.anticipos') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 448 512"><path d="M128 0c17.7 0 32 14.3 32 32V64H288V32c0-17.7 14.3-32 32-32s32 14.3 32 32V64h48c26.5 0 48 21.5 48 48v48H0V112C0 85.5 21.5 64 48 64H96V32c0-17.7 14.3-32 32-32zM0 192H448V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V192zM329 305c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-95 95-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L329 305z"/></svg>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('ventas.anticipos') ? 'font-black' : 'font-bold' }} italic">Anticipos</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all hover:bg-black/10 text-black">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M0 128C0 92.7 28.7 64 64 64h384c35.3 0 64 28.7 64 64v256c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128zm64 64c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zm384 0c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32v-64c0-17.7-14.3-32-32-32zM256 192c-35.3 0-64 28.7-64 64s28.7 64 64 64 64-28.7 64-64-28.7-64-64-64z"/></svg>
-                            <span class="text-[10px] uppercase tracking-[0.2em] font-bold italic">Gastos</span>
+                        <a href="{{ route('gastos.index') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('gastos.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 576 512"><path d="M64 64C28.7 64 0 92.7 0 128V384c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H64zm64 320H64V336c35.3 0 64 28.7 64 64zM64 192V128h64c0 35.3-28.7 64-64 64zM448 384c0-35.3 28.7-64 64-64v64H448zm64-192c-35.3 0-64-28.7-64-64h64v64zM288 160a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>
+                            <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('gastos.*') ? 'font-black' : 'font-bold' }} italic">Gastos</span>
                         </a>
                     </div>
                 </div>
 
-                <a href="#" class="flex items-center gap-4 px-6 py-5 rounded-[2rem] transition-all hover:bg-black/10 font-black">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 512 512"><path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4 .6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"/></svg>
-                    <span class="text-xs uppercase tracking-[0.3em] font-black italic">Configuración</span>
-                </a>
+                <a href="{{ route('ventas.configuracion') }}" class="flex items-center gap-3 px-6 py-3.5 rounded-[1.5rem] transition-all {{ request()->routeIs('ventas.configuracion') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/10 text-black' }}">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg>
+                    <span class="text-[10px] uppercase tracking-[0.2em] {{ request()->routeIs('Conf.configuracion') ? 'font-black' : 'font-bold' }} italic">Configuración</span>
+                    </a>
 
             </nav>
 

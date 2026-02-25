@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class CargosController extends Controller
 {
@@ -30,9 +29,7 @@ class CargosController extends Controller
         ]);
 
         $id_ca = DB::table('cargos')->insertGetId([
-            'nombre' => $request->nombre,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
+            'nombre' => $request->nombre
         ]);
 
         DB::table('permisos')->insert([
@@ -79,8 +76,7 @@ class CargosController extends Controller
         ]);
         
         DB::table('cargos')->where('id_ca', $id)->update([
-            'nombre' => $request->nombre,
-            'updated_at' => Carbon::now()
+            'nombre' => $request->nombre
         ]);
         
         $permisosData = [
