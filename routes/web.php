@@ -26,6 +26,7 @@ use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\AnticiposController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\PuntoVentaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -206,6 +207,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/venta/flujo-caja', [FlujoCajaController::class, 'index'])->name('flujo.caja.index');
     Route::post('/venta/flujo-caja/abrir', [FlujoCajaController::class, 'abrirCaja'])->name('flujo.caja.abrir');
     Route::post('/venta/flujo-caja/cerrar/{id}', [FlujoCajaController::class, 'cerrarCaja'])->name('flujo.caja.cerrar');
+    Route::get('/venta/flujo-caja/pdf/{id}', [FlujoCajaController::class, 'descargarPdf'])->name('flujo.caja.pdf');
 
     // --- MONITOR DE PEDIDOS (COCINA/ENTREGA) ---
     Route::get('/venta/pedidos', [PedidosController::class, 'index'])->name('ventas.pedidos');
@@ -221,4 +223,9 @@ Route::middleware(['auth'])->group(function () {
 
     // --- CONFIGURACIÓN POS ---
     Route::get('/Conf/configuracion', [ConfiguracionController::class, 'index'])->name('ventas.configuracion');
+    
+    // --- PUNTO DE VENTA (POS) ---
+    Route::get('/venta/pos', [PuntoVentaController::class, 'index'])->name('ventas.pos');
+    Route::post('/venta/pos/guardar', [PuntoVentaController::class, 'store'])->name('ventas.pos.store');
+    Route::get('/venta/pos/ticket/{id}', [PuntoVentaController::class, 'ticket'])->name('ventas.pos.ticket');
 });
