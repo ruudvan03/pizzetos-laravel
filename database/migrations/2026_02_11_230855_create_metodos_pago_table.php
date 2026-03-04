@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('metodos_pago', function (Blueprint $table) {
-            $table->integer('id_metpago', true);
+        Schema::create('MetodosPago', function (Blueprint $table) {
+            $table->integer('id_metpago')->autoIncrement();
             $table->string('metodo', 50);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('metodos_pago');
+        Schema::dropIfExists('MetodosPago');
     }
 };

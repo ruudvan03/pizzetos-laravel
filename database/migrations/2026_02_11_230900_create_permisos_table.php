@@ -6,11 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('permisos', function (Blueprint $table) {
-            $table->integer('id_permiso', true);
+        Schema::create('Permisos', function (Blueprint $table) {
+            $table->integer('id_permiso', true); 
             $table->integer('id_cargo')->unique();
+            
             $table->boolean('crear_producto');
             $table->boolean('modificar_producto');
             $table->boolean('eliminar_producto');
@@ -27,12 +31,16 @@ return new class extends Migration
             $table->boolean('modificar_recurso');
             $table->boolean('eliminar_recurso');
             $table->boolean('ver_recurso');
-            $table->foreign('id_cargo')->references('id_ca')->on('cargos');
+
+            $table->foreign('id_cargo')->references('id_ca')->on('Cargos');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('permisos');
+        Schema::dropIfExists('Permisos');
     }
 };

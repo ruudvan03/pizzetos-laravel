@@ -8,17 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('costillas', function (Blueprint $table) {
-            $table->integer('id_cos', true);
+        Schema::create('Costillas', function (Blueprint $table) {
+            $table->integer('id_cos', true); // True activa el auto_increment
             $table->string('orden', 255)->nullable();
             $table->decimal('precio', 10, 2);
             $table->integer('id_cat');
-            $table->foreign('id_cat')->references('id_cat')->on('categorias_prod');
+            
+            $table->foreign('id_cat')->references('id_cat')->on('CategoriasProd');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('costillas');
+        Schema::dropIfExists('Costillas');
     }
 };

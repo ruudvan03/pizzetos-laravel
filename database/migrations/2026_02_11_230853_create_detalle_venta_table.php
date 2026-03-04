@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('detalle_venta', function (Blueprint $table) {
+        Schema::create('DetalleVenta', function (Blueprint $table) {
             $table->integer('id_detalle', true);
             $table->integer('id_venta');
             $table->integer('cantidad');
@@ -19,6 +19,8 @@ return new class extends Migration
             $table->integer('id_alis')->nullable();
             $table->integer('id_spag')->nullable();
             $table->integer('id_papa')->nullable();
+            
+            // Campos JSON tal cual tu estructura original
             $table->json('id_rec')->nullable();
             $table->json('id_barr')->nullable();
             $table->integer('id_maris')->nullable();
@@ -31,35 +33,36 @@ return new class extends Migration
             $table->integer('queso')->nullable();
             $table->json('pizza_mitad')->nullable();
             
-            $table->foreign('id_venta')->references('id_venta')->on('venta');
-            $table->foreign('id_hamb')->references('id_hamb')->on('hamburguesas');
-            $table->foreign('id_cos')->references('id_cos')->on('costillas');
-            $table->foreign('id_alis')->references('id_alis')->on('alitas');
-            $table->foreign('id_spag')->references('id_spag')->on('spaguetty');
-            $table->foreign('id_papa')->references('id_papa')->on('orden_de_papas');
-            $table->foreign('id_maris')->references('id_maris')->on('pizzas_mariscos');
-            $table->foreign('id_refresco')->references('id_refresco')->on('refrescos');
-            $table->foreign('id_pizza')->references('id_pizza')->on('pizzas');
+            // Llaves foráneas con nombres de tablas corregidos (CamelCase)
+            $table->foreign('id_venta')->references('id_venta')->on('Venta');
+            $table->foreign('id_hamb')->references('id_hamb')->on('Hamburguesas');
+            $table->foreign('id_cos')->references('id_cos')->on('Costillas');
+            $table->foreign('id_alis')->references('id_alis')->on('Alitas');
+            $table->foreign('id_spag')->references('id_spag')->on('Spaguetty');
+            $table->foreign('id_papa')->references('id_papa')->on('OrdenDePapas');
+            $table->foreign('id_maris')->references('id_maris')->on('PizzasMariscos');
+            $table->foreign('id_refresco')->references('id_refresco')->on('Refrescos');
+            $table->foreign('id_pizza')->references('id_pizza')->on('Pizzas');
         });
 
-        // Trigger AFTER INSERT
+        // Trigger AFTER INSERT corregido (Nombres de tablas: PVersion y Venta)
         DB::unprepared('
-            CREATE TRIGGER verificarDetallesCrear AFTER INSERT ON detalle_venta
+            CREATE TRIGGER verificarDetallesCrear AFTER INSERT ON DetalleVenta
             FOR EACH ROW
             BEGIN
-                UPDATE p_version
+                UPDATE PVersion
                 SET version = version + 1
                 WHERE id_suc = (
                     SELECT id_suc
-                    FROM venta
+                    FROM Venta
                     WHERE id_venta = NEW.id_venta
                 );
             END
         ');
 
-        // Trigger AFTER UPDATE
+        // Trigger AFTER UPDATE corregido
         DB::unprepared('
-            CREATE TRIGGER verificarDetallesActualizar AFTER UPDATE ON detalle_venta
+            CREATE TRIGGER verificarDetallesActualizar AFTER UPDATE ON DetalleVenta
             FOR EACH ROW
             BEGIN
                 IF (
@@ -81,11 +84,11 @@ return new class extends Migration
                     OR NOT (NEW.status <=> OLD.status)
                     OR NOT (NEW.ingredientes <=> OLD.ingredientes)
                 ) THEN
-                    UPDATE p_version
+                    UPDATE PVersion
                     SET version = version + 1
                     WHERE id_suc = (
                         SELECT id_suc
-                        FROM venta
+                        FROM Venta
                         WHERE id_venta = NEW.id_venta
                     );
                 END IF;
@@ -97,6 +100,6 @@ return new class extends Migration
     {
         DB::unprepared('DROP TRIGGER IF EXISTS verificarDetallesCrear');
         DB::unprepared('DROP TRIGGER IF EXISTS verificarDetallesActualizar');
-        Schema::dropIfExists('detalle_venta');
+        Schema::dropIfExists('DetalleVenta');
     }
 };

@@ -8,18 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('refrescos', function (Blueprint $table) {
-            $table->integer('id_refresco', true);
+        Schema::create('Refrescos', function (Blueprint $table) {
+            $table->integer('id_refresco')->autoIncrement();
             $table->string('nombre', 255);
             $table->integer('id_tamano');
             $table->integer('id_cat');
-            $table->foreign('id_tamano')->references('id_tamano')->on('tamanos_refrescos');
-            $table->foreign('id_cat')->references('id_cat')->on('categorias_prod');
+            $table->foreign('id_tamano')->references('id_tamano')->on('TamanosRefrescos');
+            $table->foreign('id_cat')->references('id_cat')->on('CategoriasProd');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('refrescos');
+        Schema::dropIfExists('Refrescos');
     }
 };

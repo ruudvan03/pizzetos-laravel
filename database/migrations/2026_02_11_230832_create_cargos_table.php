@@ -8,15 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cargos', function (Blueprint $table) {
-            $table->integer('id_ca', true); // Clave primaria
+        Schema::create('Cargos', function (Blueprint $table) {
+            $table->integer('id_ca')->autoIncrement();
             $table->string('nombre', 255);
-            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('cargos');
+        Schema::dropIfExists('Cargos');
     }
 };

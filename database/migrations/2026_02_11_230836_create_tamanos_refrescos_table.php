@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tamanos_refrescos', function (Blueprint $table) {
-            $table->integer('id_tamano', true);
+        Schema::create('TamanosRefrescos', function (Blueprint $table) {
+            $table->integer('id_tamano')->autoIncrement();
             $table->string('tamano', 50);
             $table->decimal('precio', 10, 2);
         });
@@ -17,6 +17,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tamanos_refrescos');
+        Schema::dropIfExists('TamanosRefrescos');
     }
 };

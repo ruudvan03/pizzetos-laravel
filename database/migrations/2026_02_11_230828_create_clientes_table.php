@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clientes', function (Blueprint $table) {
-            $table->integer('id_clie', true); // Cambiar de $table->id() a integer con auto_increment
+        Schema::create('Clientes', function (Blueprint $table) {
+            $table->integer('id_clie')->autoIncrement();
             $table->string('nombre', 255);
             $table->string('apellido', 255)->nullable();
             $table->string('telefono', 20)->nullable();
             $table->integer('status')->default(1);
-            $table->timestamps();
         });
     }
 
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('clientes');
+        Schema::dropIfExists('Clientes');
     }
 };

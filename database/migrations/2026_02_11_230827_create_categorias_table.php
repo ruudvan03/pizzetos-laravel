@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categorias', function (Blueprint $table) {
-            $table->integer('id_cat', true); // Cambiar de $table->id() a integer con auto_increment
-            $table->string('descripcion', 255); // Agregar el campo descripcion
-            $table->timestamps();
+        Schema::create('CategoriasProd', function (Blueprint $table) {
+            $table->integer('id_cat', true); 
+            $table->string('descripcion', 255);
+            
+
         });
     }
 
@@ -23,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categorias');
+        Schema::dropIfExists('CategoriasProd');
     }
 };

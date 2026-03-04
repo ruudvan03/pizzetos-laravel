@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('direcciones', function (Blueprint $table) {
-            $table->integer('id_dir', true);
+        Schema::create('Direcciones', function (Blueprint $table) {
+            $table->integer('id_dir')->autoIncrement();
             $table->integer('id_clie');
             $table->string('calle', 100);
             $table->string('manzana', 100)->nullable();
@@ -17,12 +17,12 @@ return new class extends Migration
             $table->string('colonia', 100)->nullable();
             $table->string('referencia', 100)->nullable();
             $table->integer('status')->default(1);
-            $table->foreign('id_clie')->references('id_clie')->on('clientes');
+            $table->foreign('id_clie')->references('id_clie')->on('Clientes');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('direcciones');
+        Schema::dropIfExists('Direcciones');
     }
 };

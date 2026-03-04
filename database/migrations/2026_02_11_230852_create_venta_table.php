@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('venta', function (Blueprint $table) {
+        Schema::create('Venta', function (Blueprint $table) {
             $table->integer('id_venta', true);
             $table->integer('id_suc');
             $table->integer('mesa')->nullable();
@@ -21,16 +21,17 @@ return new class extends Migration
             $table->string('nombreClie', 100)->nullable();
             $table->integer('id_caja');
             $table->string('detalles', 100)->nullable();
-            $table->foreign('id_suc')->references('id_suc')->on('sucursal');
-            $table->foreign('id_caja')->references('id_caja')->on('caja');
+            
+            $table->foreign('id_suc')->references('id_suc')->on('Sucursal');
+            $table->foreign('id_caja')->references('id_caja')->on('Caja');
         });
 
         // Trigger AFTER INSERT
         DB::unprepared('
-            CREATE TRIGGER verificarCrear AFTER INSERT ON venta
+            CREATE TRIGGER verificarCrear AFTER INSERT ON Venta
             FOR EACH ROW
             BEGIN
-                UPDATE p_version
+                UPDATE PVersion
                 SET version = version + 1
                 WHERE id_suc = NEW.id_suc;
             END
@@ -38,7 +39,7 @@ return new class extends Migration
 
         // Trigger AFTER UPDATE
         DB::unprepared('
-            CREATE TRIGGER verificarVentaActualizar AFTER UPDATE ON venta
+            CREATE TRIGGER verificarVentaActualizar AFTER UPDATE ON Venta
             FOR EACH ROW
             BEGIN
                 IF (
@@ -52,7 +53,7 @@ return new class extends Migration
                     OR NEW.id_caja <> OLD.id_caja
                     OR NOT (NEW.detalles <=> OLD.detalles)
                 ) THEN
-                    UPDATE p_version
+                    UPDATE PVersion
                     SET version = version + 1
                     WHERE id_suc = NEW.id_suc;
                 END IF;
@@ -64,6 +65,6 @@ return new class extends Migration
     {
         DB::unprepared('DROP TRIGGER IF EXISTS verificarCrear');
         DB::unprepared('DROP TRIGGER IF EXISTS verificarVentaActualizar');
-        Schema::dropIfExists('venta');
+        Schema::dropIfExists('Venta');
     }
 };

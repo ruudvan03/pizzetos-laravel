@@ -6,24 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('p_especiales', function (Blueprint $table) {
-            $table->integer('id_pespeciales', true);
+        Schema::create('PEspeciales', function (Blueprint $table) {
+            $table->integer('id_pespeciales', true); // True activa el auto_increment
             $table->integer('id_venta');
             $table->integer('id_dir')->nullable();
             $table->integer('id_clie')->nullable();
             $table->datetime('fecha_creacion')->useCurrent();
             $table->datetime('fecha_entrega')->nullable();
             $table->integer('status')->default(1);
-            $table->foreign('id_venta')->references('id_venta')->on('venta');
-            $table->foreign('id_dir')->references('id_dir')->on('direcciones');
-            $table->foreign('id_clie')->references('id_clie')->on('clientes');
+
+            $table->foreign('id_venta')->references('id_venta')->on('Venta');
+            $table->foreign('id_dir')->references('id_dir')->on('Direcciones');
+            $table->foreign('id_clie')->references('id_clie')->on('Clientes');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('p_especiales');
+        Schema::dropIfExists('PEspeciales');
     }
 };
