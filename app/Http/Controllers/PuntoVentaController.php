@@ -12,105 +12,120 @@ class PuntoVentaController extends Controller
     public function index()
     {
         $id_sucursal = Auth::check() ? (Auth::user()->id_suc ?? 1) : 1;
-        $cajaAbierta = DB::table('caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
+        $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
 
-        // Traemos información clave de tu BD
-        $clientes = DB::table('clientes')->where('status', 1)->get();
-        $direcciones = DB::table('direcciones')->where('status', 1)->get();
-        $categorias = DB::table('categoriasprod')->get();
-        $paquetes = DB::table('paquetes')->get();
+        // 1. PIZZAS NORMALES (Cat 12)
+        $pizzas_raw = DB::table('Pizzas')
+            ->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')
+            ->join('TamanosPizza', 'Pizzas.id_tamano', '=', 'TamanosPizza.id_tamañop')
+            ->select('Especialidades.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'Pizzas.id_pizza')
+            ->get();
+        $pizzas = [];
+        foreach($pizzas_raw as $p) {
+            if(!isset($pizzas[$p->nombre])) $pizzas[$p->nombre] = ['nombre' => $p->nombre, 'tamanos' => []];
+            $pizzas[$p->nombre]['tamanos'][] = ['id' => $p->id_pizza, 'tamano' => $p->tamano, 'precio' => $p->precio];
+        }
 
-        $catalogo = [];
+        // 2. MARISCOS (Cat 2)
+        $mariscos_raw = DB::table('PizzasMariscos')
+            ->join('TamanosPizza', 'PizzasMariscos.id_tamañop', '=', 'TamanosPizza.id_tamañop')
+            ->select('PizzasMariscos.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'PizzasMariscos.id_maris')
+            ->get();
+        $mariscos = [];
+        foreach($mariscos_raw as $m) {
+            $nom = str_replace('Pizza ', '', $m->nombre);
+            if(!isset($mariscos[$nom])) $mariscos[$nom] = ['nombre' => $nom, 'tamanos' => []];
+            $mariscos[$nom]['tamanos'][] = ['id' => $m->id_maris, 'tamano' => $m->tamano, 'precio' => $m->precio];
+        }
 
-        // 1. HAMBURGUESAS (id_cat = 6)
-        foreach(DB::table('hamburguesas')->get() as $h) { $catalogo[] = ['id_unico' => 'hamb_'.$h->id_hamb, 'db_id' => $h->id_hamb, 'tipo_columna' => 'id_hamb', 'nombre' => $h->paquete, 'precio' => $h->precio, 'id_cat' => $h->id_cat, 'color' => 'text-orange-600 bg-orange-50']; }
+        // 3. PRODUCTOS DIRECTOS (Rectangular, Barra, Extras)
+        $directos = [];
+        $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
+        foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
+
+        $barra = DB::table('Barra')->join('Especialidades', 'Barra.id_especialidad', '=', 'Especialidades.id_esp')->select('Barra.id_barr as id', 'Especialidades.nombre', 'Barra.precio')->get();
+        foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
+
+        foreach(DB::table('Hamburguesas')->get() as $h) { $directos[] = ['id' => $h->id_hamb, 'col' => 'id_hamb', 'nombre' => $h->paquete, 'precio' => $h->precio, 'cat' => 6]; }
+        foreach(DB::table('Alitas')->get() as $a) { $directos[] = ['id' => $a->id_alis, 'col' => 'id_alis', 'nombre' => $a->orden, 'precio' => $a->precio, 'cat' => 5]; }
+        foreach(DB::table('Costillas')->get() as $c) { $directos[] = ['id' => $c->id_cos, 'col' => 'id_cos', 'nombre' => $c->orden, 'precio' => $c->precio, 'cat' => 7]; }
+        foreach(DB::table('Spaguetty')->get() as $s) { $directos[] = ['id' => $s->id_spag, 'col' => 'id_spag', 'nombre' => $s->orden, 'precio' => $s->precio, 'cat' => 9]; }
+        foreach(DB::table('OrdenDePapas')->get() as $p) { $directos[] = ['id' => $p->id_papa, 'col' => 'id_papa', 'nombre' => $p->orden, 'precio' => $p->precio, 'cat' => 8]; }
         
-        // 2. ALITAS (id_cat = 5)
-        foreach(DB::table('alitas')->get() as $a) { $catalogo[] = ['id_unico' => 'ali_'.$a->id_alis, 'db_id' => $a->id_alis, 'tipo_columna' => 'id_alis', 'nombre' => $a->orden, 'precio' => $a->precio, 'id_cat' => $a->id_cat, 'color' => 'text-red-600 bg-red-50']; }
-        
-        // 3. COSTILLAS (id_cat = 7)
-        foreach(DB::table('costillas')->get() as $c) { $catalogo[] = ['id_unico' => 'cos_'.$c->id_cos, 'db_id' => $c->id_cos, 'tipo_columna' => 'id_cos', 'nombre' => $c->orden, 'precio' => $c->precio, 'id_cat' => $c->id_cat, 'color' => 'text-rose-600 bg-rose-50']; }
-        
-        // 4. SPAGUETTY (id_cat = 9)
-        foreach(DB::table('spaguetty')->get() as $s) { $catalogo[] = ['id_unico' => 'spa_'.$s->id_spag, 'db_id' => $s->id_spag, 'tipo_columna' => 'id_spag', 'nombre' => $s->orden, 'precio' => $s->precio, 'id_cat' => $s->id_cat, 'color' => 'text-yellow-600 bg-yellow-50']; }
-        
-        // 5. PAPAS (id_cat = 8)
-        foreach(DB::table('ordendepapas')->get() as $p) { $catalogo[] = ['id_unico' => 'pap_'.$p->id_papa, 'db_id' => $p->id_papa, 'tipo_columna' => 'id_papa', 'nombre' => $p->orden, 'precio' => $p->precio, 'id_cat' => $p->id_cat, 'color' => 'text-amber-600 bg-amber-50']; }
-        
-        // 6. REFRESCOS (id_cat = 1)
-        $refrescos = DB::table('refrescos')->join('tamanosrefrescos', 'refrescos.id_tamano', '=', 'tamanosrefrescos.id_tamano')->select('refrescos.*', 'tamanosrefrescos.tamano', 'tamanosrefrescos.precio')->get();
-        foreach($refrescos as $r) { $catalogo[] = ['id_unico' => 'ref_'.$r->id_refresco, 'db_id' => $r->id_refresco, 'tipo_columna' => 'id_refresco', 'nombre' => $r->nombre . ' (' . $r->tamano . ')', 'precio' => $r->precio, 'id_cat' => $r->id_cat, 'color' => 'text-blue-600 bg-blue-50']; }
-        
-        // 7. PIZZAS NORMALES (id_cat = 12)
-        $pizzas = DB::table('pizzas')->join('especialidades', 'pizzas.id_esp', '=', 'especialidades.id_esp')->join('tamanospizza', 'pizzas.id_tamano', '=', 'tamanospizza.id_tamañop')->select('pizzas.id_pizza', 'especialidades.nombre as esp_nombre', 'tamanospizza.tamano', 'tamanospizza.precio', 'pizzas.id_cat')->get();
-        foreach($pizzas as $p) { $catalogo[] = ['id_unico' => 'piz_'.$p->id_pizza, 'db_id' => $p->id_pizza, 'tipo_columna' => 'id_pizza', 'nombre' => 'Pizza ' . $p->esp_nombre . ' (' . str_replace([' Especial', ' Camaron', ' Mar'], '', $p->tamano) . ')', 'precio' => $p->precio, 'id_cat' => $p->id_cat, 'color' => 'text-green-600 bg-green-50']; }
+        $refrescos = DB::table('Refrescos')->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')->select('Refrescos.id_refresco as id', 'Refrescos.nombre', 'TamanosRefrescos.tamano', 'TamanosRefrescos.precio')->get();
+        foreach($refrescos as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_refresco', 'nombre' => $r->nombre . ' (' . $r->tamano . ')', 'precio' => $r->precio, 'cat' => 1]; }
 
-        // 8. PIZZAS MARISCOS (id_cat = 2)
-        $mariscos = DB::table('pizzasmariscos')->join('tamanospizza', 'pizzasmariscos.id_tamañop', '=', 'tamanospizza.id_tamañop')->select('pizzasmariscos.id_maris', 'pizzasmariscos.nombre', 'tamanospizza.tamano', 'tamanospizza.precio', 'pizzasmariscos.id_cat')->get();
-        foreach($mariscos as $m) { $catalogo[] = ['id_unico' => 'mar_'.$m->id_maris, 'db_id' => $m->id_maris, 'tipo_columna' => 'id_maris', 'nombre' => $m->nombre . ' (' . str_replace([' Especial', ' Camaron', ' Mar'], '', $m->tamano) . ')', 'precio' => $m->precio, 'id_cat' => $m->id_cat, 'color' => 'text-teal-600 bg-teal-50']; }
+        // 4. DATOS PARA MODALES Y GLOBALES
+        $paquetes = DB::table('Paquetes')->get();
+        $ingredientes = DB::table('Ingredientes')->get();
+        $tamanos_base = DB::table('TamanosPizza')->where('tamano', 'like', '%Especial%')->get(); 
+        $especialidades_lista = DB::table('Especialidades')->get();
+        $categorias_extras = DB::table('CategoriasProd')->whereIn('id_cat', [1,5,6,7,8,9])->get();
 
-        // 9. RECTANGULAR (id_cat = 11)
-        $rectangular = DB::table('rectangular')->join('especialidades', 'rectangular.id_esp', '=', 'especialidades.id_esp')->select('rectangular.*', 'especialidades.nombre')->get();
-        foreach($rectangular as $rec) { $catalogo[] = ['id_unico' => 'rec_'.$rec->id_rec, 'db_id' => $rec->id_rec, 'tipo_columna' => 'id_rec', 'nombre' => 'Rectangular ' . $rec->nombre, 'precio' => $rec->precio, 'id_cat' => $rec->id_cat, 'color' => 'text-indigo-600 bg-indigo-50']; }
-
-        // 10. BARRA (id_cat = 10)
-        $barra = DB::table('barra')->join('especialidades', 'barra.id_especialidad', '=', 'especialidades.id_esp')->select('barra.*', 'especialidades.nombre')->get();
-        foreach($barra as $b) { $catalogo[] = ['id_unico' => 'bar_'.$b->id_barr, 'db_id' => $b->id_barr, 'tipo_columna' => 'id_barr', 'nombre' => 'Barra ' . $b->nombre, 'precio' => $b->precio, 'id_cat' => $b->id_cat, 'color' => 'text-purple-600 bg-purple-50']; }
-
-        return view('ventas.pos', compact('cajaAbierta', 'categorias', 'catalogo', 'clientes', 'direcciones', 'paquetes'));
+        // AQUÍ SE ENVÍAN LAS NUEVAS VARIABLES A LA VISTA
+        return view('Ventas.pos', [
+            'cajaAbierta' => $cajaAbierta,
+            'pizzas' => array_values($pizzas),
+            'mariscos' => array_values($mariscos),
+            'directos' => $directos,
+            'paquetes' => $paquetes,
+            'ingredientes' => $ingredientes,
+            'tamanos_base' => $tamanos_base,
+            'especialidades_lista' => $especialidades_lista,
+            'categorias_extras' => $categorias_extras
+        ]);
     }
 
     public function store(Request $request)
     {
         try {
             DB::beginTransaction();
-
             $id_sucursal = Auth::check() ? (Auth::user()->id_suc ?? 1) : 1;
-            $cajaAbierta = DB::table('caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
+            $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
+            
             if(!$cajaAbierta) throw new \Exception("No hay caja abierta.");
 
-            // 1. Guardar VENTA 
-            $id_venta = DB::table('venta')->insertGetId([
-                'id_suc' => $id_sucursal,
-                'id_caja' => $cajaAbierta->id_caja,
-                'total' => $request->total,
-                'tipo_servicio' => $request->tipo_servicio,
-                'mesa' => $request->mesa,
-                'nombreClie' => $request->nombre_cliente,
-                'comentarios' => $request->comentarios,
-                'status' => 0, 
-                'fecha_hora' => Carbon::now()
+            $id_venta = DB::table('Venta')->insertGetId([
+                'id_suc' => $id_sucursal, 'id_caja' => $cajaAbierta->id_caja,
+                'total' => $request->total, 'tipo_servicio' => $request->tipo_servicio,
+                'mesa' => $request->mesa, 'comentarios' => $request->comentarios,
+                'status' => 0, 'fecha_hora' => Carbon::now()
             ]);
 
-            // 2. Guardar DETALLES (Carrito)
             foreach($request->carrito as $item) {
-                DB::table('detalleventa')->insert([
-                    'id_venta' => $id_venta,
-                    'cantidad' => $item['cantidad'],
-                    'precio_unitario' => $item['precio'],
-                    $item['tipo_columna'] => $item['db_id']
-                ]);
+                $datosJson = [];
+                if(isset($item['comentario']) && $item['comentario'] !== '') $datosJson['nota'] = $item['comentario'];
+                if(isset($item['ingredientes_extra'])) $datosJson['ingredientes_extra'] = $item['ingredientes_extra'];
+
+                $datosInsert = [
+                    'id_venta' => $id_venta, 
+                    'cantidad' => $item['qty'], // Alineado con Alpine.js
+                    'precio_unitario' => $item['precioFinal'], // Alineado con Alpine.js
+                    'queso' => (isset($item['orilla_queso']) && $item['orilla_queso']) ? 1 : 0,
+                    'ingredientes' => count($datosJson) > 0 ? json_encode($datosJson) : null
+                ];
+
+                if (isset($item['tipo']) && $item['tipo'] == 'paq') {
+                    $datosInsert['id_paquete'] = (string) $item['db_id'];
+                } elseif (isset($item['tipo']) && $item['tipo'] == 'piz_mitad') {
+                    $datosInsert['id_pizza'] = null;
+                    $datosInsert['pizza_mitad'] = json_encode(['mitad1' => $item['mitad1'], 'mitad2' => $item['mitad2'], 'tamano' => $item['tamano']]);
+                } else {
+                    $datosInsert[$item['col']] = $item['db_id'];
+                }
+
+                DB::table('DetalleVenta')->insert($datosInsert);
             }
 
-            // 3. Guardar PAGOS
-            foreach($request->pagos as $pago) {
-                if($pago['monto'] > 0) {
-                    DB::table('pago')->insert([
-                        'id_venta' => $id_venta,
-                        'id_metpago' => $pago['id_metpago'], 
-                        'monto' => $pago['monto'],
-                        'referencia' => $pago['referencia'] ?? null
-                    ]);
+            if ($request->has('pagos')) {
+                foreach($request->pagos as $pago) {
+                    DB::table('Pago')->insert(['id_venta' => $id_venta, 'id_metpago' => $pago['id_metpago'], 'monto' => $pago['monto']]);
                 }
             }
 
-            // 4. Guardar DOMICILIO (Si aplica)
-            if ($request->tipo_servicio == 3 && $request->id_clie && $request->id_dir) {
-                DB::table('pdomicilio')->insert([
-                    'id_venta' => $id_venta,
-                    'id_clie' => $request->id_clie,
-                    'id_dir' => $request->id_dir
-                ]);
+            // Guardar Domicilio
+            if ($request->tipo_servicio == 3 && $request->has('id_clie') && $request->id_clie && $request->has('id_dir') && $request->id_dir) {
+                DB::table('PDomicilio')->insert(['id_venta' => $id_venta, 'id_clie' => $request->id_clie, 'id_dir' => $request->id_dir]);
             }
 
             DB::commit();
@@ -124,13 +139,15 @@ class PuntoVentaController extends Controller
 
     public function ticket($id)
     {
-        $venta = DB::table('venta')->where('id_venta', $id)->first();
+        $venta = DB::table('Venta')->where('id_venta', $id)->first();
         if(!$venta) abort(404);
-
-        $detalles = DB::table('detalleventa')->where('id_venta', $id)->get();
-        $pagos = DB::table('pago')->join('metodospago', 'pago.id_metpago', '=', 'metodospago.id_metpago')->where('id_venta', $id)->get();
-        $domicilio = DB::table('pdomicilio')->join('clientes', 'pdomicilio.id_clie', '=', 'clientes.id_clie')->join('direcciones', 'pdomicilio.id_dir', '=', 'direcciones.id_dir')->where('id_venta', $id)->first();
-
-        return view('ventas.ticket', compact('venta', 'detalles', 'pagos', 'domicilio'));
+        $detalles = DB::table('DetalleVenta')->where('id_venta', $id)->get();
+        
+        // Se hace un left join por si acaso
+        $pagos = DB::table('Pago')
+            ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
+            ->where('id_venta', $id)->get();
+            
+        return view('Ventas.ticket', compact('venta', 'detalles', 'pagos'));
     }
 }
