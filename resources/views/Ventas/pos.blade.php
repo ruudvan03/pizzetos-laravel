@@ -104,14 +104,12 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-hide bg-[#f8f9fa]">
-                    
                     <template x-for="(group, gIdx) in cartGroups" :key="group.id_grupo">
                         <div>
                             
                             {{-- TARJETAS PARA PIZZAS AGRUPADAS (MAXIMO 2 POR CAJA - LIMPIO) --}}
                             <template x-if="group.type === 'pizza_pair'">
                                 <div class="bg-white border border-gray-200 rounded-[8px] shadow-sm mb-4">
-                                    
                                     <div class="bg-gray-100 border-b border-gray-200 px-4 py-2.5 rounded-t-[8px] flex justify-between items-center">
                                         <h3 class="font-bold text-[#212529] text-[13px]" x-text="'Pizzas Tamaño ' + group.size"></h3>
                                         <span class="font-bold text-[11px] bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600" x-text="group.items.length + ' Pizza(s)'"></span>
@@ -120,7 +118,6 @@
                                     <div class="p-4 space-y-4">
                                         <template x-for="p in group.items" :key="p.item.uid">
                                             <div class="relative border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                                
                                                 <div class="flex justify-between items-start w-full">
                                                     <div class="pr-8">
                                                         <h4 class="font-black text-[#212529] text-[14px] leading-tight mb-0.5" x-text="p.item.variante || p.item.nombre_base"></h4>
@@ -150,7 +147,6 @@
                                             </div>
                                         </template>
                                     </div>
-
                                     <div class="px-4 py-3 bg-gray-50 text-right border-t border-gray-200 rounded-b-[8px]">
                                         <span class="text-gray-500 text-[12px] font-bold uppercase mr-2 tracking-wider">Subtotal:</span>
                                         <span class="font-black text-[#212529] text-[18px]" x-text="'$' + group.subtotal.toFixed(2)"></span>
@@ -158,7 +154,7 @@
                                 </div>
                             </template>
 
-                            {{-- TARJETAS PARA OTROS PRODUCTOS (Hamburguesas, Rectangulares, Paquetes) --}}
+                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES --}}
                             <template x-if="group.type === 'normal'">
                                 <div class="border border-gray-200 rounded-[8px] p-4 bg-white shadow-sm mb-4 relative">
                                     <div class="flex justify-between items-start mb-2">
@@ -480,7 +476,7 @@
             </div>
         </div>
 
-        {{-- PAQUETE 3 --}}
+        {{-- PAQUETE 3 (Nuevo con selección múltiple como la rectangular) --}}
         <div x-show="modalPaq3" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl w-[450px] flex flex-col max-h-[90vh] overflow-hidden" @click.away="modalPaq3 = false">
                 <div class="p-6 relative border-b border-gray-100 bg-[#ffc107]">
@@ -488,22 +484,43 @@
                     <h2 class="text-2xl font-black text-black mb-1">Paquete 3</h2>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-[#f8f9fa] scrollbar-hide">
-                    <ul class="list-disc pl-5 text-[14px] font-medium text-gray-600 mb-5 mt-0">
+                    
+                    <ul class="list-disc pl-5 text-[14px] font-medium text-gray-600 mb-4 mt-0">
                         <li>3 Pizzas Grandes</li>
                         <li>1 Refresco de 2L Jarrito</li>
                     </ul>
 
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-[13px] font-bold text-black">Selecciona 3 Pizzas Grandes:</p>
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-[14px] font-bold text-black">1. Selecciona 3 Pizzas:</p>
                         <span class="text-[12px] font-black bg-white px-2 py-1 rounded shadow-sm border border-gray-200" :class="paq3Pizzas.length === 3 ? 'text-green-600' : 'text-gray-500'" x-text="paq3Pizzas.length + '/3'"></span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-2">
-                        <template x-for="esp in dbEspecialidades" :key="esp.id_esp">
-                            <button @click="togglePaq3(esp.nombre)" 
-                                    :class="paq3Pizzas.includes(esp.nombre) ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200 hover:bg-gray-50'" 
-                                    class="border rounded-[8px] p-3 text-[12px] font-medium text-left text-black shadow-sm transition-colors" x-text="esp.nombre"></button>
+                    <p class="text-[11px] text-gray-500 mb-3">Toca las especialidades de abajo para agregar (puedes repetir).</p>
+
+                    <div class="grid grid-cols-3 gap-2 mb-5">
+                        <template x-for="i in 3">
+                            <div class="border-2 rounded-[8px] p-2 text-center transition-all h-[55px] flex items-center justify-center relative" 
+                                 :class="paq3Pizzas[i-1] ? 'border-[#ffc107] bg-[#fff9c4]' : 'border-dashed border-gray-300 bg-white'">
+                                <template x-if="paq3Pizzas[i-1]">
+                                    <div class="w-full flex justify-between items-center px-1">
+                                        <span class="text-[11px] font-bold text-[#212529] leading-tight" x-text="paq3Pizzas[i-1]"></span>
+                                        <button @click="removePaq3Esp(i-1)" class="text-red-500 hover:bg-red-100 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[12px]">&times;</button>
+                                    </div>
+                                </template>
+                                <template x-if="!paq3Pizzas[i-1]">
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Vacía</span>
+                                </template>
+                            </div>
                         </template>
                     </div>
+
+                    <p class="font-bold text-[14px] text-black mb-3">2. Especialidades disponibles:</p>
+                    <div class="grid grid-cols-2 gap-2 border border-gray-100 rounded-lg p-2 bg-white">
+                        <template x-for="esp in dbEspecialidades" :key="esp.id_esp">
+                            <button @click="addPaq3Esp(esp.nombre)" :disabled="paq3Pizzas.length >= 3" 
+                                    class="border rounded-[8px] p-2.5 text-[12px] font-medium text-left text-black shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#ffc107] hover:bg-[#fffde7]" x-text="esp.nombre"></button>
+                        </template>
+                    </div>
+
                 </div>
                 <div class="p-5 flex gap-3 border-t border-gray-100 bg-white justify-between items-center">
                     <span class="font-black text-[#28a745] text-[20px]">Precio: $<span x-text="paqObj ? parseFloat(paqObj.precio).toFixed(2) : '0.00'"></span></span>
@@ -898,8 +915,26 @@
                 },
                 addPaq1() { this.addPaq(1, this.paq1Opt); this.modalPaq1 = false; },
                 addPaq2() { this.addPaq(2, this.paq2Extra + ' + Pizza ' + this.paq2Pizza); this.modalPaq2 = false; },
-                togglePaq3(nom) { let idx = this.paq3Pizzas.indexOf(nom); if(idx > -1) this.paq3Pizzas.splice(idx, 1); else if(this.paq3Pizzas.length < 3) this.paq3Pizzas.push(nom); },
-                addPaq3() { this.addPaq(3, this.paq3Pizzas.join(' / ')); this.modalPaq3 = false; },
+                
+                // PAQUETE 3 - LOGICA DE MULTIPLES ESPECIALIDADES (INCLUSO REPETIDAS)
+                addPaq3Esp(esp) {
+                    if(this.paq3Pizzas.length < 3) this.paq3Pizzas.push(esp);
+                },
+                removePaq3Esp(index) {
+                    this.paq3Pizzas.splice(index, 1);
+                },
+                formatearPaq3Preview() {
+                    if(this.paq3Pizzas.length === 0) return 'Sin especialidades';
+                    let counts = {};
+                    this.paq3Pizzas.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                    let parts = [];
+                    for(let k in counts) { parts.push(counts[k] + ' ' + k); }
+                    return parts.join(', ');
+                },
+                addPaq3() {
+                    this.addPaq(3, this.formatearPaq3Preview());
+                    this.modalPaq3 = false;
+                },
 
                 // MITADES E INGREDIENTES
                 toggleMitad(nom) { let idx = this.mitSel.indexOf(nom); if(idx > -1) this.mitSel.splice(idx, 1); else if(this.mitSel.length < 2) this.mitSel.push(nom); },
