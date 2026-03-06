@@ -15,11 +15,7 @@ class PuntoVentaController extends Controller
         $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
 
         // 1. PIZZAS NORMALES (Cat 12)
-        $pizzas_raw = DB::table('Pizzas')
-            ->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')
-            ->join('TamanosPizza', 'Pizzas.id_tamano', '=', 'TamanosPizza.id_tamañop')
-            ->select('Especialidades.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'Pizzas.id_pizza')
-            ->get();
+        $pizzas_raw = DB::table('Pizzas')->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')->join('TamanosPizza', 'Pizzas.id_tamano', '=', 'TamanosPizza.id_tamañop')->select('Especialidades.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'Pizzas.id_pizza')->get();
         $pizzas = [];
         foreach($pizzas_raw as $p) {
             if(!isset($pizzas[$p->nombre])) $pizzas[$p->nombre] = ['nombre' => $p->nombre, 'tamanos' => []];
@@ -27,10 +23,7 @@ class PuntoVentaController extends Controller
         }
 
         // 2. MARISCOS (Cat 2)
-        $mariscos_raw = DB::table('PizzasMariscos')
-            ->join('TamanosPizza', 'PizzasMariscos.id_tamañop', '=', 'TamanosPizza.id_tamañop')
-            ->select('PizzasMariscos.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'PizzasMariscos.id_maris')
-            ->get();
+        $mariscos_raw = DB::table('PizzasMariscos')->join('TamanosPizza', 'PizzasMariscos.id_tamañop', '=', 'TamanosPizza.id_tamañop')->select('PizzasMariscos.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'PizzasMariscos.id_maris')->get();
         $mariscos = [];
         foreach($mariscos_raw as $m) {
             $nom = str_replace('Pizza ', '', $m->nombre);
@@ -41,10 +34,11 @@ class PuntoVentaController extends Controller
         // 3. PRODUCTOS DIRECTOS (Rectangular, Barra, Extras)
         $directos = [];
         $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
+        // AQUI QUITAMOS LA PALABRA 'Rectangular ' PARA QUE SOLO MANDE EL NOMBRE DE LA ESPECIALIDAD
         foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
 
         $barra = DB::table('Barra')->join('Especialidades', 'Barra.id_especialidad', '=', 'Especialidades.id_esp')->select('Barra.id_barr as id', 'Especialidades.nombre', 'Barra.precio')->get();
-        foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
+        foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => 'Barra ' . $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
 
         foreach(DB::table('Hamburguesas')->get() as $h) { $directos[] = ['id' => $h->id_hamb, 'col' => 'id_hamb', 'nombre' => $h->paquete, 'precio' => $h->precio, 'cat' => 6]; }
         foreach(DB::table('Alitas')->get() as $a) { $directos[] = ['id' => $a->id_alis, 'col' => 'id_alis', 'nombre' => $a->orden, 'precio' => $a->precio, 'cat' => 5]; }
@@ -62,17 +56,10 @@ class PuntoVentaController extends Controller
         $especialidades_lista = DB::table('Especialidades')->get();
         $categorias_extras = DB::table('CategoriasProd')->whereIn('id_cat', [1,5,6,7,8,9])->get();
 
-        // AQUÍ SE ENVÍAN LAS NUEVAS VARIABLES A LA VISTA
         return view('Ventas.pos', [
-            'cajaAbierta' => $cajaAbierta,
-            'pizzas' => array_values($pizzas),
-            'mariscos' => array_values($mariscos),
-            'directos' => $directos,
-            'paquetes' => $paquetes,
-            'ingredientes' => $ingredientes,
-            'tamanos_base' => $tamanos_base,
-            'especialidades_lista' => $especialidades_lista,
-            'categorias_extras' => $categorias_extras
+            'cajaAbierta' => $cajaAbierta, 'pizzas' => array_values($pizzas), 'mariscos' => array_values($mariscos),
+            'directos' => $directos, 'paquetes' => $paquetes, 'ingredientes' => $ingredientes,
+            'tamanos_base' => $tamanos_base, 'especialidades_lista' => $especialidades_lista, 'categorias_extras' => $categorias_extras
         ]);
     }
 
@@ -96,11 +83,10 @@ class PuntoVentaController extends Controller
                 $datosJson = [];
                 if(isset($item['comentario']) && $item['comentario'] !== '') $datosJson['nota'] = $item['comentario'];
                 if(isset($item['ingredientes_extra'])) $datosJson['ingredientes_extra'] = $item['ingredientes_extra'];
+                if(isset($item['cuartos'])) $datosJson['cuartos'] = $item['cuartos'];
 
                 $datosInsert = [
-                    'id_venta' => $id_venta, 
-                    'cantidad' => $item['qty'], // Alineado con Alpine.js
-                    'precio_unitario' => $item['precioFinal'], // Alineado con Alpine.js
+                    'id_venta' => $id_venta, 'cantidad' => $item['qty'], 'precio_unitario' => $item['precioFinal'],
                     'queso' => (isset($item['orilla_queso']) && $item['orilla_queso']) ? 1 : 0,
                     'ingredientes' => count($datosJson) > 0 ? json_encode($datosJson) : null
                 ];
@@ -142,12 +128,7 @@ class PuntoVentaController extends Controller
         $venta = DB::table('Venta')->where('id_venta', $id)->first();
         if(!$venta) abort(404);
         $detalles = DB::table('DetalleVenta')->where('id_venta', $id)->get();
-        
-        // Se hace un left join por si acaso
-        $pagos = DB::table('Pago')
-            ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
-            ->where('id_venta', $id)->get();
-            
+        $pagos = DB::table('Pago')->where('id_venta', $id)->get();
         return view('Ventas.ticket', compact('venta', 'detalles', 'pagos'));
     }
 }
