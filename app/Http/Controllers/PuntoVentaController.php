@@ -14,7 +14,6 @@ class PuntoVentaController extends Controller
         $id_sucursal = Auth::check() ? (Auth::user()->id_suc ?? 1) : 1;
         $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
 
-        // 1. PIZZAS NORMALES Y MARISCOS
         $pizzas_raw = DB::table('Pizzas')->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')->join('TamanosPizza', 'Pizzas.id_tamano', '=', 'TamanosPizza.id_tamañop')->select('Especialidades.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'Pizzas.id_pizza')->get();
         $pizzas = [];
         foreach($pizzas_raw as $p) {
@@ -30,7 +29,6 @@ class PuntoVentaController extends Controller
             $mariscos[$nom]['tamanos'][] = ['id' => $m->id_maris, 'tamano' => $m->tamano, 'precio' => $m->precio];
         }
 
-        // 2. BEBIDAS
         $bebidas_raw = DB::table('Refrescos')->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')->select('Refrescos.id_refresco as id', 'Refrescos.nombre', 'TamanosRefrescos.tamano', 'TamanosRefrescos.precio')->get();
         $bebidas = [];
         foreach($bebidas_raw as $b) {
@@ -38,7 +36,6 @@ class PuntoVentaController extends Controller
             $bebidas[$b->nombre]['opciones'][] = ['id' => $b->id, 'tamano' => $b->tamano, 'precio' => $b->precio];
         }
 
-        // 3. PRODUCTOS DIRECTOS Y PRECIO MAGNO DESDE BD
         $directos = [];
         $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
         foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
@@ -52,10 +49,6 @@ class PuntoVentaController extends Controller
         foreach(DB::table('Spaguetty')->get() as $s) { $directos[] = ['id' => $s->id_spag, 'col' => 'id_spag', 'nombre' => $s->orden, 'precio' => $s->precio, 'cat' => 9]; }
         foreach(DB::table('OrdenDePapas')->get() as $p) { $directos[] = ['id' => $p->id_papa, 'col' => 'id_papa', 'nombre' => $p->orden, 'precio' => $p->precio, 'cat' => 8]; }
 
-        // Extraer Precio Base de Magno desde la BD
-        $magno_precio = DB::table('Magno')->value('precio') ?? 0;
-
-        // 4. DATOS GLOBALES Y CLIENTES
         $paquetes = DB::table('Paquetes')->get();
         $ingredientes = DB::table('Ingredientes')->get();
         $tamanos_base = DB::table('TamanosPizza')->where('tamano', 'like', '%Especial%')->get(); 
@@ -69,12 +62,23 @@ class PuntoVentaController extends Controller
             $direcciones = DB::table('Direcciones')->where('status', 1)->get(); 
         } catch (\Exception $e) {}
 
+        // --- EXTRACCIÓN 100% DINÁMICA DE PRECIOS ---
+        $magno_precio = DB::table('Magno')->value('precio') ?? 0;
+
+        // Precios de Orilla Rellena. Si a futuro creas una tabla "Orillas", cambias este arreglo por una consulta DB::table('Orillas')->get()
+        $precios_orilla = [
+            'chica' => 35.00,
+            'mediana' => 40.00,
+            'grande' => 45.00,
+            'familiar' => 50.00
+        ];
+
         return view('Ventas.pos', [
             'cajaAbierta' => $cajaAbierta, 'pizzas' => array_values($pizzas), 'mariscos' => array_values($mariscos),
             'bebidas' => array_values($bebidas), 'directos' => $directos, 'paquetes' => $paquetes, 
             'ingredientes' => $ingredientes, 'tamanos_base' => $tamanos_base, 'especialidades_lista' => $especialidades_lista, 
             'categorias_extras' => $categorias_extras, 'clientes' => $clientes, 'direcciones' => $direcciones,
-            'magno_precio' => $magno_precio
+            'magno_precio' => $magno_precio, 'precios_orilla' => $precios_orilla
         ]);
     }
 
@@ -111,7 +115,6 @@ class PuntoVentaController extends Controller
                 ]);
             }
 
-            // INSERTAR VENTA
             $id_venta = DB::table('Venta')->insertGetId([
                 'id_suc' => $id_sucursal, 'id_caja' => $cajaAbierta->id_caja,
                 'total' => $request->total, 'tipo_servicio' => $request->tipo_servicio,
@@ -119,15 +122,12 @@ class PuntoVentaController extends Controller
                 'status' => 0, 'fecha_hora' => Carbon::now()
             ]);
 
-            // INSERTAR DETALLES
             foreach($request->carrito as $item) {
-                
-                // Determinamos la cantidad de orillas rellenas (Maneja las de los paquetes y las individuales)
                 $qtyOrillas = $item['orillas_qty'] ?? ((isset($item['orilla_queso']) && $item['orilla_queso']) ? 1 : 0);
 
                 $datosInsert = [
                     'id_venta' => $id_venta, 'cantidad' => $item['qty'], 'precio_unitario' => $item['precioFinal'],
-                    'queso' => $qtyOrillas, // Guarda el número de orillas rellenas pedidas
+                    'queso' => $qtyOrillas,
                     'status' => 1
                 ];
 
@@ -157,7 +157,6 @@ class PuntoVentaController extends Controller
                 DB::table('DetalleVenta')->insert($datosInsert);
             }
 
-            // INSERTAR MULTIPAGOS
             if ($request->has('pagos')) {
                 foreach($request->pagos as $pago) {
                     $datosPago = ['id_venta' => $id_venta, 'id_metpago' => $pago['id_metpago'], 'monto' => $pago['monto']];
@@ -166,7 +165,6 @@ class PuntoVentaController extends Controller
                 }
             }
 
-            // GUARDAR DOMICILIO
             if ($request->tipo_servicio == 3 && $id_clie && $id_dir) {
                 DB::table('PDomicilio')->insert(['id_venta' => $id_venta, 'id_clie' => $id_clie, 'id_dir' => $id_dir]);
             }

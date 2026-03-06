@@ -30,7 +30,8 @@
         const dbTamanosBase = {!! json_encode($tamanos_base) !!};
         const dbEspecialidades = {!! json_encode($especialidades_lista) !!};
         const dbCategoriasExtras = {!! json_encode($categorias_extras) !!}; 
-        const dbMagnoPrice = {!! json_encode($magno_precio) !!}; 
+        const dbMagnoPrice = parseFloat({!! json_encode($magno_precio) !!}); 
+        const dbPreciosOrilla = {!! json_encode($precios_orilla) !!}; 
         
         let rawClientes = {!! json_encode($clientes) !!};
         const dbClientes = Array.isArray(rawClientes) ? rawClientes : Object.values(rawClientes || {});
@@ -210,7 +211,7 @@
                                             <span class="w-8 h-7 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[13px]" x-text="group.item.qty"></span>
                                             <button @click="updateNormalQty(group.item, 1)" class="w-7 h-7 font-bold text-[#495057] hover:bg-gray-300">+</button>
                                         </div>
-                                        <span class="text-[12px] text-[#6c757d] font-medium" x-text="'| c/u: $' + parseFloat(group.item.precioBase).toFixed(2)"></span>
+                                        <span class="text-[12px] text-[#6c757d] font-medium" x-text="'| Base: $' + parseFloat(group.item.precioBase).toFixed(2)"></span>
                                     </div>
                                     
                                     <div x-show="group.item.variante" class="bg-[#f8f9fa] border border-gray-200 rounded-[6px] p-2 mt-2">
@@ -219,7 +220,7 @@
 
                                     {{-- Opcion de Orilla Queso exclusiva para la Magno --}}
                                     <template x-if="group.item.is_magno">
-                                        <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer mt-2 w-max bg-white px-2 py-1 rounded border border-gray-200">
+                                        <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer mt-2 w-max bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">
                                             <input type="checkbox" x-model="group.item.orilla_queso" @change="recalc()" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-3.5 h-3.5">
                                             Orilla Queso <span class="font-bold text-[#fd7e14]" x-text="'+$' + group.item.precio_orilla"></span>
                                         </label>
@@ -227,8 +228,8 @@
 
                                     {{-- Opcion de Orillas Extra para Paquetes --}}
                                     <template x-if="group.item.tipo === 'paq'">
-                                        <div class="flex items-center justify-between mt-2 bg-white px-3 py-2 rounded border border-gray-200">
-                                            <span class="text-[12px] text-[#495057] font-medium">Orillas Rellenas <span class="font-bold text-[#fd7e14]">(+$45 c/u)</span></span>
+                                        <div class="flex items-center justify-between mt-2 bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
+                                            <span class="text-[12px] text-[#495057] font-bold">Orillas Rellenas <span class="text-[#fd7e14]">(+$<span x-text="group.item.precio_orilla"></span> c/u)</span></span>
                                             <div class="flex items-center bg-[#e9ecef] rounded border border-gray-200">
                                                 <button @click="decrementarOrillaPaq(group.item.uid)" class="w-6 h-6 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center leading-none">-</button>
                                                 <span class="w-6 h-6 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[12px]" x-text="group.item.orillas_qty"></span>
@@ -326,7 +327,7 @@
             </div>
         </div>
 
-        {{-- MAGNO (Diseño Limpio) --}}
+        {{-- MAGNO --}}
         <div x-show="modalMagno" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl w-[700px] flex flex-col h-[85vh] overflow-hidden" @click.away="modalMagno = false">
                 <div class="bg-[#212529] p-5 flex justify-between items-center text-white">
@@ -876,7 +877,6 @@
                 modalBebida: false, bebidaItem: null,
                 modalMagno: false, magnoItem: null, magnoSel: [],
 
-                // DOMICILIO Y PAGOS VARIABLES
                 modalCliente: false, 
                 modalPago: false,
                 searchClienteText: '', showClientesList: false,
@@ -907,7 +907,6 @@
                     return d;
                 },
                 
-                // Getter reactivo a prueba de errores de BD y Nulls
                 get clientesFiltrados() {
                     let listaSegura = Array.isArray(dbClientes) ? dbClientes : [];
                     if(!this.searchClienteText) return listaSegura; 
@@ -920,7 +919,6 @@
                     });
                 },
 
-                // Utilidades para mostrar nombre y telefono sin importar el nombre de la columna en BD
                 getClienteNombre(cl) {
                     let ape = cl.apellido || cl.Apellido || '';
                     let nom = cl.nombre || cl.Nombre || cl.nombre_cliente || cl.cliente || 'Sin Nombre';
@@ -944,16 +942,16 @@
                     return str; 
                 },
 
+                // Extraccion dinámica de la variable PHP inyectada
                 getPrecioOrilla(nombreBase) {
                     let n = nombreBase.toLowerCase();
-                    if(n.includes('chica')) return 35;
-                    if(n.includes('mediana') || n.includes('media')) return 40;
-                    if(n.includes('grande')) return 45;
-                    if(n.includes('familiar')) return 50;
-                    return 35; 
+                    if(n.includes('chica')) return dbPreciosOrilla.chica;
+                    if(n.includes('mediana') || n.includes('media')) return dbPreciosOrilla.mediana;
+                    if(n.includes('grande')) return dbPreciosOrilla.grande;
+                    if(n.includes('familiar')) return dbPreciosOrilla.familiar;
+                    return dbPreciosOrilla.chica; 
                 },
 
-                // MOTOR INTELIGENTE SILENCIOSO
                 actualizarCarrito() {
                     let pizzasFlat = [];
                     let normals = [];
@@ -972,17 +970,13 @@
                                 }
                             }
                         } else {
-                            // MAGNO, PAQUETES, BEBIDAS, ETC
                             cItem.subtotalBase = cItem.precioBase * cItem.qty;
                             
-                            // Calcula orillas rellenas de paquetes (multiplicado por qty del paquete)
                             let extraOrillasPaq = (cItem.orillas_qty || 0) * (cItem.precio_orilla || 0) * cItem.qty;
                             let extraOrillaUnica = (cItem.orilla_queso ? cItem.precio_orilla * cItem.qty : 0);
 
                             cItem.subtotal = cItem.subtotalBase + extraOrillaUnica + extraOrillasPaq;
                             cItem.descuentoPromo = 0;
-                            
-                            // Precio Final por unidad (para la base de datos)
                             cItem.precioFinal = cItem.precioBase + (cItem.orilla_queso ? cItem.precio_orilla : 0) + ((cItem.orillas_qty || 0) * (cItem.precio_orilla || 0));
                             
                             normals.push({ cartIndex: index, item: cItem });
@@ -1053,7 +1047,7 @@
                     this.addPizzaToMainCart({
                         db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true, is_magno: false,
                         nombre_base: nomFull, variante: this.opcItem.nombre, precioBase: parseFloat(t.precio),
-                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam)
+                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), comentario: ''
                     });
                     this.modalOpc = false;
                 },
@@ -1073,11 +1067,9 @@
                     this.modalBebida = false;
                 },
 
-                // MAGNO
                 abrirMagnoGeneral() {
-                    let precioMagno = dbMagnoPrice && dbMagnoPrice > 150 ? parseFloat(dbMagnoPrice) : 230.00; 
-                    
-                    this.magnoItem = { id: null, col: 'id_pizza', nombre: 'Magno', precio: precioMagno };
+                    // Ahora usa directamente la variable de base de datos extraida desde PHP
+                    this.magnoItem = { id: null, col: 'id_pizza', nombre: 'Magno', precio: dbMagnoPrice };
                     this.magnoSel = [];
                     this.modalMagno = true;
                 },
@@ -1101,7 +1093,7 @@
                             db_id: null, col: 'id_magno', tipo: 'directo', 
                             nombre_base: 'Magno', variante: varianteFinal, 
                             medios: this.magnoSel, 
-                            precioBase: pb, qty: 1, es_pizza: false, is_magno: true, orilla_queso: false, precio_orilla: 50,
+                            precioBase: pb, qty: 1, es_pizza: false, is_magno: true, orilla_queso: false, precio_orilla: dbPreciosOrilla.familiar,
                             uid: this.generateUID()
                         }); 
                     }
@@ -1109,7 +1101,6 @@
                     this.modalMagno = false;
                 },
 
-                // RECTANGULAR Y BARRA
                 abrirRectangularGeneral() {
                     let baseItem = dbDirectos.find(d => d.cat === 11);
                     if(!baseItem) return alert('No hay pizzas rectangulares configuradas en la base de datos.');
@@ -1192,7 +1183,6 @@
                     this.actualizarCarrito();
                 },
 
-                // PAQUETES (Cuentan con Orilla Queso dinámica)
                 abrirPaquete(id) {
                     this.paqObj = dbPaquetes.find(p => p.id_paquete === id);
                     if(id === 1) { this.paq1Opt = 'Combinado (1 Hawaiana y 1 Pepperoni)'; this.modalPaq1 = true; }
@@ -1201,7 +1191,7 @@
                 },
                 addPaq(id, variante) {
                     let pb = parseFloat(this.paqObj.precio);
-                    let maxPizzas = id === 1 ? 2 : (id === 2 ? 1 : 3); // Limite de orillas
+                    let maxPizzas = id === 1 ? 2 : (id === 2 ? 1 : 3);
                     let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante && i.orillas_qty === 0);
                     
                     if(idx > -1) { this.cart[idx].qty++; }
@@ -1209,7 +1199,7 @@
                         this.cart.push({ 
                             db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, 
                             precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID(),
-                            orillas_qty: 0, max_orillas: maxPizzas, precio_orilla: 45 // 45 precio orilla grande
+                            orillas_qty: 0, max_orillas: maxPizzas, precio_orilla: dbPreciosOrilla.grande // Usa PHP variable
                         }); 
                     }
                     this.actualizarCarrito();
@@ -1228,7 +1218,6 @@
                 },
                 addPaq3() { this.addPaq(3, this.formatearPaq3Preview()); this.modalPaq3 = false; },
 
-                // INCREMENTAR/DECREMENTAR ORILLAS EN PAQUETES
                 incrementarOrillaPaq(uid) {
                     let idx = this.cart.findIndex(c => c.uid === uid);
                     if(idx > -1 && this.cart[idx].orillas_qty < this.cart[idx].max_orillas) {
@@ -1244,7 +1233,6 @@
                     }
                 },
 
-                // MITADES E INGREDIENTES
                 toggleMitad(nom) { let idx = this.mitSel.indexOf(nom); if(idx > -1) this.mitSel.splice(idx, 1); else if(this.mitSel.length < 2) this.mitSel.push(nom); },
                 addMitad() {
                     let cTam = this.cleanSize(this.mitTam.tamano);
@@ -1260,7 +1248,6 @@
                     this.modalIngredientes = false; this.ingTam = null; this.ingSel = [];
                 },
 
-                // EVENTOS INTERNOS
                 recalc() { this.actualizarCarrito(); },
                 toggleOrilla(uid, checked) {
                     let idx = this.cart.findIndex(c => c.uid === uid);
@@ -1400,7 +1387,6 @@
                         }
                     });
 
-                    // Construir Array de Pagos
                     let pagosToSend = [];
                     if(this.pagos.efectivo.activo && this.pagos.efectivo.monto > 0) {
                         pagosToSend.push({ id_metpago: 2, monto: this.pagos.efectivo.monto }); // ID 2 = Efectivo en BD
@@ -1412,7 +1398,6 @@
                         pagosToSend.push({ id_metpago: 3, monto: this.pagos.transferencia.monto, referencia: this.pagos.transferencia.referencia });
                     }
 
-                    // Datos Domicilio
                     let reqBody = {
                         _token: '{{ csrf_token() }}', 
                         tipo_servicio: this.servicio, mesa: this.mesa, 
