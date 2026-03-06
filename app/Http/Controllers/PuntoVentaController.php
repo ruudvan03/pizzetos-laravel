@@ -31,7 +31,7 @@ class PuntoVentaController extends Controller
             $mariscos[$nom]['tamanos'][] = ['id' => $m->id_maris, 'tamano' => $m->tamano, 'precio' => $m->precio];
         }
 
-        // 3. BEBIDAS AGRUPADAS (Cat 1) - Para crear sub-menús (Pepsi, Bebidas Calientes, etc.)
+        // 3. BEBIDAS AGRUPADAS (Cat 1)
         $bebidas_raw = DB::table('Refrescos')->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')->select('Refrescos.id_refresco as id', 'Refrescos.nombre', 'TamanosRefrescos.tamano', 'TamanosRefrescos.precio')->get();
         $bebidas = [];
         foreach($bebidas_raw as $b) {
@@ -39,7 +39,7 @@ class PuntoVentaController extends Controller
             $bebidas[$b->nombre]['opciones'][] = ['id' => $b->id, 'tamano' => $b->tamano, 'precio' => $b->precio];
         }
 
-        // 4. PRODUCTOS DIRECTOS RESTANTES (Hamburguesas, Alitas, Costillas, Spaguetty, Papas, Magno...)
+        // 4. PRODUCTOS DIRECTOS RESTANTES
         $directos = [];
         $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
         foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
@@ -59,7 +59,7 @@ class PuntoVentaController extends Controller
         $tamanos_base = DB::table('TamanosPizza')->where('tamano', 'like', '%Especial%')->get(); 
         $especialidades_lista = DB::table('Especialidades')->get();
         
-        // Categorías Dinámicas: Toma todas las categorías excepto Pizzas, Mariscos, Rectangular y Barra
+        // Categorías Dinámicas (Omitimos las que ya tienen botón propio)
         $categorias_extras = DB::table('CategoriasProd')->whereNotIn('id_cat', [12, 2, 11, 10])->get();
 
         return view('Ventas.pos', [
@@ -135,7 +135,11 @@ class PuntoVentaController extends Controller
         $venta = DB::table('Venta')->where('id_venta', $id)->first();
         if(!$venta) abort(404);
         $detalles = DB::table('DetalleVenta')->where('id_venta', $id)->get();
-        $pagos = DB::table('Pago')->where('id_venta', $id)->get();
+        
+        $pagos = DB::table('Pago')
+            ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
+            ->where('id_venta', $id)->get();
+            
         return view('Ventas.ticket', compact('venta', 'detalles', 'pagos'));
     }
 }

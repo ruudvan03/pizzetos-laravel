@@ -22,13 +22,13 @@
     <script>
         const dbPizzas = {!! json_encode($pizzas) !!};
         const dbMariscos = {!! json_encode($mariscos) !!};
-        const dbBebidas = {!! json_encode($bebidas) !!}; // El nuevo array de Bebidas Agrupadas
+        const dbBebidas = {!! json_encode($bebidas) !!}; 
         const dbDirectos = {!! json_encode($directos) !!};
         const dbPaquetes = {!! json_encode($paquetes) !!};
         const dbIngredientes = {!! json_encode($ingredientes) !!};
         const dbTamanosBase = {!! json_encode($tamanos_base) !!};
         const dbEspecialidades = {!! json_encode($especialidades_lista) !!};
-        const dbCategoriasExtras = {!! json_encode($categorias_extras) !!}; // Extrae categorias dinamicamente
+        const dbCategoriasExtras = {!! json_encode($categorias_extras) !!}; 
     </script>
 
     <div class="w-full min-h-[90vh] bg-[#f8f9fa] p-4 lg:p-6 font-sans text-[#212529]" x-data="posApp()">
@@ -49,21 +49,30 @@
                 {{-- BARRA DE CATEGORÍAS --}}
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-col xl:flex-row justify-between items-center gap-4">
                     <div class="flex flex-wrap gap-1.5 items-center w-full xl:w-auto">
-                        <button @click="cat = 12" :class="cat === 12 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Pizzas</button>
-                        <button @click="cat = 2" :class="cat === 2 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Mariscos</button>
+                        <button @click="cat = 12; view = 'pizzas'" :class="cat === 12 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Pizzas</button>
+                        <button @click="cat = 2; view = 'pizzas'" :class="cat === 2 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Mariscos</button>
                         
                         <button @click="abrirRectangularGeneral()" :class="modalRectangular ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Rectangular</button>
                         <button @click="abrirBarraGeneral()" :class="modalBarra ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Barra</button>
                         
-                        {{-- EXTRAS DROPDOWN DINÁMICO --}}
+                        {{-- MENÚ EXTRAS --}}
                         <div class="relative" x-data="{ openExtras: false }">
-                            <button @click="openExtras = !openExtras" :class="dbCategoriasExtras.map(c=>c.id_cat).includes(cat) ? 'bg-[#adb5bd] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors flex items-center gap-1">
+                            <button @click="openExtras = !openExtras" :class="dbCategoriasExtras.map(c=>c.id_cat).includes(cat) || cat === 1 ? 'bg-[#adb5bd] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors flex items-center gap-1">
                                 Extras <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div x-show="openExtras" @click.away="openExtras = false" x-cloak class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto">
+                            <div x-show="openExtras" @click.away="openExtras = false" x-cloak class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-y-auto">
+                                
+                                {{-- Categorías Dinámicas (Refrescos, Hamburguesas, Alitas, etc) --}}
                                 <template x-for="catEx in dbCategoriasExtras" :key="catEx.id_cat">
-                                    <button @click="cat = catEx.id_cat; openExtras = false" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50" x-text="catEx.descripcion"></button>
+                                    <button @click="
+                                        cat = parseInt(catEx.id_cat); 
+                                        view = (cat === 1 || catEx.descripcion.toLowerCase().includes('refresco')) ? 'bebidas' : 'otros'; 
+                                        openExtras = false;
+                                    " class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50" x-text="catEx.descripcion"></button>
                                 </template>
+                                
+                                {{-- Botón Exclusivo MAGNO (Estándar y Limpio) --}}
+                                <button @click="abrirMagnoGeneral(); openExtras = false" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Magno</button>
                             </div>
                         </div>
                     </div>
@@ -79,8 +88,8 @@
                 {{-- GRID PRODUCTOS --}}
                 <div class="overflow-y-auto max-h-[65vh] pb-10 scrollbar-hide pr-1">
                     
-                    {{-- Vista Pizzas y Mariscos --}}
-                    <div x-show="[12, 2].includes(cat)" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {{-- Pizzas / Mariscos --}}
+                    <div x-show="view === 'pizzas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                         <template x-for="p in getListaTamanos()" :key="p.nombre">
                             <button @click="abrirOpciones(p)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-[#ffc107] p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
                                 <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
@@ -89,8 +98,8 @@
                         </template>
                     </div>
 
-                    {{-- Vista Bebidas Agrupadas --}}
-                    <div x-show="getListaBebidas().length > 0 && ![12, 2].includes(cat)" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" x-cloak>
+                    {{-- Bebidas (Refrescos Agrupados) --}}
+                    <div x-show="view === 'bebidas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" x-cloak>
                         <template x-for="b in getListaBebidas()" :key="'beb_'+b.nombre">
                             <button @click="abrirBebida(b)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-[#17a2b8] p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
                                 <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="b.nombre"></span>
@@ -99,14 +108,14 @@
                         </template>
                     </div>
 
-                    {{-- Vista Otros (Directos) --}}
-                    <div x-show="getListaDirectos().length > 0 && ![12, 2].includes(cat)" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mt-4" x-cloak>
+                    {{-- Otros Productos (Hamburguesas, etc) --}}
+                    <div x-show="view === 'otros'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mt-4" x-cloak>
                         <template x-for="p in getListaDirectos()" :key="p.id">
                             <button @click="addDirecto(p)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-blue-400 p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
                                 <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
                                 <div class="flex items-center gap-1 mt-auto">
                                     <span class="text-gray-400 text-[12px]">Precio</span>
-                                    <span class="text-blue-600 text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
+                                    <span class="text-[#fd7e14] text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
                                 </div>
                             </button>
                         </template>
@@ -122,12 +131,14 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-hide bg-[#f8f9fa]">
+                    
                     <template x-for="(group, gIdx) in cartGroups" :key="group.id_grupo">
                         <div>
                             
                             {{-- TARJETAS PARA PIZZAS AGRUPADAS (MAXIMO 2 POR CAJA - LIMPIO) --}}
                             <template x-if="group.type === 'pizza_pair'">
                                 <div class="bg-white border border-gray-200 rounded-[8px] shadow-sm mb-4">
+                                    
                                     <div class="bg-gray-100 border-b border-gray-200 px-4 py-2.5 rounded-t-[8px] flex justify-between items-center">
                                         <h3 class="font-bold text-[#212529] text-[13px]" x-text="'Pizzas Tamaño ' + group.size"></h3>
                                         <span class="font-bold text-[11px] bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600" x-text="group.items.length + ' Pizza(s)'"></span>
@@ -136,6 +147,7 @@
                                     <div class="p-4 space-y-4">
                                         <template x-for="p in group.items" :key="p.item.uid">
                                             <div class="relative border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                                                
                                                 <div class="flex justify-between items-start w-full">
                                                     <div class="pr-8">
                                                         <h4 class="font-black text-[#212529] text-[14px] leading-tight mb-0.5" x-text="p.item.variante || p.item.nombre_base"></h4>
@@ -152,7 +164,7 @@
                                                         <span class="w-8 h-7 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[13px]">1</span>
                                                         <button @click="clonePizza(p.item)" class="w-7 h-7 font-bold text-[#495057] hover:bg-gray-300">+</button>
                                                     </div>
-                                                    <span class="text-[12px] text-[#6c757d] font-medium" x-text="'Base: $' + parseFloat(p.price).toFixed(2)"></span>
+                                                    <span class="text-[12px] text-[#6c757d] font-medium" x-text="'$' + parseFloat(p.price).toFixed(2)"></span>
                                                 </div>
 
                                                 <div class="flex justify-between items-end mt-2">
@@ -165,6 +177,7 @@
                                             </div>
                                         </template>
                                     </div>
+
                                     <div class="px-4 py-3 bg-gray-50 text-right border-t border-gray-200 rounded-b-[8px]">
                                         <span class="text-gray-500 text-[12px] font-bold uppercase mr-2 tracking-wider">Subtotal:</span>
                                         <span class="font-black text-[#212529] text-[18px]" x-text="'$' + group.subtotal.toFixed(2)"></span>
@@ -172,7 +185,7 @@
                                 </div>
                             </template>
 
-                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES --}}
+                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES (Incluyendo Magno) --}}
                             <template x-if="group.type === 'normal'">
                                 <div class="border border-gray-200 rounded-[8px] p-4 bg-white shadow-sm mb-4 relative">
                                     <div class="flex justify-between items-start mb-2">
@@ -194,6 +207,14 @@
                                     <div x-show="group.item.variante" class="bg-[#f8f9fa] border border-gray-200 rounded-[6px] p-2 mt-2">
                                         <span class="text-[12px] text-[#495057] block font-bold whitespace-pre-wrap" x-text="group.item.variante"></span>
                                     </div>
+
+                                    {{-- Opcion de Orilla Queso exclusiva para la Magno --}}
+                                    <template x-if="group.item.is_magno">
+                                        <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer mt-2 w-max bg-white px-2 py-1 rounded border border-gray-200">
+                                            <input type="checkbox" x-model="group.item.orilla_queso" @change="recalc()" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-3.5 h-3.5">
+                                            Orilla Queso <span class="font-bold text-[#fd7e14]" x-text="'+$' + group.item.precio_orilla"></span>
+                                        </label>
+                                    </template>
 
                                     <div class="text-right font-black text-[#212529] text-[16px] mt-3 border-t border-gray-100 pt-2">
                                         <span x-text="'$' + group.subtotal.toFixed(2)"></span>
@@ -283,6 +304,77 @@
                             <span class="font-black text-[#17a2b8] text-[15px]" x-text="'$' + parseFloat(opc.precio).toFixed(2)"></span>
                         </button>
                     </template>
+                </div>
+            </div>
+        </div>
+
+        {{-- MAGNO (Diseño Morado) --}}
+        <div x-show="modalMagno" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-xl shadow-2xl w-[700px] flex flex-col h-[85vh] overflow-hidden" @click.away="modalMagno = false">
+                <div class="bg-[#9c27b0] p-5 flex justify-between items-center text-white">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        Magno (Familiar)
+                    </h2>
+                    <button @click="modalMagno = false" class="hover:text-gray-200 font-bold text-2xl leading-none">&times;</button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                    <div class="w-full md:w-[60%] p-6 overflow-y-auto border-r border-gray-100 space-y-6 bg-[#f8f9fa] scrollbar-hide">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="font-bold text-[14px] text-black">1. Llena las 2 mitades:</p>
+                            <span class="text-[12px] font-black bg-white border border-gray-200 px-2 py-1 rounded shadow-sm" :class="magnoSel.length === 2 ? 'text-[#9c27b0]' : 'text-gray-500'" x-text="magnoSel.length + '/2'"></span>
+                        </div>
+                        <p class="text-[12px] text-gray-500 mb-4">Toca las especialidades de abajo para llenar la Magno.</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-6">
+                            <template x-for="i in 2">
+                                <div class="border-2 rounded-[8px] p-3 text-center transition-all h-[60px] flex items-center justify-center relative" 
+                                     :class="magnoSel[i-1] ? 'border-[#9c27b0] bg-[#f3e5f5]' : 'border-dashed border-gray-300 bg-gray-50'">
+                                    <template x-if="magnoSel[i-1]">
+                                        <div class="w-full flex justify-between items-center px-1">
+                                            <span class="text-[12px] font-bold text-[#9c27b0]" x-text="magnoSel[i-1]"></span>
+                                            <button @click="removeMagnoEsp(i-1)" class="text-red-500 hover:bg-red-100 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px]">&times;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!magnoSel[i-1]">
+                                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Mitad Vacia</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div>
+                            <p class="font-bold text-[14px] text-black mb-3">2. Especialidades disponibles:</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <template x-for="esp in dbEspecialidades" :key="esp.id_esp">
+                                    <button @click="addMagnoEsp(esp.nombre)" :disabled="magnoSel.length >= 2" class="border rounded-[8px] p-2.5 text-[12px] font-bold text-left transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-white border-gray-200 text-gray-700 hover:border-[#9c27b0] hover:text-[#9c27b0]">
+                                        <span x-text="esp.nombre"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-[40%] bg-white p-6 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-[18px] font-black text-black border-b border-gray-200 pb-3 mb-5">Resumen Magno</h3>
+                            <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-1">Producto</p>
+                            <p class="text-[15px] font-black text-[#9c27b0] mb-5" x-text="magnoItem?.nombre"></p>
+                            
+                            <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-2">Composición</p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-[8px] p-4 text-[13px] font-bold text-gray-700 whitespace-pre-wrap leading-relaxed" x-text="formatearMagnoPreview()"></div>
+                            <div class="mt-3 bg-[#fff9c4] text-[#ffc107] border border-[#ffc107] px-3 py-2 rounded font-bold text-[11px] flex items-center gap-2">
+                                Incluye 1 Refresco de 2L
+                            </div>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <div class="flex justify-between items-end mb-4">
+                                <span class="text-gray-500 text-[14px] font-bold">Precio Fijo</span>
+                                <span class="font-black text-[#28a745] text-[26px] leading-none" x-text="'$' + (magnoItem ? parseFloat(magnoItem.precio).toFixed(2) : '0.00')"></span>
+                            </div>
+                            <button @click="addMagno()" :disabled="magnoSel.length !== 2" :class="magnoSel.length !== 2 ? 'bg-[#ced4da] text-gray-500 cursor-not-allowed' : 'bg-[#9c27b0] text-white hover:bg-[#7b1fa2] shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[14px] transition-all mb-2">Añadir al Carrito</button>
+                            <button @click="modalMagno = false" class="w-full text-gray-500 hover:text-black font-bold text-[13px] py-2">Cancelar</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -616,7 +708,7 @@
                         </div>
                         <div class="mt-6 text-center">
                             <div class="flex justify-between items-end mb-4">
-                                <span class="text-gray-500 text-[14px] font-bold">Base</span>
+                                <span class="text-gray-500 text-[14px] font-bold">Total</span>
                                 <span class="font-black text-[#28a745] text-[26px] leading-none" x-text="'$' + (mitTam ? parseFloat(mitTam.precio).toFixed(2) : '0.00')"></span>
                             </div>
                             <button @click="addMitad()" :disabled="mitSel.length !== 2 || !mitTam" :class="(mitSel.length !== 2 || !mitTam) ? 'bg-[#ced4da] text-gray-500 cursor-not-allowed' : 'bg-[#dc3545] text-white hover:bg-red-700 shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[14px] transition-all mb-2">Añadir al Carrito</button>
@@ -638,12 +730,12 @@
                 </div>
                 <div class="flex-1 overflow-y-auto p-6 bg-[#f8f9fa] space-y-6 scrollbar-hide">
                     <div>
-                        <p class="font-bold text-[14px] text-black mb-3">1. Selecciona el tamaño base:</p>
+                        <p class="font-bold text-[14px] text-black mb-3">1. Selecciona el tamaño:</p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                             <template x-for="tam in dbTamanosBase" :key="tam.id_tamañop">
                                 <button @click="ingTam = tam" :class="ingTam?.id_tamañop === tam.id_tamañop ? 'border-orange-500 bg-orange-50 shadow' : 'border-gray-200 bg-white hover:border-orange-300'" class="border rounded-[8px] py-4 text-center transition-all">
                                     <span class="block font-bold text-black text-[14px]" x-text="cleanSize(tam.tamano)"></span>
-                                    <span class="block font-black text-[#28a745] text-[15px] mt-1" x-text="'Base: $' + parseFloat(tam.precio).toFixed(2)"></span>
+                                    <span class="block font-black text-[#28a745] text-[15px] mt-1" x-text="'$' + parseFloat(tam.precio).toFixed(2)"></span>
                                 </button>
                             </template>
                         </div>
@@ -664,32 +756,13 @@
                 </div>
                 <div class="p-5 flex gap-4 bg-white border-t border-gray-200 items-center justify-between">
                     <div class="flex flex-col">
-                        <span class="text-[12px] text-gray-400 font-bold uppercase tracking-wider">Total Base</span>
+                        <span class="text-[12px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
                         <span class="font-black text-[#28a745] text-[26px] leading-none" x-text="'$' + precioPizzaIngredientes().toFixed(2)"></span>
                     </div>
                     <div class="flex gap-2">
                         <button @click="modalIngredientes = false" class="bg-[#e9ecef] hover:bg-[#dee2e6] text-[#495057] font-bold px-6 py-3.5 rounded-[8px] text-[14px] transition-colors">Cancelar</button>
                         <button @click="addIng()" :disabled="!ingTam || ingSel.length === 0" :class="(!ingTam || ingSel.length === 0) ? 'bg-[#ced4da] text-white cursor-not-allowed' : 'bg-[#fd7e14] hover:bg-[#e36b0c] text-white shadow-md'" class="font-bold px-6 py-3.5 rounded-[8px] text-[14px] transition-all">Añadir al Carrito</button>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- MODAL COMENTARIOS GENERALES --}}
-        <div x-show="modalComentarios" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-xl shadow-2xl w-[450px] max-w-full overflow-hidden" @click.away="modalComentarios = false">
-                <div class="p-5 border-b border-gray-100">
-                    <h2 class="text-lg font-bold text-[#212529] flex items-center gap-2">
-                        <svg class="w-5 h-5 text-[#ffc107]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path></svg>
-                        Nota General del Pedido
-                    </h2>
-                </div>
-                <div class="p-6">
-                    <textarea x-model="comentariosGeneralesTemp" rows="4" maxlength="255" placeholder="Escribe instrucciones generales para cocina..." class="w-full bg-[#f8f9fa] border border-gray-200 rounded-[8px] p-3 text-[13px] text-[#212529] focus:outline-none focus:border-[#fd7e14] focus:bg-white resize-none"></textarea>
-                </div>
-                <div class="p-5 flex gap-3 bg-white border-t border-gray-100">
-                    <button @click="modalComentarios = false" class="flex-1 bg-[#e9ecef] hover:bg-[#dee2e6] text-[#212529] font-bold py-2.5 rounded-[6px] text-[13px]">Cancelar</button>
-                    <button @click="comentariosGenerales = comentariosGeneralesTemp; modalComentarios = false" class="flex-1 bg-[#fd7e14] hover:bg-[#e36b0c] text-white font-bold py-2.5 rounded-[6px] text-[13px] shadow-sm">Guardar Nota</button>
                 </div>
             </div>
         </div>
@@ -712,6 +785,7 @@
                 modalRectangular: false, rectItem: null, rectSel: [],
                 modalBarra: false, barraItem: null, barraSel: [],
                 modalBebida: false, bebidaItem: null,
+                modalMagno: false, magnoItem: null, magnoSel: [],
 
                 getListaTamanos() {
                     let d = this.cat === 12 ? dbPizzas : (this.cat === 2 ? dbMariscos : []);
@@ -724,7 +798,7 @@
                     return d;
                 },
                 getListaBebidas() {
-                    let d = dbBebidas.filter(i => i.cat === this.cat);
+                    let d = dbBebidas;
                     if(this.search) d = d.filter(i => i.nombre.toLowerCase().includes(this.search.toLowerCase()));
                     return d;
                 },
@@ -758,9 +832,8 @@
                     let normals = [];
 
                     this.cart.forEach((cItem, index) => {
-                        if (cItem.es_pizza) {
+                        if (cItem.es_pizza && !cItem.is_magno) { 
                             let baseSize = this.cleanSize(cItem.nombre_base).toUpperCase();
-                            
                             cItem.subtotalBase = cItem.precioBase;
                             cItem.subtotal = cItem.precioBase + (cItem.orilla_queso ? cItem.precio_orilla : 0);
                             cItem.descuentoPromo = 0;
@@ -773,9 +846,9 @@
                             }
                         } else {
                             cItem.subtotalBase = cItem.precioBase * cItem.qty;
-                            cItem.subtotal = cItem.subtotalBase;
+                            cItem.subtotal = cItem.subtotalBase + (cItem.orilla_queso ? cItem.precio_orilla * cItem.qty : 0);
                             cItem.descuentoPromo = 0;
-                            cItem.precioFinal = cItem.precioBase;
+                            cItem.precioFinal = cItem.precioBase + (cItem.orilla_queso ? cItem.precio_orilla : 0);
                             normals.push({ cartIndex: index, item: cItem });
                         }
                     });
@@ -798,7 +871,6 @@
 
                             let groupItems = [p1];
                             let subGroup = p1.price + (p1.item.orilla_queso ? p1.item.precio_orilla : 0);
-                            
                             p1.item.precioCobrado = p1.price;
                             p1.item.precioFinal = p1.item.precioCobrado + (p1.item.orilla_queso ? p1.item.precio_orilla : 0);
 
@@ -832,7 +904,7 @@
                     });
                 },
 
-                // AGREGADO
+                // METODOS DE AGREGADO NORMAL
                 addPizzaToMainCart(obj) {
                     this.cart.push({ ...obj, qty: 1, uid: this.generateUID() });
                     this.actualizarCarrito();
@@ -842,7 +914,7 @@
                     let cTam = this.cleanSize(t.tamano);
                     let nomFull = (this.cat === 12 ? 'Pizza ' : 'Mariscos ') + cTam;
                     this.addPizzaToMainCart({
-                        db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true,
+                        db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true, is_magno: false,
                         nombre_base: nomFull, variante: this.opcItem.nombre, precioBase: parseFloat(t.precio),
                         orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam)
                     });
@@ -857,11 +929,49 @@
                     } else { 
                         this.cart.push({ 
                             db_id: opc.id, col: 'id_refresco', tipo: 'directo', nombre_base: nomFull, variante: '', 
-                            precioBase: parseFloat(opc.precio), qty: 1, es_pizza: false, uid: this.generateUID() 
+                            precioBase: parseFloat(opc.precio), qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID() 
                         }); 
                     }
                     this.actualizarCarrito();
                     this.modalBebida = false;
+                },
+
+                // MAGNO
+                abrirMagnoGeneral() {
+                    let fam = dbTamanosBase.find(t => t.tamano.toLowerCase().includes('familiar'));
+                    let precioMagno = fam ? parseFloat(fam.precio) : 250; 
+                    
+                    this.magnoItem = { id: null, col: 'id_pizza', nombre: 'Magno', precio: precioMagno };
+                    this.magnoSel = [];
+                    this.modalMagno = true;
+                },
+                addMagnoEsp(esp) { if(this.magnoSel.length < 2) this.magnoSel.push(esp); },
+                removeMagnoEsp(index) { this.magnoSel.splice(index, 1); },
+                formatearMagnoPreview() {
+                    if(this.magnoSel.length === 0) return 'Sin especialidades';
+                    let counts = {};
+                    this.magnoSel.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                    let parts = [];
+                    for(let k in counts) { parts.push(counts[k] + '/2 ' + k); }
+                    return parts.join(' / ');
+                },
+                addMagno() {
+                    let pb = parseFloat(this.magnoItem.precio);
+                    let varianteFinal = this.formatearMagnoPreview() + '\n+ 1 Refresco de 2L';
+                    let idx = this.cart.findIndex(i => i.is_magno && i.variante === varianteFinal);
+                    if(idx > -1) { this.cart[idx].qty++; } 
+                    else { 
+                        this.cart.push({ 
+                            db_id: null, col: 'id_pizza', tipo: 'piz_mitad', 
+                            nombre_base: 'Magno', variante: varianteFinal, 
+                            medios: this.magnoSel, 
+                            mitad1: this.magnoSel[0], mitad2: this.magnoSel[1] || this.magnoSel[0], tamano: 'Familiar Especial',
+                            precioBase: pb, qty: 1, es_pizza: false, is_magno: true, orilla_queso: false, precio_orilla: 50,
+                            uid: this.generateUID()
+                        }); 
+                    }
+                    this.actualizarCarrito();
+                    this.modalMagno = false;
                 },
 
                 // RECTANGULAR Y BARRA
@@ -891,7 +1001,7 @@
                         this.cart.push({ 
                             db_id: this.rectItem.id, col: this.rectItem.col, tipo: 'directo', 
                             nombre_base: this.rectItem.nombre, variante: varianteFinal, cuartos: this.rectSel,
-                            precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()
+                            precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID()
                         }); 
                     }
                     this.actualizarCarrito();
@@ -924,7 +1034,7 @@
                         this.cart.push({ 
                             db_id: this.barraItem.id, col: this.barraItem.col, tipo: 'directo', 
                             nombre_base: this.barraItem.nombre, variante: varianteFinal, medios: this.barraSel,
-                            precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()
+                            precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID()
                         }); 
                     }
                     this.actualizarCarrito();
@@ -941,7 +1051,7 @@
                     } else { 
                         this.cart.push({ 
                             db_id: p.id, col: p.col, tipo: 'directo', nombre_base: p.nombre, variante: '', 
-                            precioBase: parseFloat(p.precio), qty: 1, es_pizza: false, uid: this.generateUID() 
+                            precioBase: parseFloat(p.precio), qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID() 
                         }); 
                     }
                     this.actualizarCarrito();
@@ -958,12 +1068,22 @@
                     let pb = parseFloat(this.paqObj.precio);
                     let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante);
                     if(idx > -1) { this.cart[idx].qty++; }
-                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()}); }
+                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID()}); }
                     this.actualizarCarrito();
                 },
                 addPaq1() { this.addPaq(1, this.paq1Opt); this.modalPaq1 = false; },
                 addPaq2() { this.addPaq(2, this.paq2Extra + ' + Pizza ' + this.paq2Pizza); this.modalPaq2 = false; },
-                togglePaq3(nom) { let idx = this.paq3Pizzas.indexOf(nom); if(idx > -1) this.paq3Pizzas.splice(idx, 1); else if(this.paq3Pizzas.length < 3) this.paq3Pizzas.push(nom); },
+                
+                addPaq3Esp(esp) { if(this.paq3Pizzas.length < 3) this.paq3Pizzas.push(esp); },
+                removePaq3Esp(index) { this.paq3Pizzas.splice(index, 1); },
+                formatearPaq3Preview() {
+                    if(this.paq3Pizzas.length === 0) return 'Sin especialidades';
+                    let counts = {};
+                    this.paq3Pizzas.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                    let parts = [];
+                    for(let k in counts) { parts.push(counts[k] + ' ' + k); }
+                    return parts.join(', ');
+                },
                 addPaq3() { this.addPaq(3, this.formatearPaq3Preview()); this.modalPaq3 = false; },
 
                 // MITADES E INGREDIENTES
@@ -971,14 +1091,14 @@
                 addMitad() {
                     let cTam = this.cleanSize(this.mitTam.tamano);
                     let nomFull = 'Mitad y Mitad ' + cTam;
-                    this.addPizzaToMainCart({ db_id: null, col: 'id_pizza', tipo: 'piz_mitad', nombre_base: nomFull, variante: this.mitSel[0] + ' / ' + this.mitSel[1], precioBase: parseFloat(this.mitTam.precio), es_pizza: true, orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), mitad1: this.mitSel[0], mitad2: this.mitSel[1], tamano: this.mitTam.tamano });
+                    this.addPizzaToMainCart({ db_id: null, col: 'id_pizza', tipo: 'piz_mitad', nombre_base: nomFull, variante: this.mitSel[0] + ' / ' + this.mitSel[1], precioBase: parseFloat(this.mitTam.precio), es_pizza: true, is_magno: false, orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), mitad1: this.mitSel[0], mitad2: this.mitSel[1], tamano: this.mitTam.tamano });
                     this.modalMitades = false; this.mitTam = null; this.mitSel = [];
                 },
-                precioPizzaIngredientes() { return !this.ingTam ? 0 : parseFloat(this.ingTam.precio); },
+                precioPizzaIngredientes() { return !this.ingTam ? 0 : parseFloat(this.ingTam.precio); }, 
                 addIng() {
                     let cTam = this.cleanSize(this.ingTam.tamano);
                     let nomFull = 'Personalizada ' + cTam;
-                    this.addPizzaToMainCart({ db_id: this.ingTam.id_tamañop, col: 'id_pizza', tipo: 'piz_ing', nombre_base: nomFull, variante: 'Ings: ' + this.ingSel.join(', '), precioBase: this.precioPizzaIngredientes(), es_pizza: true, orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), ingredientes_extra: this.ingSel });
+                    this.addPizzaToMainCart({ db_id: this.ingTam.id_tamañop, col: 'id_pizza', tipo: 'piz_ing', nombre_base: nomFull, variante: 'Ings: ' + this.ingSel.join(', '), precioBase: this.precioPizzaIngredientes(), es_pizza: true, is_magno: false, orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), ingredientes_extra: this.ingSel });
                     this.modalIngredientes = false; this.ingTam = null; this.ingSel = [];
                 },
 
@@ -1010,6 +1130,8 @@
                     this.actualizarCarrito();
                 },
 
+                abrirModalComentarios() { this.comentariosGeneralesTemp = this.comentariosGenerales; this.modalComentarios = true; },
+                guardarComentarios() { this.comentariosGenerales = this.comentariosGeneralesTemp; this.modalComentarios = false; },
                 getTotal() { return this.cartGroups.reduce((s, g) => s + g.subtotal, 0); },
                 nomServicio() { const s = {1: 'Comer Aqui', 2: 'Para Llevar', 3: 'A Domicilio', 4: 'P. Especiales'}; return s[this.servicio]; },
 
@@ -1023,7 +1145,7 @@
                                 cartPayload.push({ ...p.item, precioFinal: p.item.precioFinal, qty: 1 });
                             });
                         } else {
-                            cartPayload.push({ ...g.item, precioFinal: g.item.precioBase });
+                            cartPayload.push({ ...g.item, precioFinal: g.item.precioFinal });
                         }
                     });
 
