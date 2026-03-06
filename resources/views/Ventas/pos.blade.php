@@ -89,7 +89,7 @@
                                 <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
                                 <div class="flex items-center gap-1 mt-auto">
                                     <span class="text-gray-400 text-[12px]">Precio</span>
-                                    <span class="text-blue-600 text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
+                                    <span class="text-[#fd7e14] text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
                                 </div>
                             </button>
                         </template>
@@ -104,6 +104,7 @@
                 </div>
 
                 <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-hide bg-[#f8f9fa]">
+                    
                     <template x-for="(group, gIdx) in cartGroups" :key="group.id_grupo">
                         <div>
                             
@@ -146,7 +147,6 @@
                                                     </label>
                                                     <span class="text-[14px] font-black text-[#212529]" x-text="'$' + p.item.precioFinal.toFixed(2)"></span>
                                                 </div>
-
                                             </div>
                                         </template>
                                     </div>
@@ -158,7 +158,7 @@
                                 </div>
                             </template>
 
-                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES --}}
+                            {{-- TARJETAS PARA OTROS PRODUCTOS (Hamburguesas, Rectangulares, Paquetes) --}}
                             <template x-if="group.type === 'normal'">
                                 <div class="border border-gray-200 rounded-[8px] p-4 bg-white shadow-sm mb-4 relative">
                                     <div class="flex justify-between items-start mb-2">
@@ -433,6 +433,13 @@
                     <h2 class="text-2xl font-black text-black mb-1">Paquete 2</h2>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 space-y-5 bg-[#f8f9fa] scrollbar-hide">
+                    
+                    <ul class="list-disc pl-5 text-[14px] font-medium text-gray-600 mb-2 mt-0">
+                        <li>1 Hamburguesa o Alitas</li>
+                        <li>1 Pizza Grande</li>
+                        <li>1 Refresco de 2L Jarrito</li>
+                    </ul>
+
                     <div>
                         <p class="text-[13px] font-bold text-gray-800 mb-2">Selecciona el tipo de producto:</p>
                         <div class="flex rounded-md overflow-hidden border border-gray-300 bg-white">
@@ -481,6 +488,11 @@
                     <h2 class="text-2xl font-black text-black mb-1">Paquete 3</h2>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-[#f8f9fa] scrollbar-hide">
+                    <ul class="list-disc pl-5 text-[14px] font-medium text-gray-600 mb-5 mt-0">
+                        <li>3 Pizzas Grandes</li>
+                        <li>1 Refresco de 2L Jarrito</li>
+                    </ul>
+
                     <div class="flex justify-between items-center mb-3">
                         <p class="text-[13px] font-bold text-black">Selecciona 3 Pizzas Grandes:</p>
                         <span class="text-[12px] font-black bg-white px-2 py-1 rounded shadow-sm border border-gray-200" :class="paq3Pizzas.length === 3 ? 'text-green-600' : 'text-gray-500'" x-text="paq3Pizzas.length + '/3'"></span>
@@ -776,12 +788,12 @@
                     this.addPizzaToMainCart({
                         db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true,
                         nombre_base: nomFull, variante: this.opcItem.nombre, precioBase: parseFloat(t.precio),
-                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), comentario: ''
+                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam)
                     });
                     this.modalOpc = false;
                 },
 
-                // RECTANGULAR Y BARRA
+                // RECTANGULAR Y BARRA DIRECTOS
                 abrirRectangularGeneral() {
                     let baseItem = dbDirectos.find(d => d.cat === 11);
                     if(!baseItem) return alert('No hay pizzas rectangulares configuradas en la base de datos.');
@@ -789,8 +801,12 @@
                     this.rectSel = [];
                     this.modalRectangular = true;
                 },
-                addRectEsp(esp) { if(this.rectSel.length < 4) this.rectSel.push(esp); },
-                removeRectEsp(index) { this.rectSel.splice(index, 1); },
+                addRectEsp(esp) {
+                    if(this.rectSel.length < 4) this.rectSel.push(esp);
+                },
+                removeRectEsp(index) {
+                    this.rectSel.splice(index, 1);
+                },
                 formatearCuartosPreview() {
                     if(this.rectSel.length === 0) return 'Sin especialidades';
                     let counts = {};
@@ -802,9 +818,11 @@
                 addRectangular() {
                     let pb = parseFloat(this.rectItem.precio);
                     let varianteFinal = this.formatearCuartosPreview();
+                    
                     let idx = this.cart.findIndex(i => i.db_id === this.rectItem.id && i.variante === varianteFinal);
-                    if(idx > -1) { this.cart[idx].qty++; } 
-                    else { 
+                    if(idx > -1) { 
+                        this.cart[idx].qty++; 
+                    } else { 
                         this.cart.push({ 
                             db_id: this.rectItem.id, col: this.rectItem.col, tipo: 'directo', 
                             nombre_base: this.rectItem.nombre, variante: varianteFinal, cuartos: this.rectSel,
@@ -853,8 +871,9 @@
                     if(p.cat === 10) return this.abrirBarraGeneral();
                     
                     let idx = this.cart.findIndex(i => i.db_id === p.id && !i.es_pizza);
-                    if(idx > -1) { this.cart[idx].qty++; } 
-                    else { 
+                    if(idx > -1) { 
+                        this.cart[idx].qty++; 
+                    } else { 
                         this.cart.push({ 
                             db_id: p.id, col: p.col, tipo: 'directo', nombre_base: p.nombre, variante: '', 
                             precioBase: parseFloat(p.precio), qty: 1, es_pizza: false, uid: this.generateUID() 
@@ -874,7 +893,7 @@
                     let pb = parseFloat(this.paqObj.precio);
                     let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante);
                     if(idx > -1) { this.cart[idx].qty++; }
-                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID(), comentario: ''}); }
+                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()}); }
                     this.actualizarCarrito();
                 },
                 addPaq1() { this.addPaq(1, this.paq1Opt); this.modalPaq1 = false; },
