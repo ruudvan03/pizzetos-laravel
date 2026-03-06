@@ -31,13 +31,20 @@ class PuntoVentaController extends Controller
             $mariscos[$nom]['tamanos'][] = ['id' => $m->id_maris, 'tamano' => $m->tamano, 'precio' => $m->precio];
         }
 
-        // 3. PRODUCTOS DIRECTOS (Rectangular, Barra, Extras)
+        // 3. BEBIDAS AGRUPADAS (Cat 1) - Para crear sub-menús (Pepsi, Bebidas Calientes, etc.)
+        $bebidas_raw = DB::table('Refrescos')->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')->select('Refrescos.id_refresco as id', 'Refrescos.nombre', 'TamanosRefrescos.tamano', 'TamanosRefrescos.precio')->get();
+        $bebidas = [];
+        foreach($bebidas_raw as $b) {
+            if(!isset($bebidas[$b->nombre])) $bebidas[$b->nombre] = ['nombre' => $b->nombre, 'cat' => 1, 'opciones' => []];
+            $bebidas[$b->nombre]['opciones'][] = ['id' => $b->id, 'tamano' => $b->tamano, 'precio' => $b->precio];
+        }
+
+        // 4. PRODUCTOS DIRECTOS RESTANTES (Hamburguesas, Alitas, Costillas, Spaguetty, Papas, Magno...)
         $directos = [];
         $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
         foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
 
         $barra = DB::table('Barra')->join('Especialidades', 'Barra.id_especialidad', '=', 'Especialidades.id_esp')->select('Barra.id_barr as id', 'Especialidades.nombre', 'Barra.precio')->get();
-        // AQUI TAMBIÉN QUITAMOS LA PALABRA 'Barra ' PARA LIMPIAR EL DISEÑO
         foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
 
         foreach(DB::table('Hamburguesas')->get() as $h) { $directos[] = ['id' => $h->id_hamb, 'col' => 'id_hamb', 'nombre' => $h->paquete, 'precio' => $h->precio, 'cat' => 6]; }
@@ -45,21 +52,21 @@ class PuntoVentaController extends Controller
         foreach(DB::table('Costillas')->get() as $c) { $directos[] = ['id' => $c->id_cos, 'col' => 'id_cos', 'nombre' => $c->orden, 'precio' => $c->precio, 'cat' => 7]; }
         foreach(DB::table('Spaguetty')->get() as $s) { $directos[] = ['id' => $s->id_spag, 'col' => 'id_spag', 'nombre' => $s->orden, 'precio' => $s->precio, 'cat' => 9]; }
         foreach(DB::table('OrdenDePapas')->get() as $p) { $directos[] = ['id' => $p->id_papa, 'col' => 'id_papa', 'nombre' => $p->orden, 'precio' => $p->precio, 'cat' => 8]; }
-        
-        $refrescos = DB::table('Refrescos')->join('TamanosRefrescos', 'Refrescos.id_tamano', '=', 'TamanosRefrescos.id_tamano')->select('Refrescos.id_refresco as id', 'Refrescos.nombre', 'TamanosRefrescos.tamano', 'TamanosRefrescos.precio')->get();
-        foreach($refrescos as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_refresco', 'nombre' => $r->nombre . ' (' . $r->tamano . ')', 'precio' => $r->precio, 'cat' => 1]; }
 
-        // 4. DATOS PARA MODALES Y GLOBALES
+        // 5. DATOS PARA MODALES Y GLOBALES
         $paquetes = DB::table('Paquetes')->get();
         $ingredientes = DB::table('Ingredientes')->get();
         $tamanos_base = DB::table('TamanosPizza')->where('tamano', 'like', '%Especial%')->get(); 
         $especialidades_lista = DB::table('Especialidades')->get();
-        $categorias_extras = DB::table('CategoriasProd')->whereIn('id_cat', [1,5,6,7,8,9])->get();
+        
+        // Categorías Dinámicas: Toma todas las categorías excepto Pizzas, Mariscos, Rectangular y Barra
+        $categorias_extras = DB::table('CategoriasProd')->whereNotIn('id_cat', [12, 2, 11, 10])->get();
 
         return view('Ventas.pos', [
             'cajaAbierta' => $cajaAbierta, 'pizzas' => array_values($pizzas), 'mariscos' => array_values($mariscos),
-            'directos' => $directos, 'paquetes' => $paquetes, 'ingredientes' => $ingredientes,
-            'tamanos_base' => $tamanos_base, 'especialidades_lista' => $especialidades_lista, 'categorias_extras' => $categorias_extras
+            'bebidas' => array_values($bebidas), 'directos' => $directos, 'paquetes' => $paquetes, 
+            'ingredientes' => $ingredientes, 'tamanos_base' => $tamanos_base, 'especialidades_lista' => $especialidades_lista, 
+            'categorias_extras' => $categorias_extras
         ]);
     }
 
@@ -84,7 +91,7 @@ class PuntoVentaController extends Controller
                 if(isset($item['comentario']) && $item['comentario'] !== '') $datosJson['nota'] = $item['comentario'];
                 if(isset($item['ingredientes_extra'])) $datosJson['ingredientes_extra'] = $item['ingredientes_extra'];
                 if(isset($item['cuartos'])) $datosJson['cuartos'] = $item['cuartos'];
-                if(isset($item['medios'])) $datosJson['medios'] = $item['medios']; // Agregamos guardado de medios para la barra
+                if(isset($item['medios'])) $datosJson['medios'] = $item['medios'];
 
                 $datosInsert = [
                     'id_venta' => $id_venta, 'cantidad' => $item['qty'], 'precio_unitario' => $item['precioFinal'],
@@ -110,7 +117,6 @@ class PuntoVentaController extends Controller
                 }
             }
 
-            // Guardar Domicilio
             if ($request->tipo_servicio == 3 && $request->has('id_clie') && $request->id_clie && $request->has('id_dir') && $request->id_dir) {
                 DB::table('PDomicilio')->insert(['id_venta' => $id_venta, 'id_clie' => $request->id_clie, 'id_dir' => $request->id_dir]);
             }
