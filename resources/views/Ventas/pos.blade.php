@@ -30,6 +30,7 @@
         const dbTamanosBase = {!! json_encode($tamanos_base) !!};
         const dbEspecialidades = {!! json_encode($especialidades_lista) !!};
         const dbCategoriasExtras = {!! json_encode($categorias_extras) !!}; 
+        const dbMagnoPrice = {!! json_encode($magno_precio) !!}; 
         
         let rawClientes = {!! json_encode($clientes) !!};
         const dbClientes = Array.isArray(rawClientes) ? rawClientes : Object.values(rawClientes || {});
@@ -69,7 +70,7 @@
                             </button>
                             <div x-show="openExtras" @click.away="openExtras = false" x-cloak class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-y-auto">
                                 
-                                {{-- Categorías Dinámicas (Refrescos, Hamburguesas, Alitas, etc) --}}
+                                {{-- Categorías Dinámicas --}}
                                 <template x-for="catEx in dbCategoriasExtras" :key="catEx.id_cat">
                                     <button @click="
                                         cat = parseInt(catEx.id_cat); 
@@ -78,10 +79,10 @@
                                     " class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50" x-text="catEx.descripcion"></button>
                                 </template>
 
-                                {{-- Botón Refrescos Obligatorio (Llama la categoría 1 de bebidas) --}}
+                                {{-- Botón Refrescos Obligatorio --}}
                                 <button @click="cat = 1; view = 'bebidas'; openExtras = false;" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Refrescos</button>
                                 
-                                {{-- Botón Exclusivo MAGNO (Limpio, sin pizza ni emoji) --}}
+                                {{-- Botón Exclusivo MAGNO --}}
                                 <button @click="abrirMagnoGeneral(); openExtras = false" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Magno</button>
                             </div>
                         </div>
@@ -193,7 +194,7 @@
                                 </div>
                             </template>
 
-                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES --}}
+                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES (Incluyendo Magno y Paquetes) --}}
                             <template x-if="group.type === 'normal'">
                                 <div class="border border-gray-200 rounded-[8px] p-4 bg-white shadow-sm mb-4 relative">
                                     <div class="flex justify-between items-start mb-2">
@@ -216,11 +217,24 @@
                                         <span class="text-[12px] text-[#495057] block font-bold whitespace-pre-wrap" x-text="group.item.variante"></span>
                                     </div>
 
+                                    {{-- Opcion de Orilla Queso exclusiva para la Magno --}}
                                     <template x-if="group.item.is_magno">
                                         <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer mt-2 w-max bg-white px-2 py-1 rounded border border-gray-200">
                                             <input type="checkbox" x-model="group.item.orilla_queso" @change="recalc()" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-3.5 h-3.5">
                                             Orilla Queso <span class="font-bold text-[#fd7e14]" x-text="'+$' + group.item.precio_orilla"></span>
                                         </label>
+                                    </template>
+
+                                    {{-- Opcion de Orillas Extra para Paquetes --}}
+                                    <template x-if="group.item.tipo === 'paq'">
+                                        <div class="flex items-center justify-between mt-2 bg-white px-3 py-2 rounded border border-gray-200">
+                                            <span class="text-[12px] text-[#495057] font-medium">Orillas Rellenas <span class="font-bold text-[#fd7e14]">(+$45 c/u)</span></span>
+                                            <div class="flex items-center bg-[#e9ecef] rounded border border-gray-200">
+                                                <button @click="decrementarOrillaPaq(group.item.uid)" class="w-6 h-6 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center leading-none">-</button>
+                                                <span class="w-6 h-6 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[12px]" x-text="group.item.orillas_qty"></span>
+                                                <button @click="incrementarOrillaPaq(group.item.uid)" class="w-6 h-6 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center leading-none">+</button>
+                                            </div>
+                                        </div>
                                     </template>
 
                                     <div class="text-right font-black text-[#212529] text-[16px] mt-3 border-t border-gray-100 pt-2">
@@ -613,7 +627,7 @@
             </div>
         </div>
 
-        {{-- MODAL DOMICILIO (Clientes y Direcciones con Búsqueda Reactiva Inteligente) --}}
+        {{-- MODAL DOMICILIO --}}
         <div x-show="modalCliente" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl w-[600px] flex flex-col max-h-[90vh] overflow-hidden">
                 <div class="p-5 border-b border-gray-100 flex justify-between items-center">
@@ -626,7 +640,6 @@
                 
                 <div class="flex-1 overflow-y-auto p-6 bg-white space-y-6">
                     
-                    {{-- Seleccion de Cliente Inteligente (Lista visible al hacer click) --}}
                     <div class="relative">
                         <label class="block text-[14px] font-bold text-gray-700 mb-2">Cliente *</label>
                         <div class="flex gap-2">
@@ -663,7 +676,6 @@
                             </button>
                         </div>
                         
-                        {{-- Muestra el Cliente Seleccionado --}}
                         <div x-show="clienteSeleccionado && !clienteFormVisible" class="mt-3 bg-green-50 border border-green-200 p-4 rounded-[8px] flex justify-between items-center transition-all">
                             <div>
                                 <span class="font-bold text-[16px] text-green-800 block" x-text="getClienteNombre(clienteSeleccionado)"></span>
@@ -673,7 +685,6 @@
                         </div>
                     </div>
 
-                    {{-- Formulario Nuevo Cliente --}}
                     <div x-show="clienteFormVisible" class="bg-gray-50 p-5 rounded-[8px] border border-gray-200 space-y-4">
                         <h4 class="font-bold text-[15px] text-gray-800 border-b border-gray-200 pb-2">Registrar Nuevo Cliente</h4>
                         <div>
@@ -686,7 +697,6 @@
                         </div>
                     </div>
 
-                    {{-- Seleccion de Direccion --}}
                     <div x-show="clienteSeleccionado || clienteFormVisible" class="pt-4 border-t border-gray-200 transition-all">
                         <div class="flex justify-between items-center mb-4">
                             <label class="block text-[14px] font-bold text-gray-700">Dirección de Entrega *</label>
@@ -695,7 +705,6 @@
                             </button>
                         </div>
 
-                        {{-- Lista de direcciones del cliente --}}
                         <div x-show="!dirFormVisible && direccionesCliente.length > 0" class="space-y-3 max-h-48 overflow-y-auto pr-1">
                             <template x-for="dir in direccionesCliente" :key="dir.id_direccion || dir.id_dir || Math.random()">
                                 <label class="block cursor-pointer">
@@ -717,7 +726,6 @@
                             Este cliente no tiene direcciones guardadas. Agrega una nueva.
                         </div>
 
-                        {{-- Formulario Nueva Direccion --}}
                         <div x-show="dirFormVisible" class="bg-gray-50 p-5 rounded-[8px] border border-gray-200 space-y-4 mt-2">
                             <h4 class="font-bold text-[15px] text-gray-800 border-b border-gray-200 pb-2">Registrar Nueva Dirección</h4>
                             <div>
@@ -858,7 +866,6 @@
                 comentariosGenerales: '', comentariosGeneralesTemp: '', modalComentarios: false,
                 modalOpc: false, opcItem: null,
 
-                // Modales Variables
                 modalPaq1: false, paq1Opt: 'Combinado (1 Hawaiana y 1 Pepperoni)', paqObj: null,
                 modalPaq2: false, paq2Tipo: 'hamb', paq2Extra: '', paq2Pizza: '',
                 modalPaq3: false, paq3Pizzas: [],
@@ -965,10 +972,19 @@
                                 }
                             }
                         } else {
+                            // MAGNO, PAQUETES, BEBIDAS, ETC
                             cItem.subtotalBase = cItem.precioBase * cItem.qty;
-                            cItem.subtotal = cItem.subtotalBase + (cItem.orilla_queso ? cItem.precio_orilla * cItem.qty : 0);
+                            
+                            // Calcula orillas rellenas de paquetes (multiplicado por qty del paquete)
+                            let extraOrillasPaq = (cItem.orillas_qty || 0) * (cItem.precio_orilla || 0) * cItem.qty;
+                            let extraOrillaUnica = (cItem.orilla_queso ? cItem.precio_orilla * cItem.qty : 0);
+
+                            cItem.subtotal = cItem.subtotalBase + extraOrillaUnica + extraOrillasPaq;
                             cItem.descuentoPromo = 0;
-                            cItem.precioFinal = cItem.precioBase + (cItem.orilla_queso ? cItem.precio_orilla : 0);
+                            
+                            // Precio Final por unidad (para la base de datos)
+                            cItem.precioFinal = cItem.precioBase + (cItem.orilla_queso ? cItem.precio_orilla : 0) + ((cItem.orillas_qty || 0) * (cItem.precio_orilla || 0));
+                            
                             normals.push({ cartIndex: index, item: cItem });
                         }
                     });
@@ -1059,7 +1075,9 @@
 
                 // MAGNO
                 abrirMagnoGeneral() {
-                    let precioMagno = 230.00; // Precio base especificado a 230
+                    // Magno fija a 230 por indicacion, si bd lo tiene a 115 se ignora
+                    let precioMagno = dbMagnoPrice && dbMagnoPrice > 150 ? parseFloat(dbMagnoPrice) : 230.00; 
+                    
                     this.magnoItem = { id: null, col: 'id_pizza', nombre: 'Magno', precio: precioMagno };
                     this.magnoSel = [];
                     this.modalMagno = true;
@@ -1077,14 +1095,13 @@
                 addMagno() {
                     let pb = parseFloat(this.magnoItem.precio);
                     let varianteFinal = this.formatearMagnoPreview() + '\n• Incluye 1 Refresco de 2L';
-                    let idx = this.cart.findIndex(i => i.is_magno && i.variante === varianteFinal);
+                    let idx = this.cart.findIndex(i => i.is_magno && i.variante === varianteFinal && !i.orilla_queso);
                     if(idx > -1) { this.cart[idx].qty++; } 
                     else { 
                         this.cart.push({ 
-                            db_id: null, col: 'id_pizza', tipo: 'piz_mitad', 
+                            db_id: null, col: 'id_magno', tipo: 'directo', 
                             nombre_base: 'Magno', variante: varianteFinal, 
                             medios: this.magnoSel, 
-                            mitad1: this.magnoSel[0], mitad2: this.magnoSel[1] || this.magnoSel[0], tamano: 'Familiar Especial',
                             precioBase: pb, qty: 1, es_pizza: false, is_magno: true, orilla_queso: false, precio_orilla: 50,
                             uid: this.generateUID()
                         }); 
@@ -1176,7 +1193,7 @@
                     this.actualizarCarrito();
                 },
 
-                // PAQUETES
+                // PAQUETES (Cuentan con Orilla Queso dinámica)
                 abrirPaquete(id) {
                     this.paqObj = dbPaquetes.find(p => p.id_paquete === id);
                     if(id === 1) { this.paq1Opt = 'Combinado (1 Hawaiana y 1 Pepperoni)'; this.modalPaq1 = true; }
@@ -1185,9 +1202,17 @@
                 },
                 addPaq(id, variante) {
                     let pb = parseFloat(this.paqObj.precio);
-                    let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante);
+                    let maxPizzas = id === 1 ? 2 : (id === 2 ? 1 : 3); // Limite de orillas
+                    let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante && i.orillas_qty === 0);
+                    
                     if(idx > -1) { this.cart[idx].qty++; }
-                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID()}); }
+                    else { 
+                        this.cart.push({ 
+                            db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, 
+                            precioBase: pb, qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID(),
+                            orillas_qty: 0, max_orillas: maxPizzas, precio_orilla: 45 // 45 precio orilla grande
+                        }); 
+                    }
                     this.actualizarCarrito();
                 },
                 addPaq1() { this.addPaq(1, this.paq1Opt); this.modalPaq1 = false; },
@@ -1203,6 +1228,22 @@
                     return parts.join(', ');
                 },
                 addPaq3() { this.addPaq(3, this.formatearPaq3Preview()); this.modalPaq3 = false; },
+
+                // INCREMENTAR/DECREMENTAR ORILLAS EN PAQUETES
+                incrementarOrillaPaq(uid) {
+                    let idx = this.cart.findIndex(c => c.uid === uid);
+                    if(idx > -1 && this.cart[idx].orillas_qty < this.cart[idx].max_orillas) {
+                        this.cart[idx].orillas_qty++;
+                        this.actualizarCarrito();
+                    }
+                },
+                decrementarOrillaPaq(uid) {
+                    let idx = this.cart.findIndex(c => c.uid === uid);
+                    if(idx > -1 && this.cart[idx].orillas_qty > 0) {
+                        this.cart[idx].orillas_qty--;
+                        this.actualizarCarrito();
+                    }
+                },
 
                 // MITADES E INGREDIENTES
                 toggleMitad(nom) { let idx = this.mitSel.indexOf(nom); if(idx > -1) this.mitSel.splice(idx, 1); else if(this.mitSel.length < 2) this.mitSel.push(nom); },
@@ -1363,10 +1404,10 @@
                     // Construir Array de Pagos
                     let pagosToSend = [];
                     if(this.pagos.efectivo.activo && this.pagos.efectivo.monto > 0) {
-                        pagosToSend.push({ id_metpago: 1, monto: this.pagos.efectivo.monto });
+                        pagosToSend.push({ id_metpago: 2, monto: this.pagos.efectivo.monto }); // ID 2 = Efectivo en BD
                     }
                     if(this.pagos.tarjeta.activo && this.pagos.tarjeta.monto > 0) {
-                        pagosToSend.push({ id_metpago: 2, monto: this.pagos.tarjeta.monto });
+                        pagosToSend.push({ id_metpago: 1, monto: this.pagos.tarjeta.monto }); // ID 1 = Tarjeta
                     }
                     if(this.pagos.transferencia.activo && this.pagos.transferencia.monto > 0) {
                         pagosToSend.push({ id_metpago: 3, monto: this.pagos.transferencia.monto, referencia: this.pagos.transferencia.referencia });
