@@ -50,10 +50,8 @@
                         <button @click="cat = 12; view = 'pizzas'" :class="cat === 12 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Pizzas</button>
                         <button @click="cat = 2; view = 'pizzas'" :class="cat === 2 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Mariscos</button>
                         
-                        {{-- Botón Rectangular (Abre Modal Directo) --}}
                         <button @click="abrirRectangularGeneral()" :class="modalRectangular ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Rectangular</button>
-                        
-                        <button @click="cat = 10; view = 'otros'" :class="cat === 10 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Barra</button>
+                        <button @click="abrirBarraGeneral()" :class="modalBarra ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Barra</button>
                         
                         <div class="relative" x-data="{ openExtras: false }">
                             <button @click="openExtras = !openExtras" :class="[1,5,6,7,8,9].includes(cat) ? 'bg-[#adb5bd] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors flex items-center gap-1">
@@ -91,7 +89,7 @@
                                 <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
                                 <div class="flex items-center gap-1 mt-auto">
                                     <span class="text-gray-400 text-[12px]">Precio</span>
-                                    <span class="text-[#fd7e14] text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
+                                    <span class="text-blue-600 text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
                                 </div>
                             </button>
                         </template>
@@ -112,6 +110,7 @@
                             {{-- TARJETAS PARA PIZZAS AGRUPADAS (MAXIMO 2 POR CAJA - LIMPIO) --}}
                             <template x-if="group.type === 'pizza_pair'">
                                 <div class="bg-white border border-gray-200 rounded-[8px] shadow-sm mb-4">
+                                    
                                     <div class="bg-gray-100 border-b border-gray-200 px-4 py-2.5 rounded-t-[8px] flex justify-between items-center">
                                         <h3 class="font-bold text-[#212529] text-[13px]" x-text="'Pizzas Tamaño ' + group.size"></h3>
                                         <span class="font-bold text-[11px] bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600" x-text="group.items.length + ' Pizza(s)'"></span>
@@ -120,6 +119,7 @@
                                     <div class="p-4 space-y-4">
                                         <template x-for="p in group.items" :key="p.item.uid">
                                             <div class="relative border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                                                
                                                 <div class="flex justify-between items-start w-full">
                                                     <div class="pr-8">
                                                         <h4 class="font-black text-[#212529] text-[14px] leading-tight mb-0.5" x-text="p.item.variante || p.item.nombre_base"></h4>
@@ -146,9 +146,11 @@
                                                     </label>
                                                     <span class="text-[14px] font-black text-[#212529]" x-text="'$' + p.item.precioFinal.toFixed(2)"></span>
                                                 </div>
+
                                             </div>
                                         </template>
                                     </div>
+
                                     <div class="px-4 py-3 bg-gray-50 text-right border-t border-gray-200 rounded-b-[8px]">
                                         <span class="text-gray-500 text-[12px] font-bold uppercase mr-2 tracking-wider">Subtotal:</span>
                                         <span class="font-black text-[#212529] text-[18px]" x-text="'$' + group.subtotal.toFixed(2)"></span>
@@ -156,7 +158,7 @@
                                 </div>
                             </template>
 
-                            {{-- TARJETAS PARA OTROS PRODUCTOS (Hamburguesas, Rectangulares, Paquetes) --}}
+                            {{-- TARJETAS PARA OTROS PRODUCTOS NORMALES --}}
                             <template x-if="group.type === 'normal'">
                                 <div class="border border-gray-200 rounded-[8px] p-4 bg-white shadow-sm mb-4 relative">
                                     <div class="flex justify-between items-start mb-2">
@@ -195,6 +197,11 @@
                         <span class="text-[16px]">Total a cobrar:</span>
                         <span x-text="'$' + getTotal().toFixed(2)" class="text-[26px] text-[#28a745]"></span>
                     </div>
+
+                    <button @click="modalComentarios = true" class="w-full bg-[#f8f9fa] border border-gray-200 hover:bg-[#e9ecef] text-[#495057] py-2.5 rounded-[6px] font-bold text-[14px] flex justify-center items-center gap-2 mb-4">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path></svg>
+                        Nota General del Pedido
+                    </button>
 
                     <div class="mb-4 h-10">
                         <template x-if="servicio === 1">
@@ -278,6 +285,9 @@
                     <div class="w-full md:w-[40%] bg-white p-6 flex flex-col justify-between">
                         <div>
                             <h3 class="text-[18px] font-black text-black border-b border-gray-200 pb-3 mb-5">Resumen Rectangular</h3>
+                            <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-1">Producto</p>
+                            <p class="text-[15px] font-black text-[#6f42c1] mb-5" x-text="rectItem?.nombre"></p>
+                            
                             <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-2">Composición</p>
                             <div class="bg-gray-50 border border-gray-200 rounded-[8px] p-4 text-[13px] font-bold text-gray-700 whitespace-pre-wrap leading-relaxed" x-text="formatearCuartosPreview()"></div>
                         </div>
@@ -288,6 +298,75 @@
                             </div>
                             <button @click="addRectangular()" :disabled="rectSel.length !== 4" :class="rectSel.length !== 4 ? 'bg-[#ced4da] text-gray-500 cursor-not-allowed' : 'bg-[#6f42c1] text-white hover:bg-[#5a32a3] shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[14px] transition-all mb-2">Añadir al Carrito</button>
                             <button @click="modalRectangular = false" class="w-full text-gray-500 hover:text-black font-bold text-[13px] py-2">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- MODAL BARRA (2 MITADES) --}}
+        <div x-show="modalBarra" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-xl shadow-2xl w-[700px] flex flex-col h-[85vh] overflow-hidden" @click.away="modalBarra = false">
+                <div class="bg-[#17a2b8] p-5 flex justify-between items-center text-white">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5z"/></svg> 
+                        Pizza de Barra (2 Mitades)
+                    </h2>
+                    <button @click="modalBarra = false" class="hover:text-gray-200 font-bold text-2xl leading-none">&times;</button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                    <div class="w-full md:w-[60%] p-6 overflow-y-auto border-r border-gray-100 space-y-6 bg-[#f8f9fa] scrollbar-hide">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="font-bold text-[14px] text-black">1. Llena las 2 mitades:</p>
+                            <span class="text-[12px] font-black bg-white border border-gray-200 px-2 py-1 rounded shadow-sm" :class="barraSel.length === 2 ? 'text-[#17a2b8]' : 'text-gray-500'" x-text="barraSel.length + '/2'"></span>
+                        </div>
+                        <p class="text-[12px] text-gray-500 mb-4">Toca las especialidades de abajo para llenar la barra.</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-6">
+                            <template x-for="i in 2">
+                                <div class="border-2 rounded-[8px] p-3 text-center transition-all h-[60px] flex items-center justify-center relative" 
+                                     :class="barraSel[i-1] ? 'border-[#17a2b8] bg-[#e6fbff]' : 'border-dashed border-gray-300 bg-gray-50'">
+                                    <template x-if="barraSel[i-1]">
+                                        <div class="w-full flex justify-between items-center px-1">
+                                            <span class="text-[12px] font-bold text-[#17a2b8]" x-text="barraSel[i-1]"></span>
+                                            <button @click="removeBarraEsp(i-1)" class="text-red-500 hover:bg-red-100 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px]">&times;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!barraSel[i-1]">
+                                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Mitad Vacia</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div>
+                            <p class="font-bold text-[14px] text-black mb-3">2. Especialidades disponibles:</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <template x-for="esp in dbEspecialidades" :key="esp.id_esp">
+                                    <button @click="addBarraEsp(esp.nombre)" :disabled="barraSel.length >= 2" class="border rounded-[8px] p-2.5 text-[12px] font-bold text-left transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-white border-gray-200 text-gray-700 hover:border-[#17a2b8] hover:text-[#17a2b8]">
+                                        <span x-text="esp.nombre"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-[40%] bg-white p-6 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-[18px] font-black text-black border-b border-gray-200 pb-3 mb-5">Resumen Barra</h3>
+                            <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-1">Producto</p>
+                            <p class="text-[15px] font-black text-[#17a2b8] mb-5" x-text="barraItem?.nombre"></p>
+                            
+                            <p class="text-[12px] font-bold text-gray-400 uppercase tracking-wide mb-2">Composición</p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-[8px] p-4 text-[13px] font-bold text-gray-700 whitespace-pre-wrap leading-relaxed" x-text="formatearMediosPreview()"></div>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <div class="flex justify-between items-end mb-4">
+                                <span class="text-gray-500 text-[14px] font-bold">Precio Fijo</span>
+                                <span class="font-black text-[#28a745] text-[26px] leading-none" x-text="'$' + (barraItem ? parseFloat(barraItem.precio).toFixed(2) : '0.00')"></span>
+                            </div>
+                            <button @click="addBarra()" :disabled="barraSel.length !== 2" :class="barraSel.length !== 2 ? 'bg-[#ced4da] text-gray-500 cursor-not-allowed' : 'bg-[#17a2b8] text-white hover:bg-[#138496] shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[14px] transition-all mb-2">Añadir al Carrito</button>
+                            <button @click="modalBarra = false" class="w-full text-gray-500 hover:text-black font-bold text-[13px] py-2">Cancelar</button>
                         </div>
                     </div>
                 </div>
@@ -531,13 +610,33 @@
             </div>
         </div>
 
+        {{-- MODAL COMENTARIOS GENERALES --}}
+        <div x-show="modalComentarios" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-xl shadow-2xl w-[450px] max-w-full overflow-hidden" @click.away="modalComentarios = false">
+                <div class="p-5 border-b border-gray-100">
+                    <h2 class="text-lg font-bold text-[#212529] flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#ffc107]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path></svg>
+                        Nota General del Pedido
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <textarea x-model="comentariosGeneralesTemp" rows="4" maxlength="255" placeholder="Escribe instrucciones generales para cocina..." class="w-full bg-[#f8f9fa] border border-gray-200 rounded-[8px] p-3 text-[13px] text-[#212529] focus:outline-none focus:border-[#fd7e14] focus:bg-white resize-none"></textarea>
+                </div>
+                <div class="p-5 flex gap-3 bg-white border-t border-gray-100">
+                    <button @click="modalComentarios = false" class="flex-1 bg-[#e9ecef] hover:bg-[#dee2e6] text-[#212529] font-bold py-2.5 rounded-[6px] text-[13px]">Cancelar</button>
+                    <button @click="comentariosGenerales = comentariosGeneralesTemp; modalComentarios = false" class="flex-1 bg-[#fd7e14] hover:bg-[#e36b0c] text-white font-bold py-2.5 rounded-[6px] text-[13px] shadow-sm">Guardar Nota</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('posApp', () => ({
                 cat: 12, view: 'pizzas', search: '', cart: [], cartGroups: [], servicio: 3, mesa: '',
-                comentariosGenerales: '', modalComentarios: false, modalOpc: false, opcItem: null,
+                comentariosGenerales: '', comentariosGeneralesTemp: '', modalComentarios: false,
+                modalOpc: false, opcItem: null,
 
                 // Modales Variables
                 modalPaq1: false, paq1Opt: 'Combinado (1 Hawaiana y 1 Pepperoni)', paqObj: null,
@@ -546,6 +645,7 @@
                 modalIngredientes: false, ingTam: null, ingSel: [],
                 modalMitades: false, mitTam: null, mitSel: [],
                 modalRectangular: false, rectItem: null, rectSel: [],
+                modalBarra: false, barraItem: null, barraSel: [],
 
                 getListaTamanos() {
                     let d = this.cat === 12 ? dbPizzas : (this.cat === 2 ? dbMariscos : []);
@@ -579,7 +679,7 @@
                     return 35; 
                 },
 
-                // MOTOR INTELIGENTE SILENCIOSO: Agrupa y calcula 2x1 y 40%
+                // MOTOR INTELIGENTE SILENCIOSO: Agrupa y calcula 2x1 y 40% OFF
                 actualizarCarrito() {
                     let pizzasFlat = [];
                     let normals = [];
@@ -676,28 +776,21 @@
                     this.addPizzaToMainCart({
                         db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true,
                         nombre_base: nomFull, variante: this.opcItem.nombre, precioBase: parseFloat(t.precio),
-                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam)
+                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), comentario: ''
                     });
                     this.modalOpc = false;
                 },
 
-                // RECTANGULAR (Abre directo desde la barra de categorias)
+                // RECTANGULAR Y BARRA
                 abrirRectangularGeneral() {
                     let baseItem = dbDirectos.find(d => d.cat === 11);
                     if(!baseItem) return alert('No hay pizzas rectangulares configuradas en la base de datos.');
-                    
-                    this.rectItem = {
-                        id: baseItem.id, col: baseItem.col, nombre: 'Pizza Rectangular', precio: baseItem.precio
-                    };
+                    this.rectItem = { id: baseItem.id, col: baseItem.col, nombre: 'Pizza Rectangular', precio: baseItem.precio };
                     this.rectSel = [];
                     this.modalRectangular = true;
                 },
-                addRectEsp(esp) {
-                    if(this.rectSel.length < 4) this.rectSel.push(esp);
-                },
-                removeRectEsp(index) {
-                    this.rectSel.splice(index, 1);
-                },
+                addRectEsp(esp) { if(this.rectSel.length < 4) this.rectSel.push(esp); },
+                removeRectEsp(index) { this.rectSel.splice(index, 1); },
                 formatearCuartosPreview() {
                     if(this.rectSel.length === 0) return 'Sin especialidades';
                     let counts = {};
@@ -709,11 +802,9 @@
                 addRectangular() {
                     let pb = parseFloat(this.rectItem.precio);
                     let varianteFinal = this.formatearCuartosPreview();
-                    
                     let idx = this.cart.findIndex(i => i.db_id === this.rectItem.id && i.variante === varianteFinal);
-                    if(idx > -1) { 
-                        this.cart[idx].qty++; 
-                    } else { 
+                    if(idx > -1) { this.cart[idx].qty++; } 
+                    else { 
                         this.cart.push({ 
                             db_id: this.rectItem.id, col: this.rectItem.col, tipo: 'directo', 
                             nombre_base: this.rectItem.nombre, variante: varianteFinal, cuartos: this.rectSel,
@@ -724,11 +815,46 @@
                     this.modalRectangular = false;
                 },
 
+                abrirBarraGeneral() {
+                    let baseItem = dbDirectos.find(d => d.cat === 10);
+                    if(!baseItem) return alert('No hay pizzas de barra configuradas en la base de datos.');
+                    this.barraItem = { id: baseItem.id, col: baseItem.col, nombre: 'Pizza de Barra', precio: baseItem.precio };
+                    this.barraSel = [];
+                    this.modalBarra = true;
+                },
+                addBarraEsp(esp) { if(this.barraSel.length < 2) this.barraSel.push(esp); },
+                removeBarraEsp(index) { this.barraSel.splice(index, 1); },
+                formatearMediosPreview() {
+                    if(this.barraSel.length === 0) return 'Sin especialidades';
+                    let counts = {};
+                    this.barraSel.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                    let parts = [];
+                    for(let k in counts) { parts.push(counts[k] + '/2 ' + k); }
+                    return parts.join(', ');
+                },
+                addBarra() {
+                    let pb = parseFloat(this.barraItem.precio);
+                    let varianteFinal = this.formatearMediosPreview();
+                    let idx = this.cart.findIndex(i => i.db_id === this.barraItem.id && i.variante === varianteFinal);
+                    if(idx > -1) { this.cart[idx].qty++; } 
+                    else { 
+                        this.cart.push({ 
+                            db_id: this.barraItem.id, col: this.barraItem.col, tipo: 'directo', 
+                            nombre_base: this.barraItem.nombre, variante: varianteFinal, medios: this.barraSel,
+                            precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()
+                        }); 
+                    }
+                    this.actualizarCarrito();
+                    this.modalBarra = false;
+                },
+
                 addDirecto(p) {
+                    if(p.cat === 11) return this.abrirRectangularGeneral();
+                    if(p.cat === 10) return this.abrirBarraGeneral();
+                    
                     let idx = this.cart.findIndex(i => i.db_id === p.id && !i.es_pizza);
-                    if(idx > -1) { 
-                        this.cart[idx].qty++; 
-                    } else { 
+                    if(idx > -1) { this.cart[idx].qty++; } 
+                    else { 
                         this.cart.push({ 
                             db_id: p.id, col: p.col, tipo: 'directo', nombre_base: p.nombre, variante: '', 
                             precioBase: parseFloat(p.precio), qty: 1, es_pizza: false, uid: this.generateUID() 
@@ -748,7 +874,7 @@
                     let pb = parseFloat(this.paqObj.precio);
                     let idx = this.cart.findIndex(i => i.db_id === id && i.tipo === 'paq' && i.variante === variante);
                     if(idx > -1) { this.cart[idx].qty++; }
-                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID()}); }
+                    else { this.cart.push({ db_id: id, col: 'id_paquete', tipo: 'paq', nombre_base: 'Paquete '+id, variante: variante, precioBase: pb, qty: 1, es_pizza: false, uid: this.generateUID(), comentario: ''}); }
                     this.actualizarCarrito();
                 },
                 addPaq1() { this.addPaq(1, this.paq1Opt); this.modalPaq1 = false; },

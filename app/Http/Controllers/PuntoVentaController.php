@@ -34,11 +34,11 @@ class PuntoVentaController extends Controller
         // 3. PRODUCTOS DIRECTOS (Rectangular, Barra, Extras)
         $directos = [];
         $rectangular = DB::table('Rectangular')->join('Especialidades', 'Rectangular.id_esp', '=', 'Especialidades.id_esp')->select('Rectangular.id_rec as id', 'Especialidades.nombre', 'Rectangular.precio')->get();
-        // AQUI QUITAMOS LA PALABRA 'Rectangular ' PARA QUE SOLO MANDE EL NOMBRE DE LA ESPECIALIDAD
         foreach($rectangular as $r) { $directos[] = ['id' => $r->id, 'col' => 'id_rec', 'nombre' => $r->nombre, 'precio' => $r->precio, 'cat' => 11]; }
 
         $barra = DB::table('Barra')->join('Especialidades', 'Barra.id_especialidad', '=', 'Especialidades.id_esp')->select('Barra.id_barr as id', 'Especialidades.nombre', 'Barra.precio')->get();
-        foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => 'Barra ' . $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
+        // AQUI TAMBIÉN QUITAMOS LA PALABRA 'Barra ' PARA LIMPIAR EL DISEÑO
+        foreach($barra as $b) { $directos[] = ['id' => $b->id, 'col' => 'id_barr', 'nombre' => $b->nombre, 'precio' => $b->precio, 'cat' => 10]; }
 
         foreach(DB::table('Hamburguesas')->get() as $h) { $directos[] = ['id' => $h->id_hamb, 'col' => 'id_hamb', 'nombre' => $h->paquete, 'precio' => $h->precio, 'cat' => 6]; }
         foreach(DB::table('Alitas')->get() as $a) { $directos[] = ['id' => $a->id_alis, 'col' => 'id_alis', 'nombre' => $a->orden, 'precio' => $a->precio, 'cat' => 5]; }
@@ -84,6 +84,7 @@ class PuntoVentaController extends Controller
                 if(isset($item['comentario']) && $item['comentario'] !== '') $datosJson['nota'] = $item['comentario'];
                 if(isset($item['ingredientes_extra'])) $datosJson['ingredientes_extra'] = $item['ingredientes_extra'];
                 if(isset($item['cuartos'])) $datosJson['cuartos'] = $item['cuartos'];
+                if(isset($item['medios'])) $datosJson['medios'] = $item['medios']; // Agregamos guardado de medios para la barra
 
                 $datosInsert = [
                     'id_venta' => $id_venta, 'cantidad' => $item['qty'], 'precio_unitario' => $item['precioFinal'],
