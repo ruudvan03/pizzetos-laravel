@@ -35,7 +35,6 @@
         
         let rawClientes = {!! json_encode($clientes) !!};
         const dbClientes = Array.isArray(rawClientes) ? rawClientes : Object.values(rawClientes || {});
-        
         let rawDirs = {!! json_encode($direcciones) !!};
         const dbDirecciones = Array.isArray(rawDirs) ? rawDirs : Object.values(rawDirs || {});
     </script>
@@ -136,7 +135,7 @@
             <div class="lg:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[calc(100vh-2rem)] sticky top-4">
                 <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-end">
                     <div>
-                        <h2 class="text-[24px] font-black text-[#212529] leading-none">Pedido Actual</h2>
+                        <h2 class="text-[24px] font-black text-[#212529] leading-none" x-text="id_venta_edit ? 'Editando #' + id_venta_edit : 'Pedido Actual'"></h2>
                         <p x-show="cartGroups.length === 0" class="text-[#6c757d] text-[14px] mt-1.5">Sin productos en el carrito</p>
                     </div>
                 </div>
@@ -208,7 +207,7 @@
                                             <span class="w-8 h-7 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[13px]" x-text="group.item.qty"></span>
                                             <button @click="updateNormalQty(group.item, 1)" class="w-7 h-7 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center">+</button>
                                         </div>
-                                        <span class="text-[12px] text-[#6c757d] font-medium" x-text="'| c/u: $' + parseFloat(group.item.precioBase).toFixed(2)"></span>
+                                        <span class="text-[12px] text-[#6c757d] font-medium" x-text="'| Base: $' + parseFloat(group.item.precioBase).toFixed(2)"></span>
                                     </div>
                                     
                                     <div x-show="group.item.variante" class="bg-[#f8f9fa] border border-gray-200 rounded-[6px] p-2 mt-2">
@@ -257,8 +256,9 @@
                         Agregar comentarios
                     </button>
 
-                    <div class="mb-4 h-11" x-show="servicio === 1">
-                        <input type="text" x-model="mesa" placeholder="Ingresa el número de MESA..." class="w-full h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[15px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
+                    <div class="mb-4 h-11 flex gap-2" x-show="servicio === 1" x-cloak>
+                        <input type="number" x-model="mesa" placeholder="Mesa #" class="w-1/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[15px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
+                        <input type="text" x-model="nombreClienteMesa" placeholder="Nombre cliente *" class="w-2/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[15px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
                     </div>
 
                     {{-- SPLIT BUTTON EXACTO SIN EMOJIS --}}
@@ -291,7 +291,7 @@
                         </div>
 
                         <button @click="procesarOrden()" :disabled="cart.length === 0" :class="cart.length === 0 ? 'bg-[#fd7e14]/60 text-white cursor-not-allowed' : 'bg-[#fd7e14] hover:bg-[#e36b0c] text-white'" class="flex-1 font-black text-[16px] rounded-r-[6px] transition-colors shadow-sm">
-                            Enviar Orden
+                            <span x-text="id_venta_edit ? 'Guardar Cambios' : 'Enviar Orden'"></span>
                         </button>
 
                     </div>
@@ -299,9 +299,7 @@
             </div>
         </div>
 
-        {{-- ========================================================================= --}}
-        {{-- MODALES DE PRODUCTOS --}}
-        {{-- ========================================================================= --}}
+        {{-- MODALES DE PRODUCTOS Y PAGOS OCULTOS ... (No hay cambios visuales en estos modales, se mantienen igual) --}}
         
         {{-- MODAL OPCIONES NORMAL --}}
         <div x-show="modalOpc" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
@@ -339,7 +337,7 @@
             </div>
         </div>
 
-        {{-- MAGNO (Diseño Limpio Sin Emojis) --}}
+        {{-- MAGNO --}}
         <div x-show="modalMagno" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl w-[700px] flex flex-col h-[85vh] overflow-hidden" @click.away="modalMagno = false">
                 <div class="bg-[#212529] p-5 flex justify-between items-center text-white">
@@ -641,7 +639,7 @@
             </div>
         </div>
 
-        {{-- MODAL DOMICILIO (Búsqueda Reactiva Inteligente y Extra Grande) --}}
+        {{-- MODAL DOMICILIO --}}
         <div x-show="modalCliente" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white rounded-xl shadow-2xl w-[650px] flex flex-col max-h-[90vh] overflow-hidden">
                 <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -654,7 +652,6 @@
                 
                 <div class="flex-1 overflow-y-auto p-8 bg-white space-y-8">
                     
-                    {{-- Seleccion de Cliente Inteligente (Lista visible al hacer click) --}}
                     <div class="relative">
                         <label class="block text-[16px] font-bold text-gray-700 mb-3">Buscar Cliente *</label>
                         <div class="flex gap-3">
@@ -674,7 +671,7 @@
                                     
                                     <template x-if="getClientesFiltrados().length === 0">
                                         <div class="px-5 py-8 text-[16px] text-gray-500 italic text-center bg-gray-50">
-                                            No se encontraron clientes.<br><span class="font-bold">Haz clic en "Nuevo" para registrarlo.</span>
+                                            No se encontraron clientes en la base de datos.<br><span class="font-bold">Haz clic en "Nuevo" para registrarlo.</span>
                                         </div>
                                     </template>
 
@@ -795,9 +792,9 @@
                 <div class="flex-1 overflow-y-auto p-5 bg-[#f8f9fa] space-y-4">
                     <p class="text-[13px] text-gray-500 mb-2">Selecciona métodos de pago (puedes elegir varios):</p>
                     
-                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.transferencia.activo ? 'border-[#ffc107]' : 'border-gray-200'">
+                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.transferencia.activo ? 'border-[#fd7e14]' : 'border-gray-200'">
                         <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
-                            <input type="checkbox" x-model="pagos.transferencia.activo" @change="autoFillPago('transferencia')" class="w-5 h-5 rounded border-gray-300 text-[#ffc107] focus:ring-[#ffc107]">
+                            <input type="checkbox" x-model="pagos.transferencia.activo" @change="autoFillPago('transferencia')" class="w-5 h-5 rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14]">
                             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                             <span class="font-bold text-[15px] text-[#212529]">Transferencia</span>
                         </label>
@@ -806,7 +803,7 @@
                                 <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Transferencia</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
-                                    <input type="number" step="0.01" min="0" x-model.number="pagos.transferencia.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#ffc107]">
+                                    <input type="number" step="0.01" min="0" x-model.number="pagos.transferencia.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#fd7e14]">
                                 </div>
                             </div>
                             <div>
@@ -816,9 +813,9 @@
                         </div>
                     </div>
 
-                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.tarjeta.activo ? 'border-[#ffc107]' : 'border-gray-200'">
+                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.tarjeta.activo ? 'border-[#fd7e14]' : 'border-gray-200'">
                         <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
-                            <input type="checkbox" x-model="pagos.tarjeta.activo" @change="autoFillPago('tarjeta')" class="w-5 h-5 rounded border-gray-300 text-[#ffc107] focus:ring-[#ffc107]">
+                            <input type="checkbox" x-model="pagos.tarjeta.activo" @change="autoFillPago('tarjeta')" class="w-5 h-5 rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14]">
                             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                             <span class="font-bold text-[15px] text-[#212529]">Tarjeta</span>
                         </label>
@@ -826,15 +823,15 @@
                             <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Tarjeta</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
-                                <input type="number" step="0.01" min="0" x-model.number="pagos.tarjeta.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#ffc107]">
+                                <input type="number" step="0.01" min="0" x-model.number="pagos.tarjeta.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#fd7e14]">
                             </div>
                             <p class="text-[11px] text-gray-400 italic mt-2">Se enviará terminal.</p>
                         </div>
                     </div>
 
-                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.efectivo.activo ? 'border-[#ffc107]' : 'border-gray-200'">
+                    <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.efectivo.activo ? 'border-[#fd7e14]' : 'border-gray-200'">
                         <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
-                            <input type="checkbox" x-model="pagos.efectivo.activo" @change="autoFillPago('efectivo')" class="w-5 h-5 rounded border-gray-300 text-[#ffc107] focus:ring-[#ffc107]">
+                            <input type="checkbox" x-model="pagos.efectivo.activo" @change="autoFillPago('efectivo')" class="w-5 h-5 rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14]">
                             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             <span class="font-bold text-[15px] text-[#212529]">Efectivo</span>
                         </label>
@@ -843,7 +840,7 @@
                                 <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Efectivo</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
-                                    <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#ffc107]">
+                                    <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-[#fd7e14]">
                                 </div>
                             </div>
                             <div>
@@ -875,8 +872,12 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('posApp', () => ({
-                cat: 12, view: 'pizzas', search: '', cart: [], cartGroups: [], servicio: 3, mesa: '',
-                comentariosGenerales: '', comentariosGeneralesTemp: '', modalComentarios: false,
+                cat: 12, view: 'pizzas', search: '', cart: {!! json_encode($cart_preloaded ?? []) !!}, cartGroups: [], 
+                servicio: {{ $venta_edit->tipo_servicio ?? 3 }}, 
+                mesa: '{{ $venta_edit->mesa ?? '' }}', 
+                nombreClienteMesa: '{{ $venta_edit->nombreClie ?? '' }}',
+                id_venta_edit: {{ $venta_edit->id_venta ?? 'null' }},
+                comentariosGenerales: '{{ $venta_edit->comentarios ?? '' }}', comentariosGeneralesTemp: '', modalComentarios: false,
                 modalOpc: false, opcItem: null,
 
                 modalPaq1: false, paq1Opt: 'Combinado (1 Hawaiana y 1 Pepperoni)', paqObj: null,
@@ -901,6 +902,12 @@
                     efectivo: { activo: false, monto: 0, entregado: 0 },
                     tarjeta: { activo: false, monto: 0 },
                     transferencia: { activo: false, monto: 0, referencia: '' }
+                },
+
+                init() {
+                    if(this.cart && this.cart.length > 0) {
+                        this.actualizarCarrito();
+                    }
                 },
 
                 getListaTamanos() {
@@ -1060,7 +1067,7 @@
                     this.addPizzaToMainCart({
                         db_id: t.id, col: (this.cat === 12 ? 'id_pizza' : 'id_maris'), tipo: 'pizza_normal', es_pizza: true, is_magno: false,
                         nombre_base: nomFull, variante: this.opcItem.nombre, precioBase: parseFloat(t.precio),
-                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam), comentario: ''
+                        orilla_queso: false, precio_orilla: this.getPrecioOrilla(cTam)
                     });
                     this.modalOpc = false;
                 },
@@ -1098,7 +1105,7 @@
                 },
                 addMagno() {
                     let pb = parseFloat(this.magnoItem.precio);
-                    let varianteFinal = this.formatearMagnoPreview() + '\n• Incluye 1 Refresco de 2L';
+                    let varianteFinal = this.formatearMagnoPreview();
                     let idx = this.cart.findIndex(i => i.is_magno && i.variante === varianteFinal && !i.orilla_queso);
                     if(idx > -1) { this.cart[idx].qty++; } 
                     else { 
@@ -1291,6 +1298,7 @@
                 abrirModalComentarios() { this.comentariosGeneralesTemp = this.comentariosGenerales; this.modalComentarios = true; },
                 guardarComentarios() { this.comentariosGenerales = this.comentariosGeneralesTemp; this.modalComentarios = false; },
                 getTotal() { return this.cartGroups.reduce((s, g) => s + g.subtotal, 0); },
+                
                 nomServicio() { 
                     if(this.servicio === 1) return 'Comer Aqui';
                     if(this.servicio === 2) return 'Para Llevar';
@@ -1383,7 +1391,7 @@
 
                 procesarOrden() {
                     if(this.servicio === 1) {
-                        if(!this.mesa) return alert("Ingrese el número de mesa.");
+                        if(!this.mesa || !this.nombreClienteMesa.trim()) return alert("El número de mesa y el nombre del cliente son obligatorios.");
                         this.procesarOrdenFinal(true); 
                     } else if(this.servicio === 2) {
                         this.abrirModalPago(); 
@@ -1419,11 +1427,14 @@
 
                     let reqBody = {
                         _token: '{{ csrf_token() }}', 
-                        tipo_servicio: this.servicio, mesa: this.mesa, 
+                        tipo_servicio: this.servicio, 
+                        mesa: this.mesa, 
+                        nombre_cliente: this.nombreClienteMesa,
                         comentarios: this.comentariosGenerales, 
                         total: this.getTotal(), 
                         carrito: cartPayload, 
-                        pagos: pagosToSend
+                        pagos: pagosToSend,
+                        id_venta_edit: this.id_venta_edit
                     };
 
                     if(this.servicio === 3) {
@@ -1439,9 +1450,15 @@
                         body: JSON.stringify(reqBody)
                     }).then(r => r.json()).then(res => {
                         if(res.success) { 
-                            this.cart = []; this.actualizarCarrito(); this.mesa = ''; this.comentariosGenerales = '';
+                            this.cart = []; this.actualizarCarrito(); 
+                            this.mesa = ''; this.nombreClienteMesa = ''; this.comentariosGenerales = '';
                             this.modalPago = false;
+                            
+                            // Imprime el ticket y luego de 1 segundo regresa al historial para evitar bugs
                             window.open('/venta/pos/ticket/' + res.id_venta, 'Ticket', 'width=400,height=600'); 
+                            if(this.id_venta_edit) {
+                                setTimeout(() => { window.location.href = "{{ route('ventas.resume') }}"; }, 1000);
+                            }
                         } else alert("Error al guardar: " + res.message);
                     });
                 }

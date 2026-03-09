@@ -1,7 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 min-h-[400px]">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+<div class="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 min-h-[400px]" x-data="historialApp()">
     
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
@@ -11,18 +16,18 @@
         
         <form action="{{ route('ventas.resume') }}" method="GET" class="flex flex-wrap items-center gap-3">
             <select name="fecha" class="border border-gray-300 text-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[160px]">
-                <option value="hoy" {{ $filtroFecha == 'hoy' ? 'selected' : '' }}>Hoy</option>
-                <option value="semana" {{ $filtroFecha == 'semana' ? 'selected' : '' }}>Esta semana</option>
-                <option value="mes" {{ $filtroFecha == 'mes' ? 'selected' : '' }}>Este mes</option>
-                <option value="todos" {{ $filtroFecha == 'todos' ? 'selected' : '' }}>Todos los registros</option>
+                <option value="hoy" {{ ($filtroFecha ?? 'hoy') == 'hoy' ? 'selected' : '' }}>Hoy</option>
+                <option value="semana" {{ ($filtroFecha ?? '') == 'semana' ? 'selected' : '' }}>Esta semana</option>
+                <option value="mes" {{ ($filtroFecha ?? '') == 'mes' ? 'selected' : '' }}>Este mes</option>
+                <option value="todos" {{ ($filtroFecha ?? '') == 'todos' ? 'selected' : '' }}>Todos los registros</option>
             </select>
 
             <select name="estado" class="border border-gray-300 text-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[160px]">
-                <option value="todos" {{ $filtroEstado == 'todos' ? 'selected' : '' }}>Todos los estados</option>
-                <option value="0" {{ $filtroEstado == '0' ? 'selected' : '' }}>Esperando</option>
-                <option value="1" {{ $filtroEstado == '1' ? 'selected' : '' }}>Preparando</option>
-                <option value="2" {{ $filtroEstado == '2' ? 'selected' : '' }}>Completado</option>
-                <option value="3" {{ $filtroEstado == '3' ? 'selected' : '' }}>Cancelado</option>
+                <option value="todos" {{ ($filtroEstado ?? 'todos') == 'todos' ? 'selected' : '' }}>Todos los estados</option>
+                <option value="0" {{ ($filtroEstado ?? '') == '0' ? 'selected' : '' }}>Esperando</option>
+                <option value="1" {{ ($filtroEstado ?? '') == '1' ? 'selected' : '' }}>Preparando</option>
+                <option value="2" {{ ($filtroEstado ?? '') == '2' ? 'selected' : '' }}>Completado</option>
+                <option value="3" {{ ($filtroEstado ?? '') == '3' ? 'selected' : '' }}>Cancelado</option>
             </select>
 
             <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-colors">
@@ -37,15 +42,17 @@
             <p class="text-gray-500 text-[15px]">No hay pedidos para mostrar</p>
         </div>
     @else
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto border border-gray-200 rounded-lg">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="text-gray-400 uppercase text-[10px] tracking-widest font-bold border-b border-gray-100">
+                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
                         <th class="px-6 py-4 font-semibold">ID VENTA</th>
                         <th class="px-6 py-4 font-semibold">FECHA / HORA</th>
                         <th class="px-6 py-4 font-semibold">CLIENTE / MESA</th>
+                        <th class="px-6 py-4 font-semibold text-center">PRODUCTOS</th>
                         <th class="px-6 py-4 font-semibold">TOTAL</th>
                         <th class="px-6 py-4 font-semibold text-center">ESTADO</th>
+                        <th class="px-6 py-4 font-semibold text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-sm">
@@ -53,22 +60,59 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 font-bold text-gray-900">#{{ $venta->id_venta }}</td>
                             <td class="px-6 py-4 text-gray-500">{{ \Carbon\Carbon::parse($venta->fecha_hora)->format('d/m/Y h:i A') }}</td>
+                            
                             <td class="px-6 py-4 text-gray-700 font-medium">
-                                {{ $venta->nombreClie ?? 'Mesa ' . $venta->mesa }}
+                                @if($venta->tipo_servicio == 1)
+                                    Mesa {{ $venta->mesa ?? '?' }} - {{ $venta->nombreClie ?? 'Sin Nombre' }}
+                                @elseif($venta->tipo_servicio == 2)
+                                    Mostrador (Para Llevar)
+                                @else
+                                    {{ $venta->nombreClie ?? ($venta->cnombre ?? 'Domicilio') }}
+                                @endif
                             </td>
+                            
+                            <td class="px-6 py-4 text-center">
+                                <span class="bg-blue-50 text-blue-700 border border-blue-200 font-bold px-2.5 py-1 rounded text-xs">
+                                    {{ $venta->total_productos ?? \DB::table('DetalleVenta')->where('id_venta', $venta->id_venta)->sum('cantidad') }}
+                                </span>
+                            </td>
+
                             <td class="px-6 py-4 font-black text-green-600">${{ number_format($venta->total, 2) }}</td>
+                            
                             <td class="px-6 py-4 text-center">
                                 @if($venta->status == 0)
-                                    <span class="bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full text-xs">Esperando</span>
+                                    <span class="bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full text-xs">Cuenta Abierta</span>
                                 @elseif($venta->status == 1)
-                                    <span class="bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full text-xs">Preparando</span>
-                                @elseif($venta->status == 2)
-                                    <span class="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs">Completado</span>
+                                    <span class="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs">Pagado</span>
                                 @elseif($venta->status == 3)
                                     <span class="bg-red-100 text-red-600 font-bold px-3 py-1 rounded-full text-xs">Cancelado</span>
                                 @else
-                                    <span class="bg-gray-100 text-gray-600 font-bold px-3 py-1 rounded-full text-xs">Desconocido</span>
+                                    <span class="bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full text-xs">Preparando</span>
                                 @endif
+                            </td>
+
+                            <td class="px-6 py-4 flex items-center justify-center gap-4">
+                                
+                                @if($venta->status == 0)
+                                <a href="/venta/pos?edit={{ $venta->id_venta }}" title="Editar Pedido" class="text-blue-500 hover:text-blue-700 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </a>
+                                @endif
+
+                                <button title="Eliminar Pedido" class="text-red-500 hover:text-red-700 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+
+                                @if($venta->status == 0 && $venta->tipo_servicio == 1)
+                                <button @click="abrirPago({{ $venta->id_venta }}, {{ $venta->total }})" title="Pagar Cuenta" class="text-green-500 hover:text-green-700 transition-colors cursor-pointer">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </button>
+                                @endif
+
+                                <a href="/venta/pos/ticket/{{ $venta->id_venta }}" target="_blank" title="Reimprimir Ticket" class="text-gray-500 hover:text-gray-800 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                </a>
+
                             </td>
                         </tr>
                     @endforeach
@@ -77,5 +121,187 @@
         </div>
     @endif
 
+    {{-- ======================================================= --}}
+    {{-- MODAL MULTIPAGO RÁPIDO (Se abre al presionar billetes)  --}}
+    {{-- ======================================================= --}}
+    <div x-show="modalPago" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-[450px] max-w-full flex flex-col h-auto max-h-[90vh] overflow-hidden" @click.away="modalPago = false">
+            <div class="bg-amber-500 p-5 flex justify-between items-center text-white relative">
+                <h2 class="text-xl font-black" x-text="'Cobrar Cuenta #' + id_venta_pago"></h2>
+                <button @click="modalPago = false" class="hover:text-white/80 font-black text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div class="p-6 text-center border-b border-gray-100 bg-white">
+                <div class="font-black text-[#1a202c] text-[36px] leading-none mb-1" x-text="'$' + total_pago.toFixed(2)"></div>
+                <div class="text-[14px] font-bold" :class="faltaPagar() === 0 ? 'text-green-500' : (faltaPagar() < 0 ? 'text-blue-500' : 'text-red-500')" x-text="faltaPagar() === 0 ? 'Monto completo asignado' : (faltaPagar() < 0 ? 'Cambio: $' + Math.abs(faltaPagar()).toFixed(2) : 'Falta asignar: $' + faltaPagar().toFixed(2))"></div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 bg-[#f8f9fa] space-y-4">
+                <p class="text-[13px] text-gray-500 mb-2">Selecciona métodos de pago:</p>
+                
+                {{-- Efectivo (2) --}}
+                <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.efectivo.activo ? 'border-amber-500' : 'border-gray-200'">
+                    <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
+                        <input type="checkbox" x-model="pagos.efectivo.activo" @change="autoFillPago('efectivo')" class="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="font-bold text-[15px] text-[#212529]">Efectivo</span>
+                    </label>
+                    <div x-show="pagos.efectivo.activo" class="px-4 pb-4 pt-1 space-y-3">
+                        <div>
+                            <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Efectivo</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
+                                <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-green-600 font-bold mb-1">¿Con cuánto paga el cliente?</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-green-600 font-bold">$</span>
+                                <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.entregado" placeholder="Monto entregado" class="w-full pl-7 pr-3 py-2 border border-green-200 bg-green-50 rounded text-[14px] font-bold focus:outline-none focus:border-green-400">
+                            </div>
+                            <p x-show="pagos.efectivo.entregado > 0 && (pagos.efectivo.entregado - pagos.efectivo.monto) >= 0" class="text-[12px] text-gray-600 mt-2 font-bold bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                Su cambio: <span class="text-green-600 text-[16px]"> $<span x-text="(pagos.efectivo.entregado - pagos.efectivo.monto).toFixed(2)"></span></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Tarjeta (1) --}}
+                <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.tarjeta.activo ? 'border-amber-500' : 'border-gray-200'">
+                    <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
+                        <input type="checkbox" x-model="pagos.tarjeta.activo" @change="autoFillPago('tarjeta')" class="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                        <span class="font-bold text-[15px] text-[#212529]">Tarjeta</span>
+                    </label>
+                    <div x-show="pagos.tarjeta.activo" class="px-4 pb-4 pt-1">
+                        <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Tarjeta</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
+                            <input type="number" step="0.01" min="0" x-model.number="pagos.tarjeta.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Transferencia (3) --}}
+                <div class="border rounded-[8px] overflow-hidden transition-all bg-white shadow-sm" :class="pagos.transferencia.activo ? 'border-amber-500' : 'border-gray-200'">
+                    <label class="flex items-center gap-3 p-4 cursor-pointer select-none">
+                        <input type="checkbox" x-model="pagos.transferencia.activo" @change="autoFillPago('transferencia')" class="w-5 h-5 rounded border-gray-300 text-amber-500 focus:ring-amber-500">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        <span class="font-bold text-[15px] text-[#212529]">Transferencia</span>
+                    </label>
+                    <div x-show="pagos.transferencia.activo" class="px-4 pb-4 pt-1 space-y-3">
+                        <div>
+                            <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Transferencia</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500 font-bold">$</span>
+                                <input type="number" step="0.01" min="0" x-model.number="pagos.transferencia.monto" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-[14px] font-bold focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-blue-600 font-bold mb-1">Número de Referencia *</label>
+                            <input type="text" x-model="pagos.transferencia.referencia" class="w-full px-3 py-2 border border-blue-200 bg-blue-50 rounded text-[14px] focus:outline-none focus:border-blue-400">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-5 bg-white border-t border-gray-100 flex flex-col gap-2">
+                <button @click="procesarPagoFinal()" :disabled="!pagosValidos()" :class="!pagosValidos() ? 'bg-[#1a202c]/50 text-white cursor-not-allowed' : 'bg-[#1a202c] hover:bg-black text-white shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[15px] transition-colors flex justify-center items-center gap-2">
+                    Confirmar Cobro <span class="bg-white/20 px-2 py-0.5 rounded text-[13px]" x-text="'$' + getTotalPagarInputs().toFixed(2)"></span>
+                </button>
+                <p x-show="!pagosValidos()" class="text-[11px] text-red-500 text-center font-medium">Asegúrate de que la suma coincida con el total.</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- LÓGICA ALPINE.JS PARA EL MODAL --}}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('historialApp', () => ({
+                modalPago: false,
+                id_venta_pago: null,
+                total_pago: 0,
+                pagos: {
+                    efectivo: { activo: false, monto: 0, entregado: null },
+                    tarjeta: { activo: false, monto: null },
+                    transferencia: { activo: false, monto: null, referencia: '' }
+                },
+
+                abrirPago(id, total) {
+                    this.id_venta_pago = id;
+                    this.total_pago = parseFloat(total);
+                    this.pagos = {
+                        efectivo: { activo: true, monto: this.total_pago, entregado: null },
+                        tarjeta: { activo: false, monto: null },
+                        transferencia: { activo: false, monto: null, referencia: '' }
+                    };
+                    this.modalPago = true;
+                },
+
+                autoFillPago(tipo) {
+                    if(this.pagos[tipo].activo) {
+                        let falta = this.faltaPagar();
+                        if(falta > 0) this.pagos[tipo].monto = falta;
+                    } else {
+                        this.pagos[tipo].monto = null;
+                    }
+                },
+
+                getTotalPagarInputs() {
+                    let pE = this.pagos.efectivo.activo ? parseFloat(this.pagos.efectivo.monto || 0) : 0;
+                    let pT = this.pagos.tarjeta.activo ? parseFloat(this.pagos.tarjeta.monto || 0) : 0;
+                    let pTr = this.pagos.transferencia.activo ? parseFloat(this.pagos.transferencia.monto || 0) : 0;
+                    return pE + pT + pTr;
+                },
+
+                faltaPagar() {
+                    let diff = this.total_pago - this.getTotalPagarInputs();
+                    return parseFloat(diff.toFixed(2));
+                },
+
+                pagosValidos() {
+                    if(this.faltaPagar() !== 0) return false;
+                    if(this.pagos.transferencia.activo && (!this.pagos.transferencia.referencia || this.pagos.transferencia.referencia.trim() === '')) return false;
+                    return true;
+                },
+
+                procesarPagoFinal() {
+                    if(!this.pagosValidos()) return;
+
+                    let pagosToSend = [];
+                    if(this.pagos.efectivo.activo && this.pagos.efectivo.monto > 0) {
+                        pagosToSend.push({ id_metpago: 2, monto: this.pagos.efectivo.monto, entregado: this.pagos.efectivo.entregado || this.pagos.efectivo.monto });
+                    }
+                    if(this.pagos.tarjeta.activo && this.pagos.tarjeta.monto > 0) {
+                        pagosToSend.push({ id_metpago: 1, monto: this.pagos.tarjeta.monto }); 
+                    }
+                    if(this.pagos.transferencia.activo && this.pagos.transferencia.monto > 0) {
+                        pagosToSend.push({ id_metpago: 3, monto: this.pagos.transferencia.monto, referencia: this.pagos.transferencia.referencia });
+                    }
+
+                    // Hace la petición a la nueva ruta en tu web.php
+                    fetch("{{ route('ventas.pagar') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            _token: '{{ csrf_token() }}',
+                            id_venta: this.id_venta_pago,
+                            pagos: pagosToSend
+                        })
+                    }).then(r => r.json()).then(res => {
+                        if(res.success) {
+                            this.modalPago = false;
+                            window.open('/venta/pos/ticket/' + this.id_venta_pago, 'Ticket', 'width=400,height=600');
+                            setTimeout(() => { window.location.reload(); }, 1000); // Recarga para ver el status Pagado
+                        } else {
+                            alert("Error al procesar el pago: " + res.message);
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
 </div>
 @endsection

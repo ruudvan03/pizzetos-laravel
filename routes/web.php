@@ -228,4 +228,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/venta/pos', [PuntoVentaController::class, 'index'])->name('ventas.pos');
     Route::post('/venta/pos/guardar', [PuntoVentaController::class, 'store'])->name('ventas.pos.store');
     Route::get('/venta/pos/ticket/{id}', [PuntoVentaController::class, 'ticket'])->name('ventas.pos.ticket');
+    Route::post('/venta/pagar', [PuntoVentaController::class, 'pagarOrden'])->name('ventas.pagar'); // <-- RUTA NUEVA PARA PAGOS
+
 });
