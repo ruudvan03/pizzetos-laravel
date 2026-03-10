@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Empleado extends Model
+class Empleado extends Authenticatable 
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'Empleados';
     protected $primaryKey = 'id_emp';
@@ -15,22 +16,22 @@ class Empleado extends Model
 
     protected $fillable = [
         'nombre',
-        'apellido',
+        'direccion', 
+        'telefono',
+        'id_ca',    
+        'id_suc',    
         'nickName',
-        'email',
         'password',
-        'id_suc',
-        'id_cargo',
         'status',
     ];
 
-    public function cargo()
-    {
-        return $this->belongsTo(Cargo::class, 'id_ca'); 
+    protected $hidden = ['password'];
+
+    public function cargo() {
+        return $this->belongsTo(Cargo::class, 'id_ca', 'id_ca'); 
     }
 
-    public function sucursal()
-    {
-        return $this->belongsTo(Sucursal::class, 'id_suc');
+    public function sucursal() {
+        return $this->belongsTo(Sucursal::class, 'id_suc', 'id_suc');
     }
 }

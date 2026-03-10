@@ -12,7 +12,7 @@ class EmpleadoController extends Controller
 {
     public function index()
     {
-        // Cargamos las relaciones para no saturar la base de datos
+        // Cargamos las relaciones exactas: 'Cargos' (id_ca) y 'Sucursal' (singular)
         $empleados = Empleado::with(['cargo', 'sucursal'])->get();
         return view('empleados.index', compact('empleados'));
     }
@@ -26,31 +26,37 @@ class EmpleadoController extends Controller
 
     public function store(Request $request)
     {
+        // 1. VALIDACIÓN: Eliminamos 'email' y 'apellido' porque no existen en tu SQL.
+        // Aseguramos que id_ca e id_suc apunten a las tablas correctas.
         $request->validate([
-            'nombre'   => 'required|string|max:255',
-            'apellido' => 'nullable|string|max:255',
-            'nickName' => 'required|string|unique:Empleados,nickName',
-            'email'    => 'required|email|unique:Empleados,email',
-            'telefono' => 'required',
-            'id_cargo' => 'required|exists:Cargos,id_cargo', 
-            'id_suc'   => 'required|exists:Sucursales,id_suc',
-            'password' => 'required|string|min:6',
+            'nombre'    => 'required|string|max:255',
+            'nickName'  => 'required|string|unique:Empleados,nickName',
+            'telefono'  => 'required',
+            'id_ca'     => 'required|exists:Cargos,id_ca', 
+            'id_suc'    => 'required|exists:Sucursal,id_suc',
+            'password'  => 'required|string|min:6',
         ]);
         
-        $empleado = new Empleado();
-        $empleado->nombre = $request->nombre;
-        $empleado->apellido = $request->apellido ?? '';
-        $empleado->nickName = $request->nickName;
-        $empleado->email = $request->email;
-        $empleado->telefono = $request->telefono;
-        $empleado->id_cargo = $request->id_cargo;
-        $empleado->id_suc = $request->id_suc;
-        $empleado->status = 1; // Activo por defecto
-        $empleado->password = Hash::make($request->password);
-        
-        $empleado->save();
+        try {
+            $empleado = new Empleado();
+            $empleado->nombre    = $request->nombre;
+            $empleado->direccion = $request->direccion ?? ''; // Existe en tu SQL
+            $empleado->nickName  = $request->nickName;
+            $empleado->telefono  = $request->telefono;
+            $empleado->id_ca     = $request->id_ca; 
+            $empleado->id_suc    = $request->id_suc;
+            $empleado->status    = 1; 
+            $empleado->password  = Hash::make($request->password);
+            
+            // Guardamos
+            $empleado->save();
 
-        return redirect()->route('empleados.index')->with('success', '¡Empleado registrado correctamente!');
+            return redirect()->route('empleados.index')->with('success', '¡Empleado registrado correctamente!');
+            
+        } catch (\Exception $e) {
+            // El catch te dirá exactamente qué columna falta si vuelve a fallar
+            return back()->withInput()->with('error', 'No se pudo guardar: ' . $e->getMessage());
+        }
     }
 
     public function edit($id)
@@ -66,54 +72,54 @@ class EmpleadoController extends Controller
     {
         $request->validate([
             'nombre'   => 'required|string|max:255',
-            'apellido' => 'nullable|string|max:255',
             'telefono' => 'required',
-            'id_cargo' => 'required|exists:Cargos,id_cargo',
-            'id_suc'   => 'required|exists:Sucursales,id_suc',
+            'id_ca'    => 'required|exists:Cargos,id_ca',
+            'id_suc'   => 'required|exists:Sucursal,id_suc',
             'nickName' => 'required|string|unique:Empleados,nickName,' . $id . ',id_emp',
-            'email'    => 'required|email|unique:Empleados,email,' . $id . ',id_emp',
             'password' => 'nullable|string|min:6',
         ]);
 
-        $empleado = Empleado::where('id_emp', $id)->firstOrFail();
-        
-        $empleado->nombre = $request->nombre;
-        $empleado->apellido = $request->apellido ?? '';
-        $empleado->nickName = $request->nickName;
-        $empleado->email = $request->email;
-        $empleado->telefono = $request->telefono;
-        $empleado->id_cargo = $request->id_cargo;
-        $empleado->id_suc = $request->id_suc;
+        try {
+            $empleado = Empleado::where('id_emp', $id)->firstOrFail();
+            
+            $empleado->nombre    = $request->nombre;
+            $empleado->direccion = $request->direccion ?? '';
+            $empleado->nickName  = $request->nickName;
+            $empleado->telefono  = $request->telefono;
+            $empleado->id_ca     = $request->id_ca; 
+            $empleado->id_suc    = $request->id_suc;
 
-        if ($request->filled('password')) {
-            $empleado->password = Hash::make($request->password);
+            if ($request->filled('password')) {
+                $empleado->password = Hash::make($request->password);
+            }
+
+            $empleado->save();
+
+            return redirect()->route('empleados.index')->with('success', 'Empleado actualizado con éxito');
+            
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Error al actualizar: ' . $e->getMessage());
         }
-
-        $empleado->save();
-
-        return redirect()->route('empleados.index')->with('success', 'Empleado actualizado con éxito');
     }
 
     public function destroy($id)
     {
-        $empleado = Empleado::where('id_emp', $id)->firstOrFail();
-        
-        // En sistemas de este tipo es mejor desactivar que borrar físicamente
-        // pero si deseas borrarlo:
-        $empleado->delete();
-
-        return redirect()->route('empleados.index')->with('success', 'Empleado eliminado del sistema');
+        try {
+            $empleado = Empleado::where('id_emp', $id)->firstOrFail();
+            $empleado->delete();
+            return redirect()->route('empleados.index')->with('success', 'Empleado eliminado del sistema');
+        } catch (\Exception $e) {
+            return back()->with('error', 'No se pudo eliminar el empleado.');
+        }
     }
 
     public function toggleStatus($id)
     {
         $empleado = Empleado::where('id_emp', $id)->firstOrFail();
-        
         $empleado->status = $empleado->status == 1 ? 0 : 1;
         $empleado->save();
 
         $mensaje = $empleado->status == 1 ? 'Empleado activado' : 'Empleado desactivado';
-        
         return redirect()->route('empleados.index')->with('success', $mensaje);
     }
 }
