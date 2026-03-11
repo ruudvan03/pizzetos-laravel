@@ -46,7 +46,7 @@
             {{-- IZQUIERDA: BOTONES Y PRODUCTOS FIJOS --}}
             <div class="lg:col-span-8 flex flex-col gap-2 h-full min-h-0">
                 
-                {{-- BOTONES SUPERIORES (Más compactos) --}}
+                {{-- BOTONES SUPERIORES --}}
                 <div class="flex flex-wrap gap-1.5 shrink-0">
                     <button @click="abrirPaquete(1)" class="bg-[#ffc107] text-[#212529] px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 1</button>
                     <button @click="abrirPaquete(2)" class="bg-[#ffc107] text-[#212529] px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 2</button>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
 
-                {{-- GRID PRODUCTOS (Más pequeños y con scroll invisible de seguridad) --}}
+                {{-- GRID PRODUCTOS --}}
                 <div class="flex-1 overflow-y-auto scrollbar-hide pb-2">
                     
                     {{-- Pizzas / Mariscos --}}
@@ -132,7 +132,7 @@
                 </div>
             </div>
 
-            {{-- DERECHA: CARRITO (Aquí está el único scroll visible de la vista) --}}
+            {{-- DERECHA: CARRITO --}}
             <div class="lg:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full min-h-0">
                 <div class="p-5 pb-4 border-b border-gray-100 flex justify-between items-end shrink-0">
                     <div>
@@ -145,49 +145,52 @@
                     <template x-for="(group, gIdx) in cartGroups" :key="group.id_grupo">
                         <div>
                             
-                            {{-- TARJETAS PARA PIZZAS AGRUPADAS --}}
+                            {{-- NUEVO DISEÑO PARA PIZZAS AGRUPADAS (Discreto, sin textos promocionales) --}}
                             <template x-if="group.type === 'pizza_pair'">
-                                <div class="bg-white border border-gray-200 rounded-[8px] shadow-sm mb-4">
-                                    <div class="bg-gray-100 border-b border-gray-200 px-4 py-2.5 rounded-t-[8px] flex justify-between items-center">
-                                        <h3 class="font-bold text-[#212529] text-[13px]" x-text="'Pizzas Tamaño ' + group.size"></h3>
-                                        <span class="font-bold text-[11px] bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600" x-text="group.items.length + ' Pizza(s)'"></span>
+                                <div class="bg-white border-2 border-amber-400 rounded-xl shadow-sm mb-4 overflow-hidden">
+                                    
+                                    {{-- HEADER DEL CUADRO --}}
+                                    <div class="bg-amber-400 px-4 py-2.5 flex justify-between items-center">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                            <h3 class="font-black text-black text-[14px]" x-text="'Pizzas ' + group.size"></h3>
+                                        </div>
+                                        <button @click="eliminarGrupo(group)" class="text-black/60 hover:text-red-700 bg-amber-300/50 hover:bg-amber-300 p-1.5 rounded-md transition-colors" title="Borrar grupo completo">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
                                     </div>
                                     
-                                    <div class="p-4 space-y-4">
-                                        <template x-for="p in group.items" :key="p.item.uid">
-                                            <div class="relative border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                                                <div class="flex justify-between items-start w-full">
+                                    {{-- PIZZAS INDEPENDIENTES ADENTRO --}}
+                                    <div class="p-3 space-y-3">
+                                        <template x-for="(p, idx) in group.items" :key="p.item.uid">
+                                            <div class="relative border border-gray-200 bg-white rounded-lg p-3 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+                                                
+                                                <div class="flex justify-between items-start mb-3">
                                                     <div class="pr-8">
-                                                        <h4 class="font-black text-[#212529] text-[14px] leading-tight mb-0.5" x-text="p.item.variante || p.item.nombre_base"></h4>
-                                                        <p class="text-[12px] text-gray-500 font-medium" x-text="p.item.nombre_base"></p>
+                                                        <h4 class="font-black text-[#212529] text-[15px] leading-tight" x-text="p.item.variante || p.item.nombre_base"></h4>
                                                     </div>
-                                                    <button @click="eliminarItemByUid(p.item.uid)" class="text-[#dc3545] hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded absolute right-0 top-0 transition-colors">
-                                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 10-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+
+                                                    <button @click="eliminarItemByUid(p.item.uid)" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-1.5 rounded transition-colors absolute right-3 top-3">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                     </button>
                                                 </div>
 
-                                                <div class="flex items-center justify-between mt-2 mb-2">
-                                                    <div class="flex items-center bg-[#e9ecef] rounded border border-gray-200">
-                                                        <button @click="eliminarItemByUid(p.item.uid)" class="w-7 h-7 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center">-</button>
-                                                        <span class="w-8 h-7 flex justify-center items-center font-bold text-[#212529] bg-white border-x border-gray-200 text-[13px]">1</span>
-                                                        <button @click="clonePizza(p.item)" class="w-7 h-7 font-bold text-[#495057] hover:bg-gray-300 flex items-center justify-center">+</button>
-                                                    </div>
-                                                    <span class="text-[12px] text-[#6c757d] font-medium" x-text="'Base: $' + parseFloat(p.price).toFixed(2)"></span>
-                                                </div>
-
-                                                <div class="flex justify-between items-end mt-2">
-                                                    <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer w-max bg-gray-50 px-2 py-1 rounded border border-gray-100 hover:bg-gray-100">
-                                                        <input type="checkbox" :checked="p.item.orilla_queso" @change="toggleOrilla(p.item.uid, $event.target.checked)" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-3.5 h-3.5">
-                                                        Orilla Queso <span class="font-bold text-[#fd7e14]" x-text="'+$' + p.item.precio_orilla"></span>
+                                                {{-- CHECKBOX ORILLA INDEPENDIENTE --}}
+                                                <div class="flex justify-between items-center pt-2.5 border-t border-gray-100">
+                                                    <label class="flex items-center gap-2 text-[13px] font-bold text-gray-600 cursor-pointer hover:text-[#fd7e14] transition-colors">
+                                                        <input type="checkbox" :checked="p.item.orilla_queso" @change="toggleOrilla(p.item.uid, $event.target.checked)" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-4 h-4">
+                                                        Orilla Queso <span class="text-[#fd7e14]" x-text="'+$' + p.item.precio_orilla"></span>
                                                     </label>
-                                                    <span class="text-[14px] font-black text-[#212529]" x-text="'$' + p.item.precioFinal.toFixed(2)"></span>
+                                                    <span class="text-[16px] font-black text-[#212529]" x-text="'$' + p.item.precioFinal.toFixed(2)"></span>
                                                 </div>
                                             </div>
                                         </template>
                                     </div>
-                                    <div class="px-4 py-3 bg-gray-50 text-right border-t border-gray-200 rounded-b-[8px]">
+
+                                    {{-- TOTAL DEL GRUPO --}}
+                                    <div class="px-4 py-3 bg-gray-50 text-right border-t border-gray-200">
                                         <span class="text-gray-500 text-[12px] font-bold uppercase mr-2 tracking-wider">Subtotal:</span>
-                                        <span class="font-black text-[#212529] text-[18px]" x-text="'$' + group.subtotal.toFixed(2)"></span>
+                                        <span class="font-black text-[#212529] text-[20px]" x-text="'$' + group.subtotal.toFixed(2)"></span>
                                     </div>
                                 </div>
                             </template>
@@ -215,7 +218,6 @@
                                         <span class="text-[12px] text-[#495057] block font-bold whitespace-pre-wrap" x-text="group.item.variante"></span>
                                     </div>
 
-                                    {{-- Opcion de Orilla Queso exclusiva para la Magno --}}
                                     <template x-if="group.item.is_magno">
                                         <label class="flex items-center gap-2 text-[12px] text-[#495057] cursor-pointer mt-2 w-max bg-white px-2 py-1 rounded border border-gray-200 shadow-sm hover:bg-gray-50">
                                             <input type="checkbox" x-model="group.item.orilla_queso" @change="recalc()" class="rounded border-gray-300 text-[#fd7e14] focus:ring-[#fd7e14] w-3.5 h-3.5">
@@ -223,7 +225,6 @@
                                         </label>
                                     </template>
 
-                                    {{-- Opcion de Orillas Extra para Paquetes --}}
                                     <template x-if="group.item.tipo === 'paq'">
                                         <div class="flex items-center justify-between mt-2 bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
                                             <span class="text-[12px] text-[#495057] font-bold">Orillas Rellenas <span class="text-[#fd7e14]">(+$<span x-text="group.item.precio_orilla"></span> c/u)</span></span>
@@ -262,7 +263,6 @@
                         <input type="text" x-model="nombreClienteMesa" placeholder="Nombre cliente *" class="w-2/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[14px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
                     </div>
 
-                    {{-- SPLIT BUTTON EXACTO --}}
                     <div class="flex h-[45px] relative" x-data="{ openServicio: false }">
                         
                         <button @click="openServicio = !openServicio" class="w-[45%] h-full bg-[#fd7e14] hover:bg-[#e36b0c] text-white font-bold text-[14px] flex justify-between items-center px-4 rounded-l-[6px] border-r border-[#e36b0c] transition-colors shadow-sm">
@@ -270,7 +270,6 @@
                                 <svg x-show="servicio === 3" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                                 <svg x-show="servicio === 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 <svg x-show="servicio === 2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                                
                                 <span x-text="nomServicio()"></span>
                             </div>
                             <svg class="w-3.5 h-3.5 transition-transform" :class="openServicio ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
@@ -640,75 +639,85 @@
             </div>
         </div>
 
-        {{-- MODAL DOMICILIO --}}
+        {{-- MODAL DOMICILIO (TOTALMENTE REDISEÑADO CON LISTA PERMANENTE) --}}
         <div x-show="modalCliente" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-xl shadow-2xl w-[650px] flex flex-col max-h-[90vh] overflow-hidden">
-                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h2 class="text-2xl font-black text-gray-800 flex items-center gap-3">
-                        <svg class="w-7 h-7 text-[#fd7e14]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+            <div class="bg-white rounded-xl shadow-2xl w-[900px] max-w-[95vw] flex flex-col max-h-[95vh] overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+                    <h2 class="text-3xl font-black text-gray-800 flex items-center gap-3">
+                        <svg class="w-8 h-8 text-[#fd7e14]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                         Dirección de Entrega
                     </h2>
-                    <button @click="modalCliente = false" class="text-gray-400 hover:text-black font-bold text-3xl leading-none">&times;</button>
+                    <button @click="modalCliente = false" class="text-gray-400 hover:text-black font-bold text-4xl leading-none">&times;</button>
                 </div>
                 
-                <div class="flex-1 overflow-y-auto p-8 bg-white space-y-8">
+                <div class="flex-1 overflow-y-auto p-8 lg:p-10 bg-white space-y-8">
                     
                     <div class="relative">
-                        <label class="block text-[16px] font-bold text-gray-700 mb-3">Buscar Cliente *</label>
-                        <div class="flex gap-3">
-                            <div class="relative flex-1" @click.away="showClientesList = false">
-                                <input type="text" 
-                                       x-model="searchClienteText" 
-                                       @click="showClientesList = true"
-                                       @input="showClientesList = true; clienteSeleccionado = null" 
-                                       @focus="showClientesList = true" 
-                                       placeholder="Toca aquí para ver o buscar clientes..." 
-                                       autocomplete="off"
-                                       class="w-full border-2 border-gray-300 rounded-[8px] py-4 px-5 text-[18px] font-medium focus:border-[#fd7e14] focus:ring-4 focus:ring-orange-100 focus:outline-none transition-all">
-                                
-                                <div x-show="showClientesList" 
-                                     x-transition 
-                                     class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-[8px] shadow-2xl max-h-80 overflow-y-auto">
-                                    
-                                    <template x-if="getClientesFiltrados().length === 0">
-                                        <div class="px-5 py-8 text-[16px] text-gray-500 italic text-center bg-gray-50">
-                                            No se encontraron clientes en la base de datos.<br><span class="font-bold">Haz clic en "Nuevo" para registrarlo.</span>
-                                        </div>
-                                    </template>
-
-                                    <template x-for="cl in getClientesFiltrados()" :key="cl.id_cliente || cl.id_clie || Math.random()">
-                                        <div @click="seleccionarCliente(cl)" class="px-6 py-5 hover:bg-orange-50 cursor-pointer border-b border-gray-100 last:border-0 flex justify-between items-center transition-colors">
-                                            <span class="font-bold text-[18px] text-gray-800" x-text="getClienteNombre(cl)"></span>
-                                            <span class="text-[15px] text-gray-600 font-bold bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-md shadow-sm" x-text="getClienteTelefono(cl)"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                            <button @click="toggleFormNuevoCliente()" class="bg-[#ffc107] hover:bg-[#e0a800] text-black font-black px-6 py-4 rounded-[8px] text-[16px] flex items-center gap-2 shadow-sm whitespace-nowrap transition-colors">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path></svg>
-                                Nuevo
+                        
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="block text-[18px] font-bold text-gray-700">Seleccionar Cliente *</label>
+                            <button x-show="!clienteFormVisible && !clienteSeleccionado" @click="toggleFormNuevoCliente()" class="bg-[#ffc107] hover:bg-[#e0a800] text-black font-black px-6 py-2.5 rounded-[8px] text-[16px] flex items-center gap-2 shadow-sm whitespace-nowrap transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path></svg>
+                                Nuevo Cliente
                             </button>
                         </div>
-                        
-                        <div x-show="clienteSeleccionado && !clienteFormVisible" class="mt-4 bg-green-50 border border-green-200 p-5 rounded-[8px] flex justify-between items-center transition-all">
-                            <div>
-                                <span class="font-black text-[20px] text-green-800 block" x-text="getClienteNombre(clienteSeleccionado)"></span>
-                                <span class="text-[16px] text-green-600 font-bold block mt-1" x-text="'Tel: ' + getClienteTelefono(clienteSeleccionado)"></span>
-                            </div>
-                            <button @click="clienteSeleccionado = null; direccionesCliente = []; dirSeleccionada = null; searchClienteText='';" class="text-red-500 bg-red-50 px-4 py-2 rounded font-bold hover:bg-red-100 transition-colors">Cambiar Cliente</button>
-                        </div>
-                    </div>
 
-                    <div x-show="clienteFormVisible" class="bg-gray-50 p-6 rounded-[8px] border border-gray-200 space-y-4">
-                        <h4 class="font-black text-[18px] text-gray-800 border-b border-gray-200 pb-3">Registrar Nuevo Cliente</h4>
-                        <div>
-                            <label class="block text-[15px] font-bold text-gray-600 mb-2">Nombre *</label>
-                            <input type="text" x-model="nuevoClienteData.nombre" class="w-full border border-gray-300 rounded-[8px] py-3 px-4 text-[16px] focus:border-[#fd7e14] focus:outline-none">
+                        {{-- VISTA DE BÚSQUEDA Y LISTA (Solo si no hay cliente seleccionado ni form de nuevo) --}}
+                        <div x-show="!clienteSeleccionado && !clienteFormVisible" class="space-y-3">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input type="text" 
+                                       x-model="searchClienteText" 
+                                       placeholder="Escribe el nombre o teléfono del cliente..." 
+                                       autocomplete="off"
+                                       class="w-full border-2 border-gray-300 rounded-[8px] py-4 pl-12 pr-5 text-[20px] font-medium focus:border-[#fd7e14] focus:ring-4 focus:ring-orange-100 focus:outline-none transition-all">
+                            </div>
+                            
+                            {{-- LISTA DE CLIENTES PERMANENTE --}}
+                            <div class="bg-white border border-gray-200 rounded-[8px] shadow-inner max-h-[300px] overflow-y-auto">
+                                <template x-if="getClientesFiltrados().length === 0">
+                                    <div class="px-5 py-8 text-[16px] text-gray-500 italic text-center bg-gray-50">
+                                        No se encontraron clientes en la base de datos.<br><span class="font-bold">Haz clic en "Nuevo Cliente" para registrarlo.</span>
+                                    </div>
+                                </template>
+
+                                <template x-for="cl in getClientesFiltrados()" :key="cl.id_cliente || cl.id_clie || Math.random()">
+                                    <div @click="seleccionarCliente(cl)" class="px-6 py-4 hover:bg-orange-50 cursor-pointer border-b border-gray-100 last:border-0 flex justify-between items-center transition-colors">
+                                        <span class="font-bold text-[18px] text-gray-800" x-text="getClienteNombre(cl)"></span>
+                                        <span class="text-[15px] text-gray-600 font-bold bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-md shadow-sm" x-text="getClienteTelefono(cl)"></span>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[15px] font-bold text-gray-600 mb-2">Teléfono</label>
-                            <input type="text" x-model="nuevoClienteData.telefono" class="w-full border border-gray-300 rounded-[8px] py-3 px-4 text-[16px] focus:border-[#fd7e14] focus:outline-none">
+
+                        {{-- ESTADO CLIENTE SELECCIONADO --}}
+                        <div x-show="clienteSeleccionado && !clienteFormVisible" class="bg-green-50 border border-green-200 p-6 rounded-[8px] flex justify-between items-center transition-all">
+                            <div>
+                                <span class="text-[13px] font-bold text-green-600 uppercase tracking-wider mb-1 block">Cliente Seleccionado</span>
+                                <span class="font-black text-[24px] text-green-800 block leading-none" x-text="getClienteNombre(clienteSeleccionado)"></span>
+                                <span class="text-[18px] text-green-700 font-bold block mt-2" x-text="'Tel: ' + getClienteTelefono(clienteSeleccionado)"></span>
+                            </div>
+                            <button @click="clienteSeleccionado = null; direccionesCliente = []; dirSeleccionada = null; searchClienteText='';" class="text-red-600 bg-red-100 px-6 py-3 rounded-lg font-bold hover:bg-red-200 transition-colors text-[16px]">Cambiar Cliente</button>
                         </div>
+
+                        {{-- FORMULARIO NUEVO CLIENTE --}}
+                        <div x-show="clienteFormVisible" class="bg-gray-50 p-6 rounded-[8px] border border-gray-200 space-y-4">
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                                <h4 class="font-black text-[18px] text-gray-800">Registrar Nuevo Cliente</h4>
+                                <button @click="toggleFormNuevoCliente()" class="text-gray-500 hover:text-red-500 font-bold text-[15px] bg-white border border-gray-300 px-3 py-1.5 rounded">Cancelar</button>
+                            </div>
+                            <div>
+                                <label class="block text-[15px] font-bold text-gray-600 mb-2">Nombre *</label>
+                                <input type="text" x-model="nuevoClienteData.nombre" class="w-full border border-gray-300 rounded-[8px] py-3 px-4 text-[16px] focus:border-[#fd7e14] focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[15px] font-bold text-gray-600 mb-2">Teléfono</label>
+                                <input type="text" x-model="nuevoClienteData.telefono" class="w-full border border-gray-300 rounded-[8px] py-3 px-4 text-[16px] focus:border-[#fd7e14] focus:outline-none">
+                            </div>
+                        </div>
+
                     </div>
 
                     <div x-show="clienteSeleccionado || clienteFormVisible" class="pt-6 border-t border-gray-200 transition-all">
@@ -770,7 +779,7 @@
 
                 </div>
 
-                <div class="p-6 flex gap-4 bg-gray-50 border-t border-gray-200">
+                <div class="p-6 flex gap-4 bg-gray-50 border-t border-gray-200 shrink-0">
                     <button @click="modalCliente = false" class="flex-1 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-4 rounded-[8px] text-[18px] transition-colors">Cancelar</button>
                     <button @click="confirmarDomicilio()" :disabled="!esDomicilioValido()" :class="!esDomicilioValido() ? 'bg-[#ced4da] text-white cursor-not-allowed' : 'bg-[#fd7e14] hover:bg-[#e36b0c] text-white shadow-md'" class="flex-1 font-black py-4 rounded-[8px] text-[18px] transition-colors">Confirmar Dirección</button>
                 </div>
@@ -1275,18 +1284,19 @@
                     if(idx > -1) this.cart[idx].orilla_queso = checked;
                     this.actualizarCarrito();
                 },
-                clonePizza(item) {
-                    let clone = JSON.parse(JSON.stringify(item));
-                    clone.uid = this.generateUID();
-                    clone.orilla_queso = false; 
-                    this.cart.push(clone);
-                    this.actualizarCarrito();
-                },
+                
                 eliminarItemByUid(uid) {
                     let idx = this.cart.findIndex(c => c.uid === uid);
                     if(idx > -1) this.cart.splice(idx, 1);
                     this.actualizarCarrito();
                 },
+
+                eliminarGrupo(group) {
+                    let uidsToRemove = group.items.map(p => p.item.uid);
+                    this.cart = this.cart.filter(cItem => !uidsToRemove.includes(cItem.uid));
+                    this.actualizarCarrito();
+                },
+
                 updateNormalQty(item, mod) {
                     let idx = this.cart.findIndex(c => c.uid === item.uid);
                     if(idx > -1) {
@@ -1455,7 +1465,6 @@
                             this.mesa = ''; this.nombreClienteMesa = ''; this.comentariosGenerales = '';
                             this.modalPago = false;
                             
-                            // Imprime el ticket y luego de 1 segundo regresa al historial para evitar bugs
                             window.open('/venta/pos/ticket/' + res.id_venta, 'Ticket', 'width=400,height=600'); 
                             if(this.id_venta_edit) {
                                 setTimeout(() => { window.location.href = "{{ route('ventas.resume') }}"; }, 1000);
