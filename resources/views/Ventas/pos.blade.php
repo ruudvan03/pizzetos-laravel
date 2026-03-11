@@ -39,35 +39,36 @@
         const dbDirecciones = Array.isArray(rawDirs) ? rawDirs : Object.values(rawDirs || {});
     </script>
 
-    <div class="w-full min-h-[90vh] bg-[#f8f9fa] p-4 lg:p-6 font-sans text-[#212529]" x-data="posApp()">
+    <div class="w-full h-[calc(100vh-95px)] bg-[#f8f9fa] font-sans text-[#212529] flex flex-col overflow-hidden" x-data="posApp()">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
             
-            <div class="lg:col-span-8 flex flex-col gap-5">
+            {{-- IZQUIERDA: BOTONES Y PRODUCTOS FIJOS --}}
+            <div class="lg:col-span-8 flex flex-col gap-2 h-full min-h-0">
                 
-                {{-- BOTONES SUPERIORES --}}
-                <div class="flex flex-wrap gap-2">
-                    <button @click="abrirPaquete(1)" class="bg-[#ffc107] text-[#212529] px-5 py-2 rounded-md text-[14px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 1</button>
-                    <button @click="abrirPaquete(2)" class="bg-[#ffc107] text-[#212529] px-5 py-2 rounded-md text-[14px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 2</button>
-                    <button @click="abrirPaquete(3)" class="bg-[#ffc107] text-[#212529] px-5 py-2 rounded-md text-[14px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 3</button>
-                    <button @click="modalIngredientes = true" class="bg-[#fd7e14] text-white px-5 py-2 rounded-md text-[14px] font-bold shadow-sm hover:brightness-95 transition-colors">Por Ingrediente</button>
-                    <button @click="modalMitades = true; mitSel = []; mitTam = null;" class="bg-[#dc3545] text-white px-5 py-2 rounded-md text-[14px] font-bold shadow-sm hover:brightness-95 transition-colors">Mitad y Mitad</button>
+                {{-- BOTONES SUPERIORES (Más compactos) --}}
+                <div class="flex flex-wrap gap-1.5 shrink-0">
+                    <button @click="abrirPaquete(1)" class="bg-[#ffc107] text-[#212529] px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 1</button>
+                    <button @click="abrirPaquete(2)" class="bg-[#ffc107] text-[#212529] px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 2</button>
+                    <button @click="abrirPaquete(3)" class="bg-[#ffc107] text-[#212529] px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Paquete 3</button>
+                    <button @click="modalIngredientes = true" class="bg-[#fd7e14] text-white px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Por Ingrediente</button>
+                    <button @click="modalMitades = true; mitSel = []; mitTam = null;" class="bg-[#dc3545] text-white px-3 py-1.5 rounded-md text-[12px] font-bold shadow-sm hover:brightness-95 transition-colors">Mitad y Mitad</button>
                 </div>
 
                 {{-- BARRA DE CATEGORÍAS --}}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-col xl:flex-row justify-between items-center gap-4">
-                    <div class="flex flex-wrap gap-1.5 items-center w-full xl:w-auto">
-                        <button @click="cat = 12; view = 'pizzas'" :class="cat === 12 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Pizzas</button>
-                        <button @click="cat = 2; view = 'pizzas'" :class="cat === 2 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Mariscos</button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-1.5 flex flex-col xl:flex-row justify-between items-center gap-2 shrink-0">
+                    <div class="flex flex-wrap gap-1 items-center w-full xl:w-auto">
+                        <button @click="cat = 12; view = 'pizzas'" :class="cat === 12 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors">Pizzas</button>
+                        <button @click="cat = 2; view = 'pizzas'" :class="cat === 2 ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors">Mariscos</button>
                         
-                        <button @click="abrirRectangularGeneral()" :class="modalRectangular ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Rectangular</button>
-                        <button @click="abrirBarraGeneral()" :class="modalBarra ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors">Barra</button>
+                        <button @click="abrirRectangularGeneral()" :class="modalRectangular ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors">Rectangular</button>
+                        <button @click="abrirBarraGeneral()" :class="modalBarra ? 'bg-[#fd7e14] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors">Barra</button>
                         
                         {{-- MENÚ EXTRAS --}}
                         <div class="relative" x-data="{ openExtras: false }">
-                            <button @click="openExtras = !openExtras" :class="dbCategoriasExtras.map(c=>c.id_cat).includes(cat) || cat === 1 ? 'bg-[#adb5bd] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-5 py-2 rounded-md text-[13px] font-bold transition-colors flex items-center gap-1">
+                            <button @click="openExtras = !openExtras" :class="dbCategoriasExtras.map(c=>c.id_cat).includes(cat) || cat === 1 ? 'bg-[#adb5bd] text-white shadow-sm' : 'bg-[#e9ecef] text-[#495057] hover:bg-[#dee2e6]'" class="px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors flex items-center gap-1">
                                 Extras 
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
                             <div x-show="openExtras" @click.away="openExtras = false" x-cloak class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-y-auto">
                                 
@@ -76,54 +77,53 @@
                                         cat = parseInt(catEx.id_cat); 
                                         view = 'otros'; 
                                         openExtras = false;
-                                    " class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50" x-text="catEx.descripcion"></button>
+                                    " class="w-full text-left px-3 py-2 text-[11px] font-bold text-[#495057] hover:bg-gray-50" x-text="catEx.descripcion"></button>
                                 </template>
 
-                                <button @click="cat = 1; view = 'bebidas'; openExtras = false;" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Refrescos</button>
-                                <button @click="abrirMagnoGeneral(); openExtras = false" class="w-full text-left px-4 py-2.5 text-[13px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Magno</button>
+                                <button @click="cat = 1; view = 'bebidas'; openExtras = false;" class="w-full text-left px-3 py-2 text-[11px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Refrescos</button>
+                                <button @click="abrirMagnoGeneral(); openExtras = false" class="w-full text-left px-3 py-2 text-[11px] font-bold text-[#495057] hover:bg-gray-50 border-t border-gray-100">Magno</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="relative w-full xl:w-[220px]">
-                        <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <div class="relative w-full xl:w-[180px]">
+                        <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-400">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </span>
-                        <input type="text" x-model="search" placeholder="Buscar producto..." class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-md text-[13px] focus:outline-none focus:border-[#fd7e14]">
+                        <input type="text" x-model="search" placeholder="Buscar..." class="w-full pl-7 pr-2 py-1 border border-gray-200 rounded-md text-[11px] focus:outline-none focus:border-[#fd7e14]">
                     </div>
                 </div>
 
-                {{-- GRID PRODUCTOS --}}
-                <div class="overflow-y-auto max-h-[65vh] pb-10 scrollbar-hide pr-1">
+                {{-- GRID PRODUCTOS (Más pequeños y con scroll invisible de seguridad) --}}
+                <div class="flex-1 overflow-y-auto scrollbar-hide pb-2">
                     
                     {{-- Pizzas / Mariscos --}}
-                    <div x-show="view === 'pizzas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div x-show="view === 'pizzas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 content-start pr-1">
                         <template x-for="p in getListaTamanos()" :key="p.nombre">
-                            <button @click="abrirOpciones(p)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-[#ffc107] p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
-                                <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
-                                <span class="text-[#fd7e14] text-[13px] font-bold flex items-center gap-1">Ver opciones <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                            <button @click="abrirOpciones(p)" class="bg-white rounded-lg shadow-sm border border-gray-100 border-l-[3px] border-l-[#ffc107] px-2.5 py-2 flex flex-col justify-between items-start text-left h-[60px] hover:shadow-md transition">
+                                <span class="font-bold text-[#212529] text-[11px] leading-tight truncate w-full" x-text="p.nombre"></span>
+                                <span class="text-[#fd7e14] text-[10px] font-bold flex items-center gap-1 mt-auto">Opciones <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
                             </button>
                         </template>
                     </div>
 
                     {{-- Bebidas --}}
-                    <div x-show="view === 'bebidas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" x-cloak>
+                    <div x-show="view === 'bebidas'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 content-start pr-1" x-cloak>
                         <template x-for="b in getListaBebidas()" :key="'beb_'+b.nombre">
-                            <button @click="abrirBebida(b)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-[#17a2b8] p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
-                                <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="b.nombre"></span>
-                                <span class="text-[#17a2b8] text-[13px] font-bold flex items-center gap-1">Elegir tamaño <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                            <button @click="abrirBebida(b)" class="bg-white rounded-lg shadow-sm border border-gray-100 border-l-[3px] border-l-[#17a2b8] px-2.5 py-2 flex flex-col justify-between items-start text-left h-[60px] hover:shadow-md transition">
+                                <span class="font-bold text-[#212529] text-[11px] leading-tight truncate w-full" x-text="b.nombre"></span>
+                                <span class="text-[#17a2b8] text-[10px] font-bold flex items-center gap-1 mt-auto">Elegir tamaño <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
                             </button>
                         </template>
                     </div>
 
                     {{-- Otros Productos (Hamburguesas, etc) --}}
-                    <div x-show="view === 'otros'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mt-4" x-cloak>
+                    <div x-show="view === 'otros'" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 content-start mt-1 pr-1" x-cloak>
                         <template x-for="p in getListaDirectos()" :key="p.id">
-                            <button @click="addDirecto(p)" class="bg-white rounded-[10px] shadow-sm border border-gray-100 border-l-[4px] border-l-blue-400 p-5 flex flex-col justify-between items-start text-left h-[105px] hover:shadow-md transition">
-                                <span class="font-bold text-[#212529] text-[15px] leading-tight" x-text="p.nombre"></span>
+                            <button @click="addDirecto(p)" class="bg-white rounded-lg shadow-sm border border-gray-100 border-l-[3px] border-l-blue-400 px-2.5 py-2 flex flex-col justify-between items-start text-left h-[60px] hover:shadow-md transition">
+                                <span class="font-bold text-[#212529] text-[11px] leading-tight truncate w-full" x-text="p.nombre"></span>
                                 <div class="flex items-center gap-1 mt-auto">
-                                    <span class="text-gray-400 text-[12px]">Precio</span>
-                                    <span class="text-[#fd7e14] text-[16px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
+                                    <span class="text-[#fd7e14] text-[12px] font-black" x-text="'$' + parseFloat(p.precio).toFixed(2)"></span>
                                 </div>
                             </button>
                         </template>
@@ -132,11 +132,12 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[calc(100vh-2rem)] sticky top-4">
-                <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-end">
+            {{-- DERECHA: CARRITO (Aquí está el único scroll visible de la vista) --}}
+            <div class="lg:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full min-h-0">
+                <div class="p-5 pb-4 border-b border-gray-100 flex justify-between items-end shrink-0">
                     <div>
-                        <h2 class="text-[24px] font-black text-[#212529] leading-none" x-text="id_venta_edit ? 'Editando #' + id_venta_edit : 'Pedido Actual'"></h2>
-                        <p x-show="cartGroups.length === 0" class="text-[#6c757d] text-[14px] mt-1.5">Sin productos en el carrito</p>
+                        <h2 class="text-[20px] font-black text-[#212529] leading-none" x-text="id_venta_edit ? 'Editando #' + id_venta_edit : 'Pedido Actual'"></h2>
+                        <p x-show="cartGroups.length === 0" class="text-[#6c757d] text-[13px] mt-1.5">Sin productos en el carrito</p>
                     </div>
                 </div>
 
@@ -245,52 +246,52 @@
                 </div>
 
                 {{-- ZONA COBRO FINAL Y SELECTOR DE SERVICIO DINAMICO --}}
-                <div class="p-6 border-t border-gray-200 bg-white rounded-b-xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                    <div class="flex justify-between items-center font-black text-[#212529] mb-4">
+                <div class="p-4 border-t border-gray-200 bg-white rounded-b-xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0">
+                    <div class="flex justify-between items-center font-black text-[#212529] mb-3">
                         <span class="text-[16px]">Total:</span>
                         <span x-text="'$' + getTotal().toFixed(2)" class="text-[26px]"></span>
                     </div>
 
-                    <button @click="modalComentarios = true" class="w-full bg-[#f8f9fa] border border-gray-200 hover:bg-[#e9ecef] text-[#212529] py-3 rounded-[6px] font-bold text-[15px] flex justify-center items-center gap-2 mb-4 transition-colors">
+                    <button @click="modalComentarios = true" class="w-full bg-[#f8f9fa] border border-gray-200 hover:bg-[#e9ecef] text-[#212529] py-2.5 rounded-[6px] font-bold text-[14px] flex justify-center items-center gap-2 mb-3 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         Agregar comentarios
                     </button>
 
-                    <div class="mb-4 h-11 flex gap-2" x-show="servicio === 1" x-cloak>
-                        <input type="number" x-model="mesa" placeholder="Mesa #" class="w-1/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[15px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
-                        <input type="text" x-model="nombreClienteMesa" placeholder="Nombre cliente *" class="w-2/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[15px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
+                    <div class="mb-3 h-10 flex gap-2" x-show="servicio === 1" x-cloak>
+                        <input type="number" x-model="mesa" placeholder="Mesa #" class="w-1/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[14px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
+                        <input type="text" x-model="nombreClienteMesa" placeholder="Nombre cliente *" class="w-2/3 h-full bg-white border border-gray-300 rounded-[6px] py-2 px-3 text-[14px] font-bold focus:outline-none focus:border-[#fd7e14] shadow-sm">
                     </div>
 
-                    {{-- SPLIT BUTTON EXACTO SIN EMOJIS --}}
-                    <div class="flex h-[50px] relative" x-data="{ openServicio: false }">
+                    {{-- SPLIT BUTTON EXACTO --}}
+                    <div class="flex h-[45px] relative" x-data="{ openServicio: false }">
                         
-                        <button @click="openServicio = !openServicio" class="w-[45%] h-full bg-[#fd7e14] hover:bg-[#e36b0c] text-white font-bold text-[15px] flex justify-between items-center px-4 rounded-l-[6px] border-r border-[#e36b0c] transition-colors shadow-sm">
+                        <button @click="openServicio = !openServicio" class="w-[45%] h-full bg-[#fd7e14] hover:bg-[#e36b0c] text-white font-bold text-[14px] flex justify-between items-center px-4 rounded-l-[6px] border-r border-[#e36b0c] transition-colors shadow-sm">
                             <div class="flex items-center gap-2">
-                                <svg x-show="servicio === 3" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                <svg x-show="servicio === 1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <svg x-show="servicio === 2" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                <svg x-show="servicio === 3" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                                <svg x-show="servicio === 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg x-show="servicio === 2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                 
                                 <span x-text="nomServicio()"></span>
                             </div>
-                            <svg class="w-4 h-4 transition-transform" :class="openServicio ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg class="w-3.5 h-3.5 transition-transform" :class="openServicio ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
                         <div x-show="openServicio" @click.away="openServicio = false" x-cloak class="absolute bottom-full left-0 w-[240px] mb-2 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 py-1">
-                            <button @click="servicio = 3; openServicio = false" class="w-full text-left px-5 py-4 text-[15px] flex items-center gap-3 transition-colors border-b border-gray-100" :class="servicio === 3 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                            <button @click="servicio = 3; openServicio = false" class="w-full text-left px-5 py-3 text-[14px] flex items-center gap-3 transition-colors border-b border-gray-100" :class="servicio === 3 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                                 A Domicilio
                             </button>
-                            <button @click="servicio = 1; openServicio = false" class="w-full text-left px-5 py-4 text-[15px] flex items-center gap-3 transition-colors border-b border-gray-100" :class="servicio === 1 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <button @click="servicio = 1; openServicio = false" class="w-full text-left px-5 py-3 text-[14px] flex items-center gap-3 transition-colors border-b border-gray-100" :class="servicio === 1 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Comer Aqui
                             </button>
-                            <button @click="servicio = 2; openServicio = false" class="w-full text-left px-5 py-4 text-[15px] flex items-center gap-3 transition-colors" :class="servicio === 2 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                            <button @click="servicio = 2; openServicio = false" class="w-full text-left px-5 py-3 text-[14px] flex items-center gap-3 transition-colors" :class="servicio === 2 ? 'text-[#fd7e14] font-black bg-orange-50' : 'text-[#495057] font-bold hover:bg-gray-50'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                 Para Llevar
                             </button>
                         </div>
 
-                        <button @click="procesarOrden()" :disabled="cart.length === 0" :class="cart.length === 0 ? 'bg-[#fd7e14]/60 text-white cursor-not-allowed' : 'bg-[#fd7e14] hover:bg-[#e36b0c] text-white'" class="flex-1 font-black text-[16px] rounded-r-[6px] transition-colors shadow-sm">
+                        <button @click="procesarOrden()" :disabled="cart.length === 0" :class="cart.length === 0 ? 'bg-[#fd7e14]/60 text-white cursor-not-allowed' : 'bg-[#fd7e14] hover:bg-[#e36b0c] text-white'" class="flex-1 font-black text-[15px] rounded-r-[6px] transition-colors shadow-sm">
                             <span x-text="id_venta_edit ? 'Guardar Cambios' : 'Enviar Orden'"></span>
                         </button>
 
@@ -299,7 +300,7 @@
             </div>
         </div>
 
-        {{-- MODALES DE PRODUCTOS Y PAGOS OCULTOS ... (No hay cambios visuales en estos modales, se mantienen igual) --}}
+        {{-- MODALES DE PRODUCTOS Y PAGOS OCULTOS --}}
         
         {{-- MODAL OPCIONES NORMAL --}}
         <div x-show="modalOpc" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">

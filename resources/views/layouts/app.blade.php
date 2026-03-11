@@ -237,33 +237,32 @@
             </div>
         </aside>
 
-        <header class="w-full bg-white border-b border-gray-100 sticky top-0 z-30 px-8 py-8">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-8">
-                    <button @click="sidebarOpen = true" class="p-4 bg-amber-400 rounded-2xl shadow-lg hover:scale-110 transition-transform active:scale-95">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+        <header class="w-full bg-white border-b border-gray-100 sticky top-0 z-30 px-6 py-3">
+            <div class="max-w-[1600px] mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <button @click="sidebarOpen = true" class="p-2.5 bg-amber-400 rounded-xl shadow-sm hover:scale-105 transition-transform active:scale-95">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"/>
                         </svg>
                     </button>
                     <div>
-                        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] mb-1 italic">By Ollintem</h2>
-                        <p class="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none"></p>
+                        <h2 class="text-[9px] font-black text-gray-400 uppercase tracking-[0.4em] mb-0 italic">By Ollintem</h2>
                     </div>
                 </div>
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4">
                     <div class="text-right hidden sm:block">
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-[0.4em] leading-none mb-1">Usuario Activo</p>
-                        <p class="text-lg font-black text-gray-900 uppercase italic tracking-tighter leading-none">{{ Auth::user()->nombre }}</p>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] leading-none mb-1">Usuario Activo</p>
+                        <p class="text-sm font-black text-gray-900 uppercase italic tracking-tighter leading-none">{{ Auth::user()->nombre }}</p>
                     </div>
-                    <div class="w-14 h-14 bg-amber-400 rounded-2xl shadow-inner flex items-center justify-center font-black text-xl italic border-4 border-white shadow-lg">
+                    <div class="w-10 h-10 bg-amber-400 rounded-xl shadow-inner flex items-center justify-center font-black text-base italic border-[3px] border-white shadow-md">
                         {{ substr(Auth::user()->nombre, 0, 1) }}
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 p-12">
-            <div class="max-w-7xl mx-auto">
+        <main class="flex-1 p-4 lg:p-6 flex flex-col">
+            <div class="max-w-[1600px] w-full mx-auto h-full flex flex-col">
                 @yield('content')
             </div>
         </main>
