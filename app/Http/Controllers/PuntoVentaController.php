@@ -20,7 +20,7 @@ class PuntoVentaController extends Controller
 
     public function index(Request $request)
     {
-        $id_sucursal = 1; 
+        $id_sucursal = 1; // <-- FORZAMOS SUCURSAL 1 (MIRAFLORES) PARA CAJA ÚNICA
         $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
 
         $pizzas_raw = DB::table('Pizzas')->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')->join('TamanosPizza', 'Pizzas.id_tamano', '=', 'TamanosPizza.id_tamañop')->select('Especialidades.nombre', 'TamanosPizza.tamano', 'TamanosPizza.precio', 'Pizzas.id_pizza')->get();
@@ -44,6 +44,7 @@ class PuntoVentaController extends Controller
         $paquetes = DB::table('Paquetes')->get();
         $ingredientes = DB::table('Ingredientes')->get();
         
+        // --- AQUÍ ESTÁ EL ARREGLO PARA QUE SALGAN LOS TAMAÑOS ---
         $tamanos_base = DB::table('TamanosPizza')
             ->whereIn('tamano', ['Chica', 'Mediana', 'Grande', 'Familiar', 'CHICA', 'MEDIANA', 'GRANDE', 'FAMILIAR'])
             ->orWhere('tamano', 'like', '%Especial%')
@@ -124,7 +125,7 @@ class PuntoVentaController extends Controller
     {
         try {
             DB::beginTransaction();
-            $id_sucursal = 1; 
+            $id_sucursal = 1; // <-- FORZAMOS SUCURSAL 1 (MIRAFLORES) PARA CAJA ÚNICA
             $cajaAbierta = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->first();
             if(!$cajaAbierta) throw new \Exception("No hay caja abierta.");
 
@@ -493,17 +494,29 @@ class PuntoVentaController extends Controller
 
     public function cancelarPedido(Request $request)
     {
-        $venta = DB::table('Venta')->where('id_venta', $request->id_venta)->first();
-        if(!$venta) return response()->json(['success' => false, 'message' => 'Venta no encontrada']);
+        try {
+            DB::beginTransaction();
+            $venta = DB::table('Venta')->where('id_venta', $request->id_venta)->first();
+            if(!$venta) {
+                return response()->json(['success' => false, 'message' => 'Venta no encontrada']);
+            }
 
-        $nuevoComentario = $venta->comentarios . " | CANCELADO - Motivo: " . $request->motivo;
+            $nuevoComentario = $venta->comentarios . " | CANCELADO - Motivo: " . $request->motivo;
 
-        DB::table('Venta')->where('id_venta', $request->id_venta)->update([
-            'status' => 3, 
-            'comentarios' => $nuevoComentario
-        ]);
+            DB::table('Venta')->where('id_venta', $request->id_venta)->update([
+                'status' => 3, 
+                'comentarios' => $nuevoComentario
+            ]);
 
-        return response()->json(['success' => true]);
+            // ELIMINAR LOS PAGOS para que no cuenten en los ingresos (corte de caja)
+            DB::table('Pago')->where('id_venta', $request->id_venta)->delete();
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function editarPago(Request $request)

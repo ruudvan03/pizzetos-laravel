@@ -88,8 +88,8 @@
                                 }
                             }
                         @endphp
-                        <tr class="hover:bg-gray-50 transition-colors {{ $venta->status == 3 ? 'bg-red-50/50 opacity-75' : '' }}">
-                            <td class="px-6 py-4 font-bold text-gray-900">#{{ $venta->id_venta }}</td>
+                        <tr class="transition-colors {{ $venta->status == 3 ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50' }}">
+                            <td class="px-6 py-4 font-bold {{ $venta->status == 3 ? 'text-red-700' : 'text-gray-900' }}">#{{ $venta->id_venta }}</td>
                             <td class="px-6 py-4 text-gray-500 whitespace-nowrap">{{ \Carbon\Carbon::parse($venta->fecha_hora)->format('d/m/Y h:i A') }}</td>
                             
                             <td class="px-6 py-4 font-bold text-blue-600 whitespace-nowrap">{{ $usuarioVenta }}</td>
@@ -125,7 +125,7 @@
                                 </span>
                             </td>
 
-                            <td class="px-6 py-4 font-black text-green-600">${{ number_format($venta->total, 2) }}</td>
+                            <td class="px-6 py-4 font-black {{ $venta->status == 3 ? 'text-red-500 line-through' : 'text-green-600' }}">${{ number_format($venta->total, 2) }}</td>
                             
                             <td class="px-6 py-4 text-center flex flex-col items-center gap-1.5">
                                 @if($venta->status == 0)
@@ -133,7 +133,7 @@
                                 @elseif($venta->status == 1)
                                     <span class="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs">Pagado</span>
                                 @elseif($venta->status == 3)
-                                    <span class="bg-red-100 text-red-600 font-bold px-3 py-1 rounded-full text-xs">Cancelado</span>
+                                    <span class="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-xs shadow-sm">Cancelado</span>
                                 @else
                                     <span class="bg-gray-100 text-gray-500 font-bold px-3 py-1 rounded-full text-xs">Desconocido</span>
                                 @endif
@@ -145,34 +145,34 @@
                                 @endif
                             </td>
 
-                            <td class="px-6 py-4 flex items-center justify-center gap-3">
-                                
-                                @if($venta->status != 3)
-                                    @if($venta->status == 0)
-                                        <a href="/venta/pos?edit={{ $venta->id_venta }}" title="Editar Pedido" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                        </a>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center gap-3">
+                                    @if($venta->status != 3)
+                                        @if($venta->status == 0)
+                                            <a href="/venta/pos?edit={{ $venta->id_venta }}" title="Editar Pedido" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                            </a>
 
-                                        <button @click="abrirPago({{ $venta->id_venta }}, {{ $venta->total }}, false)" title="Pagar Cuenta" class="text-green-600 hover:text-green-800 bg-green-50 p-1.5 rounded transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                            <button @click="abrirPago({{ $venta->id_venta }}, {{ $venta->total }}, false)" title="Pagar Cuenta" class="text-green-600 hover:text-green-800 bg-green-50 p-1.5 rounded transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                            </button>
+                                        @endif
+
+                                        @if($venta->status == 1)
+                                            <button @click="abrirPago({{ $venta->id_venta }}, {{ $venta->total }}, true)" title="Editar Método de Pago" class="text-amber-600 hover:text-amber-800 bg-amber-50 p-1.5 rounded transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                            </button>
+                                        @endif
+
+                                        <button @click="abrirCancelar({{ $venta->id_venta }})" title="Cancelar Pedido" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     @endif
 
-                                    @if($venta->status == 1)
-                                        <button @click="abrirPago({{ $venta->id_venta }}, {{ $venta->total }}, true)" title="Editar Método de Pago" class="text-amber-600 hover:text-amber-800 bg-amber-50 p-1.5 rounded transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                                        </button>
-                                    @endif
-
-                                    <button @click="abrirCancelar({{ $venta->id_venta }})" title="Cancelar Pedido" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                @endif
-
-                                <a href="/venta/pos/ticket/{{ $venta->id_venta }}" target="_blank" title="Reimprimir Ticket" class="text-gray-500 hover:text-gray-800 bg-gray-100 p-1.5 rounded transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                                </a>
-
+                                    <a href="/venta/pos/ticket/{{ $venta->id_venta }}" target="_blank" title="Reimprimir Ticket" class="text-gray-500 hover:text-gray-800 bg-gray-100 p-1.5 rounded transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -189,7 +189,7 @@
                 <button @click="modalCancelar = false" class="hover:text-white/80 font-black text-2xl leading-none">&times;</button>
             </div>
             <div class="p-6 bg-white space-y-4">
-                <p class="text-gray-600 text-[14px]">Esta acción anulará el ticket y no sumará al corte de caja. Por favor, ingresa el motivo:</p>
+                <p class="text-gray-600 text-[14px]">Esta acción anulará el ticket y el dinero se restará de los ingresos. Por favor, ingresa el motivo:</p>
                 <textarea x-model="motivo_cancelacion" rows="3" placeholder="Ej: El cliente se fue, pedido duplicado..." class="w-full border border-gray-300 rounded p-3 text-sm focus:outline-none focus:border-red-500"></textarea>
             </div>
             <div class="p-5 bg-gray-50 border-t border-gray-100 flex gap-3">
@@ -290,7 +290,7 @@
                 isProcessing: false,
                 motivo_cancelacion: '',
                 pagos: {
-                    efectivo: { activo: false, monto: 0, entregado: null },
+                    efectivo: { activo: false, monto: null, entregado: null },
                     tarjeta: { activo: false, monto: null },
                     transferencia: { activo: false, monto: null, referencia: '' }
                 },
@@ -319,7 +319,7 @@
                     this.es_edicion_pago = esEdicion;
                     this.isProcessing = false;
                     this.pagos = {
-                        efectivo: { activo: true, monto: this.total_pago, entregado: null },
+                        efectivo: { activo: false, monto: null, entregado: null },
                         tarjeta: { activo: false, monto: null },
                         transferencia: { activo: false, monto: null, referencia: '' }
                     };
@@ -348,6 +348,7 @@
                 
                 pagosValidos() { 
                     if (this.faltaPagar() !== 0) return false;
+                    if(!this.pagos.efectivo.activo && !this.pagos.tarjeta.activo && !this.pagos.transferencia.activo) return false;
                     if (this.pagos.transferencia.activo && (!this.pagos.transferencia.referencia || this.pagos.transferencia.referencia.trim() === '')) return false;
                     return true;
                 },
