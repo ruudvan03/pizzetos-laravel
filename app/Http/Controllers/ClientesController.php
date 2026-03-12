@@ -4,126 +4,95 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ClientesController extends Controller
 {
+    /**
+     * Lista todos los clientes activos.
+     */
     public function index()
     {
-        $clientes = DB::table('clientes')->orderBy('id_clie', 'desc')->get();
-        
-        $todasDirecciones = DB::table('direcciones')
-            ->where('status', 1)
-            ->get()
-            ->groupBy('id_clie');
-
-        return view('clientes.index', compact('clientes', 'todasDirecciones'));
+        $clientes = DB::table('Clientes')->where('status', 1)->get();
+        return view('Clientes.index', compact('clientes'));
     }
 
-    public function create()
-    {
-        return view('clientes.create');
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'telefono' => 'required|string|max:20'
-        ]);
-
-        $id_clie = DB::table('clientes')->insertGetId([
-            'nombre' => $request->nombre,
-            'apellido' => $request->apellido,
-            'telefono' => $request->telefono,
-            'status' => 1,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        if ($request->filled('calle')) {
-            DB::table('direcciones')->insert([
-                'id_clie' => $id_clie,
-                'calle' => $request->calle,
-                'manzana' => $request->manzana,
-                'lote' => $request->lote,
-                'colonia' => $request->colonia,
-                'referencia' => $request->referencia,
-                'status' => 1
-            ]);
-        }
-
-        return redirect()->route('clientes.index')->with('success', 'Cliente guardado exitosamente.');
-    }
-
+    /**
+     * Muestra el formulario de edición.
+     */
     public function edit($id)
     {
-        $cliente = DB::table('clientes')->where('id_clie', $id)->first();
-        $direcciones = DB::table('direcciones')->where('id_clie', $id)->where('status', 1)->get();
+        // Buscamos por id_clie que es tu llave primaria
+        $cliente = DB::table('Clientes')->where('id_clie', $id)->first();
         
-        return view('clientes.edit', compact('cliente', 'direcciones'));
+        if (!$cliente) {
+            return redirect()->route('clientes.index')->with('error', 'Cliente no encontrado');
+        }
+
+        // Traemos sus direcciones relacionadas
+        $direcciones = DB::table('Direcciones')
+            ->where('id_clie', $id)
+            ->where('status', 1)
+            ->get();
+        
+        return view('Clientes.edit', compact('cliente', 'direcciones'));
     }
 
+    /**
+     * Procesa la actualización del cliente y sus múltiples direcciones.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
             'telefono' => 'required|string|max:20'
         ]);
-        
-        DB::table('clientes')->where('id_clie', $id)->update([
-            'nombre' => $request->nombre,
-            'apellido' => $request->apellido,
-            'telefono' => $request->telefono,
-            'updated_at' => Carbon::now()
-        ]);
 
-        if ($request->has('direcciones')) {
-            foreach ($request->direcciones as $id_dir => $dirData) {
-                DB::table('direcciones')->where('id_dir', $id_dir)->update([
-                    'calle' => $dirData['calle'],
-                    'manzana' => $dirData['manzana'],
-                    'lote' => $dirData['lote'],
-                    'colonia' => $dirData['colonia'],
-                    'referencia' => $dirData['referencia']
-                ]);
+        try {
+            DB::beginTransaction();
+
+            // 1. Actualizar datos básicos del cliente
+            // NOTA: No incluimos updated_at porque la tabla no tiene esa columna
+            DB::table('Clientes')->where('id_clie', $id)->update([
+                'nombre'   => $request->nombre,
+                'apellido' => $request->apellido,
+                'telefono' => $request->telefono
+            ]);
+
+            // 2. Actualizar cada dirección que se editó en el formulario
+            if ($request->has('direcciones')) {
+                foreach ($request->direcciones as $id_dir => $dirData) {
+                    DB::table('Direcciones')->where('id_dir', $id_dir)->update([
+                        'calle'      => $dirData['calle'],
+                        'manzana'    => $dirData['manzana'] ?? '',
+                        'lote'       => $dirData['lote'] ?? '',
+                        'colonia'    => $dirData['colonia'] ?? '',
+                        'referencia' => $dirData['referencia'] ?? ''
+                    ]);
+                }
             }
+
+            DB::commit();
+            return redirect()->route('clientes.index')->with('success', 'Cliente y direcciones actualizados correctamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Si hay un error, regresamos con el mensaje exacto para saber qué pasó
+            return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
         }
-        
-        return redirect()->route('clientes.index')->with('success', 'Cliente actualizado exitosamente.');
     }
 
-    public function storeDireccion(Request $request, $id)
-    {
-        DB::table('direcciones')->insert([
-            'id_clie' => $id,
-            'calle' => $request->calle,
-            'manzana' => $request->manzana,
-            'lote' => $request->lote,
-            'colonia' => $request->colonia,
-            'referencia' => $request->referencia,
-            'status' => 1
-        ]);
-        return back()->with('success', 'Dirección agregada exitosamente.');
-    }
-
-    public function destroyDireccion($id)
-    {
-        DB::table('direcciones')->where('id_dir', $id)->update(['status' => 0]); 
-        return back()->with('success', 'Dirección eliminada.');
-    }
-
-    // Desactivar cliente
+    /**
+     * Realiza un borrado lógico del cliente.
+     */
     public function destroy($id)
     {
-        DB::table('clientes')->where('id_clie', $id)->update(['status' => 0]); 
-        return redirect()->route('clientes.index')->with('success', 'Cliente desactivado exitosamente');
-    }
-
-    // Activar cliente
-    public function activar($id)
-    {
-        DB::table('clientes')->where('id_clie', $id)->update(['status' => 1]); 
-        return redirect()->route('clientes.index')->with('success', 'Cliente activado exitosamente');
+        try {
+            // Borrado lógico cambiando status a 0
+            DB::table('Clientes')->where('id_clie', $id)->update(['status' => 0]);
+            
+            return redirect()->route('clientes.index')->with('success', 'Cliente eliminado correctamente');
+        } catch (\Exception $e) {
+            return back()->with('error', 'No se pudo eliminar el cliente.');
+        }
     }
 }
