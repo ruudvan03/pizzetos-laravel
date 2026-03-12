@@ -148,9 +148,7 @@
         </div>
     @endif
 
-    {{-- ======================================================= --}}
-    {{-- MODAL CANCELAR PEDIDO                                   --}}
-    {{-- ======================================================= --}}
+    {{-- MODAL CANCELAR PEDIDO --}}
     <div x-show="modalCancelar" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-[400px] max-w-full flex flex-col overflow-hidden" @click.away="modalCancelar = false">
             <div class="bg-red-600 p-5 flex justify-between items-center text-white">
@@ -168,9 +166,7 @@
         </div>
     </div>
 
-    {{-- ======================================================= --}}
-    {{-- MODAL MULTIPAGO RÁPIDO (Y EDICIÓN DE PAGO)              --}}
-    {{-- ======================================================= --}}
+    {{-- MODAL MULTIPAGO RÁPIDO (Y EDICIÓN DE PAGO) --}}
     <div x-show="modalPago" x-cloak class="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-[450px] max-w-full flex flex-col h-auto max-h-[90vh] overflow-hidden" @click.away="modalPago = false">
             <div :class="es_edicion_pago ? 'bg-blue-600' : 'bg-green-600'" class="p-5 flex justify-between items-center text-white relative">
@@ -196,6 +192,16 @@
                         <div>
                             <label class="block text-[12px] text-gray-500 mb-1">Monto a cobrar con Efectivo</label>
                             <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.monto" class="w-full border border-gray-300 rounded px-3 py-2 text-[14px] font-bold focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-green-600 font-bold mb-1">¿Con cuánto paga el cliente?</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-green-600 font-bold">$</span>
+                                <input type="number" step="0.01" min="0" x-model.number="pagos.efectivo.entregado" placeholder="Monto entregado" class="w-full pl-7 pr-3 py-2 border border-green-200 bg-green-50 rounded text-[14px] font-bold focus:outline-none focus:border-green-400">
+                            </div>
+                            <p x-show="pagos.efectivo.entregado > 0 && (pagos.efectivo.entregado - pagos.efectivo.monto) >= 0" class="text-[12px] text-gray-600 mt-2 font-bold bg-white p-2 rounded border border-gray-100 shadow-sm text-center">
+                                Su cambio: <span class="text-green-600 text-[16px]"> $<span x-text="(pagos.efectivo.entregado - pagos.efectivo.monto).toFixed(2)"></span></span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -233,8 +239,9 @@
             </div>
 
             <div class="p-5 bg-white border-t border-gray-100 flex flex-col gap-2">
-                <button @click="procesarPagoFinal()" :disabled="!pagosValidos()" :class="!pagosValidos() ? 'bg-[#1a202c]/50 text-white cursor-not-allowed' : 'bg-[#1a202c] hover:bg-black text-white shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[15px] transition-colors">
-                    <span x-text="es_edicion_pago ? 'Guardar Nuevo Pago' : 'Confirmar Cobro'"></span>
+                <button @click="procesarPagoFinal()" :disabled="!pagosValidos() || isProcessing" :class="(!pagosValidos() || isProcessing) ? 'bg-[#1a202c]/50 text-white cursor-not-allowed' : 'bg-[#1a202c] hover:bg-black text-white shadow-md'" class="w-full font-bold py-3.5 rounded-[8px] text-[15px] transition-colors">
+                    <span x-show="!isProcessing" x-text="es_edicion_pago ? 'Guardar Nuevo Pago' : 'Confirmar Cobro'"></span>
+                    <span x-show="isProcessing">Procesando...</span>
                 </button>
             </div>
         </div>
@@ -249,6 +256,7 @@
                 id_venta_cancelar: null,
                 total_pago: 0,
                 es_edicion_pago: false,
+                isProcessing: false,
                 motivo_cancelacion: '',
                 pagos: {
                     efectivo: { activo: false, monto: 0, entregado: null },
@@ -265,10 +273,12 @@
                 procesarCancelacion() {
                     if(!this.motivo_cancelacion.trim()) return alert("Por favor, ingresa el motivo de la cancelación.");
                     fetch("{{ route('ventas.cancelar') }}", {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify({ _token: '{{ csrf_token() }}', id_venta: this.id_venta_cancelar, motivo: this.motivo_cancelacion })
                     }).then(r => r.json()).then(res => {
                         if(res.success) { window.location.reload(); } else { alert("Error: " + res.message); }
+                    }).catch(e => {
+                        alert("Hubo un error al cancelar. Intenta recargar la página.");
                     });
                 },
 
@@ -276,6 +286,7 @@
                     this.id_venta_pago = id;
                     this.total_pago = parseFloat(total);
                     this.es_edicion_pago = esEdicion;
+                    this.isProcessing = false;
                     this.pagos = {
                         efectivo: { activo: true, monto: this.total_pago, entregado: null },
                         tarjeta: { activo: false, monto: null },
@@ -301,26 +312,49 @@
                 },
 
                 faltaPagar() { return parseFloat((this.total_pago - this.getTotalPagarInputs()).toFixed(2)); },
-                pagosValidos() { return this.faltaPagar() === 0; },
+                
+                pagosValidos() { 
+                    if(this.faltaPagar() !== 0) return false;
+                    if(this.pagos.transferencia.activo && (!this.pagos.transferencia.referencia || this.pagos.transferencia.referencia.trim() === '')) return false;
+                    return true;
+                },
 
                 procesarPagoFinal() {
                     if(!this.pagosValidos()) return;
+                    this.isProcessing = true;
+                    
                     let pagosToSend = [];
-                    if(this.pagos.efectivo.activo && this.pagos.efectivo.monto > 0) pagosToSend.push({ id_metpago: 2, monto: this.pagos.efectivo.monto });
-                    if(this.pagos.tarjeta.activo && this.pagos.tarjeta.monto > 0) pagosToSend.push({ id_metpago: 1, monto: this.pagos.tarjeta.monto }); 
-                    if(this.pagos.transferencia.activo && this.pagos.transferencia.monto > 0) pagosToSend.push({ id_metpago: 3, monto: this.pagos.transferencia.monto, referencia: this.pagos.transferencia.referencia });
+                    if(this.pagos.efectivo.activo && this.pagos.efectivo.monto > 0) {
+                        pagosToSend.push({ id_metpago: 2, monto: this.pagos.efectivo.monto, entregado: this.pagos.efectivo.entregado || this.pagos.efectivo.monto });
+                    }
+                    if(this.pagos.tarjeta.activo && this.pagos.tarjeta.monto > 0) {
+                        pagosToSend.push({ id_metpago: 1, monto: this.pagos.tarjeta.monto }); 
+                    }
+                    if(this.pagos.transferencia.activo && this.pagos.transferencia.monto > 0) {
+                        pagosToSend.push({ id_metpago: 3, monto: this.pagos.transferencia.monto, referencia: this.pagos.transferencia.referencia });
+                    }
 
                     let url = this.es_edicion_pago ? "{{ route('ventas.editar_pago') }}" : "{{ route('ventas.pagar') }}";
 
                     fetch(url, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify({ _token: '{{ csrf_token() }}', id_venta: this.id_venta_pago, pagos: pagosToSend })
-                    }).then(r => r.json()).then(res => {
+                    }).then(async r => {
+                        if(!r.ok) { throw new Error("Error del servidor: " + r.status); }
+                        return r.json();
+                    }).then(res => {
                         if(res.success) {
                             this.modalPago = false;
                             if(!this.es_edicion_pago) window.open('/venta/pos/ticket/' + this.id_venta_pago, 'Ticket', 'width=400,height=600');
                             setTimeout(() => { window.location.reload(); }, 1000);
-                        } else { alert("Error: " + res.message); }
+                        } else { 
+                            alert("Error al procesar: " + res.message); 
+                            this.isProcessing = false;
+                        }
+                    }).catch(e => {
+                        alert("Ocurrió un error. Intenta de nuevo.\n" + e.message);
+                        this.isProcessing = false;
                     });
                 }
             }));
