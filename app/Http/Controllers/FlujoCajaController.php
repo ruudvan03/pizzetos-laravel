@@ -11,11 +11,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class FlujoCajaController extends Controller
 {
     /**
-     * Muestra el panel de control de caja con nombres de cliente claros.
+     * Muestra el panel de control de caja con lógica de nombres de cliente claros y cuadre exacto.
      */
     public function index()
     {
-        $id_sucursal = 1;
+        $id_sucursal = 1; // SUCURSAL MIRAFLORES
         
         $cajaAbierta = DB::table('Caja')
             ->leftJoin('Empleados', 'Caja.id_emp', '=', 'Empleados.id_emp')
@@ -28,7 +28,7 @@ class FlujoCajaController extends Controller
             return view('Ventas.flujo_caja', ['cajaAbierta' => null]);
         }
 
-        // 1. GASTOS DETALLADOS
+        // 1. GASTOS DETALLADOS (Blindado contra falta de id_emp)
         try {
             $gastos_detalle = DB::table('Gastos')
                 ->leftJoin('Empleados', 'Gastos.id_emp', '=', 'Empleados.id_emp')
@@ -43,14 +43,14 @@ class FlujoCajaController extends Controller
         }
         $total_gastos = $gastos_detalle->sum('precio');
 
-        // 2. VENTAS CON LÓGICA DE NOMBRES PARA LA VISTA
+        // 2. VENTAS CON LÓGICA DE NOMBRES Y DESGLOSE
         $ventas_detalle = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
             ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
             ->where('Venta.id_caja', $cajaAbierta->id_caja)
             ->select(
                 'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 'Venta.mesa', 'Venta.tipo_servicio',
-                // Lógica: 1=Mesa, 2=Para Llevar, 3=Domicilio
+                // Traducción de servicios a nombres legibles
                 DB::raw("CASE 
                     WHEN Venta.tipo_servicio = 2 THEN 'PARA LLEVAR'
                     WHEN Venta.tipo_servicio = 1 THEN CONCAT('MESA ', COALESCE(Venta.mesa, ''), ' - ', COALESCE(Venta.nombreClie, 'CLIENTE'))
@@ -60,11 +60,14 @@ class FlujoCajaController extends Controller
                 DB::raw("GROUP_CONCAT(COALESCE(Pago.referencia, 'S/R') SEPARATOR ' / ') as referencias"),
                 DB::raw("GROUP_CONCAT(CONCAT(MetodosPago.metodo, ': $', Pago.monto) SEPARATOR ' + ') as montos_detalle")
             )
-            ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 'Venta.nombreClie', 'Venta.mesa', 'Venta.tipo_servicio')
+            ->groupBy(
+                'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 
+                'Venta.nombreClie', 'Venta.mesa', 'Venta.tipo_servicio'
+            )
             ->orderBy('Venta.id_venta', 'desc')
             ->get();
 
-        // 3. TOTALES POR MÉTODO
+        // 3. TOTALES POR MÉTODO (Para las Cards superiores)
         $pagos = DB::table('Pago')
             ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
             ->join('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
@@ -74,8 +77,11 @@ class FlujoCajaController extends Controller
             ->groupBy('MetodosPago.metodo')
             ->pluck('total_monto', 'metodo');
 
+        // Mapeo exacto de variables para evitar error Undefined Key en la Vista
         $stats = [
             'num_ventas' => $ventas_detalle->where('status', '!=', 3)->count(),
+            'num_pedidos' => $ventas_detalle->where('status', '!=', 3)->count(),
+            'venta_total_bruta' => $ventas_detalle->where('status', '!=', 3)->sum('total'),
             'venta_total' => $ventas_detalle->where('status', '!=', 3)->sum('total'),
             'total_gastos' => $total_gastos,
             'efectivo_ventas' => $pagos['Efectivo'] ?? 0,
@@ -83,13 +89,14 @@ class FlujoCajaController extends Controller
             'transferencia' => $pagos['Transferencia'] ?? 0,
         ];
 
+        // LÓGICA DE CUADRE: Efectivo Real = (Ventas Efectivo - Gastos)
         $stats['efectivo_real_en_sobre'] = $stats['efectivo_ventas'] - $stats['total_gastos'];
 
         return view('Ventas.flujo_caja', compact('cajaAbierta', 'stats', 'ventas_detalle', 'gastos_detalle'));
     }
 
     /**
-     * Reporte PDF de Cierre con nombres corregidos.
+     * Reporte PDF de Cierre con nombres corregidos y mapeo de variables.
      */
     public function descargarPdf($id)
     {
@@ -174,12 +181,13 @@ class FlujoCajaController extends Controller
     public function abrirCaja(Request $request)
     {
         $request->validate(['monto_inicial' => 'required|numeric|min:0']);
-        if(DB::table('Caja')->where('status', 1)->where('id_suc', 1)->exists()) return redirect()->back()->with('error', 'Caja abierta.');
+        if(DB::table('Caja')->where('status', 1)->where('id_suc', 1)->exists()) return redirect()->back()->with('error', 'Turno ya activo.');
+
         DB::table('Caja')->insert([
             'id_suc' => 1, 'id_emp' => Auth::user()->id_emp, 'fecha_apertura' => Carbon::now(),
             'monto_inicial' => $request->monto_inicial, 'status' => 1, 'observaciones_apertura' => $request->observaciones ?? 'Apertura'
         ]);
-        return redirect()->route('flujo.caja.index')->with('success', 'Turno iniciado.');
+        return redirect()->route('flujo.caja.index')->with('success', 'Turno iniciado correctamente.');
     }
 
     public function cerrarCaja(Request $request, $id)
