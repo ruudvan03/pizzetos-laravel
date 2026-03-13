@@ -11,11 +11,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class FlujoCajaController extends Controller
 {
     /**
-     * Muestra el panel de control de caja actual o la vista de apertura.
+     * Muestra el panel de control de caja con nombres de cliente claros.
      */
     public function index()
     {
-        $id_sucursal = 1; // <-- FORZAMOS SUCURSAL 1 (MIRAFLORES) PARA CAJA ÚNICA
+        $id_sucursal = 1;
         
         $cajaAbierta = DB::table('Caja')
             ->leftJoin('Empleados', 'Caja.id_emp', '=', 'Empleados.id_emp')
@@ -28,80 +28,138 @@ class FlujoCajaController extends Controller
             return view('Ventas.flujo_caja', ['cajaAbierta' => null]);
         }
 
-        // Estadísticas iniciales
-        $stats = [
-            'num_ventas' => 0, 
-            'total_gastos' => 0, 
-            'venta_total' => 0, 
-            'efectivo' => 0,      // Solo ventas en efectivo
-            'tarjeta' => 0,       // Solo ventas en tarjeta
-            'transferencia' => 0,  // Solo ventas en transferencia
-            'monto_esperado_cajon' => 0 // Fondo + Efectivo - Gastos
-        ];
+        // 1. GASTOS DETALLADOS
+        try {
+            $gastos_detalle = DB::table('Gastos')
+                ->leftJoin('Empleados', 'Gastos.id_emp', '=', 'Empleados.id_emp')
+                ->where('id_caja', $cajaAbierta->id_caja)
+                ->select('Gastos.*', 'Empleados.nickName as responsable')
+                ->get();
+        } catch (\Exception $e) {
+            $gastos_detalle = DB::table('Gastos')
+                ->where('id_caja', $cajaAbierta->id_caja)
+                ->select('Gastos.*', DB::raw("'N/A' as responsable"))
+                ->get();
+        }
+        $total_gastos = $gastos_detalle->sum('precio');
 
-        // 1. Obtener Gastos de esta caja
-        $gastos_detalle = DB::table('Gastos')->where('id_caja', $cajaAbierta->id_caja)->get();
-        $stats['total_gastos'] = $gastos_detalle->sum('precio');
-
-        // 2. Obtener Ventas con MÚLTIPLES MÉTODOS DE PAGO (Corregido para ONLY_FULL_GROUP_BY)
+        // 2. VENTAS CON LÓGICA DE NOMBRES PARA LA VISTA
         $ventas_detalle = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
             ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
             ->where('Venta.id_caja', $cajaAbierta->id_caja)
             ->select(
-                'Venta.id_venta',
-                'Venta.fecha_hora',
-                'Venta.total',
-                'Venta.status',
-                'Venta.tipo_servicio',
-                'Venta.mesa',
-                'Venta.nombreClie',
+                'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 'Venta.mesa', 'Venta.tipo_servicio',
+                // Lógica: 1=Mesa, 2=Para Llevar, 3=Domicilio
+                DB::raw("CASE 
+                    WHEN Venta.tipo_servicio = 2 THEN 'PARA LLEVAR'
+                    WHEN Venta.tipo_servicio = 1 THEN CONCAT('MESA ', COALESCE(Venta.mesa, ''), ' - ', COALESCE(Venta.nombreClie, 'CLIENTE'))
+                    ELSE COALESCE(Venta.nombreClie, 'DOMICILIO')
+                END as nombre_cliente_formateado"),
                 DB::raw("GROUP_CONCAT(MetodosPago.metodo SEPARATOR ', ') as metodos_pago"),
-                DB::raw("GROUP_CONCAT(CONCAT('$', Pago.monto) SEPARATOR ' + ') as montos_detalle")
+                DB::raw("GROUP_CONCAT(COALESCE(Pago.referencia, 'S/R') SEPARATOR ' / ') as referencias"),
+                DB::raw("GROUP_CONCAT(CONCAT(MetodosPago.metodo, ': $', Pago.monto) SEPARATOR ' + ') as montos_detalle")
             )
-            ->groupBy(
-                'Venta.id_venta',
-                'Venta.fecha_hora',
-                'Venta.total',
-                'Venta.status',
-                'Venta.tipo_servicio',
-                'Venta.mesa',
-                'Venta.nombreClie'
-            ) 
+            ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 'Venta.nombreClie', 'Venta.mesa', 'Venta.tipo_servicio')
             ->orderBy('Venta.id_venta', 'desc')
             ->get();
-        
-        // 2.1 Estadísticas IGNORANDO cancelados (status = 3)
-        $ventasValidas = $ventas_detalle->where('status', '!=', 3);
-        $stats['num_ventas'] = $ventasValidas->count();
-        $stats['venta_total'] = $ventasValidas->sum('total');
 
-        // 3. Desglose preciso por método de pago para las tarjetas informativas superiores
+        // 3. TOTALES POR MÉTODO
         $pagos = DB::table('Pago')
             ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
             ->join('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
             ->where('Venta.id_caja', $cajaAbierta->id_caja)
+            ->where('Venta.status', '!=', 3) 
             ->select('MetodosPago.metodo', DB::raw('SUM(Pago.monto) as total_monto'))
             ->groupBy('MetodosPago.metodo')
             ->pluck('total_monto', 'metodo');
 
-        $stats['efectivo'] = $pagos['Efectivo'] ?? 0;
-        $stats['tarjeta'] = $pagos['Tarjeta'] ?? 0;
-        $stats['transferencia'] = $pagos['Transferencia'] ?? 0;
+        $stats = [
+            'num_ventas' => $ventas_detalle->where('status', '!=', 3)->count(),
+            'venta_total' => $ventas_detalle->where('status', '!=', 3)->sum('total'),
+            'total_gastos' => $total_gastos,
+            'efectivo_ventas' => $pagos['Efectivo'] ?? 0,
+            'tarjeta' => $pagos['Tarjeta'] ?? 0,
+            'transferencia' => $pagos['Transferencia'] ?? 0,
+        ];
 
-        // 4. Lógica de "Dinero en Cajón" (Fondo + Ventas Efectivo - Gastos)
-        $stats['monto_esperado_cajon'] = ($cajaAbierta->monto_inicial + $stats['efectivo']) - $stats['total_gastos'];
+        $stats['efectivo_real_en_sobre'] = $stats['efectivo_ventas'] - $stats['total_gastos'];
 
         return view('Ventas.flujo_caja', compact('cajaAbierta', 'stats', 'ventas_detalle', 'gastos_detalle'));
     }
 
     /**
-     * Muestra el historial de cajas cerradas.
+     * Reporte PDF de Cierre con nombres corregidos.
      */
+    public function descargarPdf($id)
+    {
+        $caja = DB::table('Caja')
+            ->leftJoin('Empleados', 'Caja.id_emp', '=', 'Empleados.id_emp')
+            ->select('Caja.*', 'Empleados.nickName as responsable_apertura')
+            ->where('id_caja', $id)->first();
+
+        if (!$caja) abort(404);
+
+        try {
+            $gastos = DB::table('Gastos')
+                ->leftJoin('Empleados', 'Gastos.id_emp', '=', 'Empleados.id_emp')
+                ->where('id_caja', $id)
+                ->select('Gastos.*', 'Empleados.nickName as responsable')
+                ->get();
+        } catch (\Exception $e) {
+            $gastos = DB::table('Gastos')
+                ->where('id_caja', $id)
+                ->select('Gastos.*', DB::raw("'N/A' as responsable"))
+                ->get();
+        }
+
+        $ventas = DB::table('Venta')
+            ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
+            ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
+            ->where('Venta.id_caja', $id)
+            ->where('Venta.status', '!=', 3)
+            ->select(
+                'Venta.id_venta', 'Venta.total', 
+                DB::raw("CASE 
+                    WHEN Venta.tipo_servicio = 2 THEN 'PARA LLEVAR'
+                    WHEN Venta.tipo_servicio = 1 THEN CONCAT('MESA ', COALESCE(Venta.mesa, ''), ' - ', COALESCE(Venta.nombreClie, 'CLIENTE'))
+                    ELSE COALESCE(Venta.nombreClie, 'DOMICILIO')
+                END as nombreClie"),
+                DB::raw("GROUP_CONCAT(MetodosPago.metodo SEPARATOR ', ') as metodos"),
+                DB::raw("GROUP_CONCAT(COALESCE(Pago.referencia, '-') SEPARATOR ' / ') as refs")
+            )
+            ->groupBy('Venta.id_venta', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie')
+            ->get();
+
+        $pagos_pdf = DB::table('Pago')
+            ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
+            ->join('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
+            ->where('Venta.id_caja', $id)
+            ->where('Venta.status', '!=', 3)
+            ->select('MetodosPago.metodo', DB::raw('SUM(Pago.monto) as total'))
+            ->groupBy('MetodosPago.metodo')->pluck('total', 'metodo');
+
+        $stats = [
+            'fondo' => $caja->monto_inicial,
+            'num_ventas' => $ventas->count(),
+            'venta_total' => $ventas->sum('total'),
+            'total_gastos' => $gastos->sum('precio'),
+            'gastos_total' => $gastos->sum('precio'),
+            'efectivo' => $pagos_pdf['Efectivo'] ?? 0,
+            'tarjeta' => $pagos_pdf['Tarjeta'] ?? 0,
+            'transferencia' => $pagos_pdf['Transferencia'] ?? 0,
+            'efectivo_esperado' => ($pagos_pdf['Efectivo'] ?? 0) - $gastos->sum('precio'),
+            'arqueo_real' => $caja->monto_final,
+            'diferencia' => $caja->monto_final - (($pagos_pdf['Efectivo'] ?? 0) - $gastos->sum('precio'))
+        ];
+
+        $pdf = Pdf::loadView('Ventas.pdf_caja', compact('caja', 'stats', 'gastos', 'ventas'));
+        return $pdf->stream('Cierre_Caja_'.$id.'.pdf');
+    }
+
     public function historial()
     {
-        $id_sucursal = 1; // <-- FORZAMOS SUCURSAL 1 (MIRAFLORES)
-
+        $id_sucursal = 1;
         $cajas = DB::table('Caja')
             ->leftJoin('Empleados', 'Caja.id_emp', '=', 'Empleados.id_emp')
             ->select('Caja.*', 'Empleados.nickName as cajero_nombre')
@@ -113,92 +171,24 @@ class FlujoCajaController extends Controller
         return view('Ventas.historial_cajas', compact('cajas'));
     }
 
-    /**
-     * Procesa la apertura de una nueva caja con el fondo inicial.
-     */
     public function abrirCaja(Request $request)
     {
-        $request->validate([
-            'monto_inicial' => 'required|numeric|min:0',
-            'observaciones' => 'nullable|string|max:255'
-        ]);
-
-        $id_sucursal = 1; // <-- FORZAMOS SUCURSAL 1 (MIRAFLORES)
-
-        // Evitar doble apertura
-        $existe = DB::table('Caja')->where('status', 1)->where('id_suc', $id_sucursal)->exists();
-        if($existe) return redirect()->back()->with('error', 'Ya existe una caja abierta.');
-
+        $request->validate(['monto_inicial' => 'required|numeric|min:0']);
+        if(DB::table('Caja')->where('status', 1)->where('id_suc', 1)->exists()) return redirect()->back()->with('error', 'Caja abierta.');
         DB::table('Caja')->insert([
-            'id_suc' => $id_sucursal,
-            'id_emp' => Auth::user()->id_emp,
-            'fecha_apertura' => Carbon::now(),
-            'monto_inicial' => $request->monto_inicial,
-            'status' => 1,
-            'observaciones_apertura' => $request->observaciones ?? 'Apertura de turno'
+            'id_suc' => 1, 'id_emp' => Auth::user()->id_emp, 'fecha_apertura' => Carbon::now(),
+            'monto_inicial' => $request->monto_inicial, 'status' => 1, 'observaciones_apertura' => $request->observaciones ?? 'Apertura'
         ]);
-
-        return redirect()->route('flujo.caja.index')->with('success', 'Caja abierta con $' . number_format($request->monto_inicial, 2));
+        return redirect()->route('flujo.caja.index')->with('success', 'Turno iniciado.');
     }
 
-    /**
-     * Procesa el cierre de la caja calculando diferencias.
-     */
     public function cerrarCaja(Request $request, $id)
     {
-        $request->validate([
-            'monto_final' => 'required|numeric|min:0', // Esto es el conteo físico del cajero
-            'observaciones_cierre' => 'nullable|string'
-        ]);
-
+        $request->validate(['monto_final' => 'required|numeric']);
         DB::table('Caja')->where('id_caja', $id)->update([
-            'fecha_cierre' => Carbon::now(),
-            'monto_final' => $request->monto_final,
-            'observaciones_cierre' => $request->observaciones_cierre,
-            'status' => 0 
+            'fecha_cierre' => Carbon::now(), 'monto_final' => $request->monto_final,
+            'observaciones_cierre' => $request->observaciones_cierre, 'status' => 0 
         ]);
-
-        return redirect()->route('flujo.caja.index')
-            ->with('success', 'Caja cerrada correctamente. Se ha generado el reporte.')
-            ->with('download_pdf', $id);
-    }
-
-    /**
-     * Genera el PDF detallando fondo, efectivo, tarjetas y gastos.
-     */
-    public function descargarPdf($id)
-    {
-        $caja = DB::table('Caja')
-            ->leftJoin('Empleados', 'Caja.id_emp', '=', 'Empleados.id_emp')
-            ->select('Caja.*', 'Empleados.nickName as cajero_nombre')
-            ->where('id_caja', $id)->first();
-
-        if (!$caja) abort(404);
-
-        $gastos = DB::table('Gastos')->where('id_caja', $id)->sum('precio');
-        $ventas = DB::table('Venta')->where('id_caja', $id)->where('status', '!=', 3)->get(); // Ignorar cancelados en PDF
-        
-        $pagos = DB::table('Pago')
-            ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
-            ->join('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
-            ->where('Venta.id_caja', $id)
-            ->select('MetodosPago.metodo', DB::raw('SUM(Pago.monto) as total_monto'))
-            ->groupBy('MetodosPago.metodo')->pluck('total_monto', 'metodo');
-
-        $stats = [
-            'num_ventas' => $ventas->count(),
-            'venta_total' => $ventas->sum('total'),
-            'total_gastos' => $gastos,
-            'efectivo' => $pagos['Efectivo'] ?? 0,
-            'tarjeta' => $pagos['Tarjeta'] ?? 0,
-            'transferencia' => $pagos['Transferencia'] ?? 0,
-            'fondo_inicial' => $caja->monto_inicial,
-            'monto_esperado' => ($caja->monto_inicial + ($pagos['Efectivo'] ?? 0)) - $gastos,
-            'monto_real' => $caja->monto_final,
-            'diferencia' => $caja->monto_final - (($caja->monto_inicial + ($pagos['Efectivo'] ?? 0)) - $gastos)
-        ];
-
-        $pdf = Pdf::loadView('Ventas.pdf_caja', compact('caja', 'stats'));
-        return $pdf->stream('Corte_Caja_'.$caja->fecha_cierre.'.pdf');
+        return redirect()->route('flujo.caja.index')->with('success', 'Turno cerrado.')->with('download_pdf', $id);
     }
 }
