@@ -9,16 +9,19 @@ class SucursalesController extends Controller
 {
     public function index()
     {
-        // Consultamos la tabla singular 'Sucursal'
+        // La tabla es singular 'Sucursal' (Confirmado por tu log de SQL)
         $sucursales = DB::table('Sucursal')->get();
         
-        // CAMBIO: Apuntamos a la carpeta recursos.sucursales
-        return view('recursos.sucursales.index', compact('sucursales'));
+        // OPCIÓN A: Si tus carpetas están en resources/views/sucursales/index.blade.php
+        return view('sucursales.index', compact('sucursales'));
+        
+        // NOTA: Si te sigue dando error de "View not found", cambia la línea de arriba por:
+        // return view('recursos.sucursales.index', compact('sucursales'));
     }
 
     public function create()
     {
-        return view('recursos.sucursales.create');
+        return view('sucursales.create');
     }
 
     public function store(Request $request)
@@ -35,16 +38,15 @@ class SucursalesController extends Controller
             'telefono' => $request->telefono
         ]);
 
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal añadida correctamente.');
+        return redirect()->route('sucursales.index')->with('success', 'Sucursal añadida.');
     }
 
     public function edit($id)
     {
         $sucursal = DB::table('Sucursal')->where('id_suc', $id)->first();
-        
         if (!$sucursal) abort(404);
 
-        return view('recursos.sucursales.edit', compact('sucursal'));
+        return view('sucursales.edit', compact('sucursal'));
     }
 
     public function update(Request $request, $id)
@@ -61,12 +63,12 @@ class SucursalesController extends Controller
             'telefono' => $request->telefono
         ]);
         
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal actualizada correctamente.');
+        return redirect()->route('sucursales.index')->with('success', 'Sucursal actualizada.');
     }
 
     public function destroy($id)
     {
         DB::table('Sucursal')->where('id_suc', $id)->delete();
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal eliminada correctamente.');
+        return redirect()->route('sucursales.index')->with('success', 'Sucursal eliminada.');
     }
 }
