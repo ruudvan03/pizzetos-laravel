@@ -9,13 +9,16 @@ class SucursalesController extends Controller
 {
     public function index()
     {
+        // Consultamos la tabla singular 'Sucursal'
         $sucursales = DB::table('Sucursal')->get();
-        return view('sucursales.index', compact('sucursales'));
+        
+        // CAMBIO: Apuntamos a la carpeta recursos.sucursales
+        return view('recursos.sucursales.index', compact('sucursales'));
     }
 
     public function create()
     {
-        return view('sucursales.create');
+        return view('recursos.sucursales.create');
     }
 
     public function store(Request $request)
@@ -41,7 +44,7 @@ class SucursalesController extends Controller
         
         if (!$sucursal) abort(404);
 
-        return view('sucursales.edit', compact('sucursal'));
+        return view('recursos.sucursales.edit', compact('sucursal'));
     }
 
     public function update(Request $request, $id)
