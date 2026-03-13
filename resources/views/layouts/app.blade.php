@@ -152,7 +152,7 @@
                 </button>
                 <div class="hidden md:block">
                     <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic leading-none">Pizzetos Management</h2>
-                    <p class="text-xs font-bold text-slate-600 mt-1">Pizzetos-POS</p>
+                    <p class="text-xs font-bold text-slate-600 mt-1">By Ollintem</p>
                 </div>
             </div>
 
