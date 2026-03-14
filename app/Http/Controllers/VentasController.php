@@ -8,9 +8,11 @@ use Carbon\Carbon;
 
 class VentasController extends Controller
 {
+    /**
+     * Muestra el historial de pedidos con Folios Virtuales.
+     */
     public function resume(Request $request)
     {
-        // 1. Iniciamos la consulta con los Joins necesarios para obtener nombres de clientes
         $query = DB::table('Venta')
             ->leftJoin('PDomicilio', 'Venta.id_venta', '=', 'PDomicilio.id_venta')
             ->leftJoin('Clientes', 'PDomicilio.id_clie', '=', 'Clientes.id_clie')
@@ -21,7 +23,7 @@ class VentasController extends Controller
             )
             ->orderBy('Venta.fecha_hora', 'desc');
 
-        // 2. Manejo de Filtros
+        // Manejo de Filtros
         $filtroFecha = $request->input('fecha', 'hoy');
         $filtroEstado = $request->input('estado', 'todos');
 
@@ -40,29 +42,73 @@ class VentasController extends Controller
 
         $ventas = $query->get();
 
-        // 3. Procesamiento de datos para la vista (Evita el Error 500)
         foreach ($ventas as $v) {
-            // Calculamos el total de productos de forma dinámica para cada venta
+            // GENERACIÓN DE FOLIO VIRTUAL (Para la vista Historial)
+            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+
             $v->total_productos = DB::table('DetalleVenta')
                 ->where('id_venta', $v->id_venta)
                 ->sum('cantidad');
             
-            // Creamos el cliente_display para que la vista lo encuentre
             if ($v->tipo_servicio == 1) {
-                // Comedor
                 $v->cliente_display = "Mesa " . ($v->mesa ?? '?') . " - " . ($v->nombreClie ?? 'Sin Nombre');
             } elseif ($v->tipo_servicio == 2) {
-                // Para llevar
                 $v->cliente_display = "Mostrador (Para Llevar)";
             } else {
-                // Domicilio (usamos los campos del Join)
                 $v->cliente_display = trim(($v->cnombre ?? '') . ' ' . ($v->capellido ?? ''));
-                if (empty($v->cliente_display)) {
-                    $v->cliente_display = "Pedido a Domicilio";
-                }
+                if (empty($v->cliente_display)) $v->cliente_display = "Pedido a Domicilio";
             }
         }
 
         return view('Ventas.resume', compact('ventas', 'filtroFecha', 'filtroEstado'));
+    }
+
+    /**
+     * Genera la vista del Ticket con el Folio Virtual corregido.
+     */
+    public function ticket($id)
+    {
+        $venta = DB::table('Venta')->where('id_venta', $id)->first();
+        if (!$venta) abort(404);
+
+        // AQUÍ ESTÁ EL TRUCO: Creamos el folio virtual antes de enviarlo al ticket
+        $venta->folio_virtual = Carbon::parse($venta->fecha_hora)->format('d-m-y') . ' ' . str_pad($venta->id_venta, 3, '0', STR_PAD_LEFT);
+
+        $final_items = DB::table('DetalleVenta')
+            ->where('id_venta', $id)
+            ->select('cantidad', 'nombre', 'total', 'subs')
+            ->get()
+            ->map(function($item) {
+                $item->subs = $item->subs ? explode(',', $item->subs) : [];
+                return $item;
+            });
+
+        $pagos = DB::table('Pago')->where('id_venta', $id)->get();
+        
+        $domicilio = DB::table('PDomicilio')
+            ->join('Clientes', 'PDomicilio.id_clie', '=', 'Clientes.id_clie')
+            ->where('id_venta', $id)
+            ->select('Clientes.*', 'PDomicilio.*')
+            ->first();
+
+        return view('Ventas.ticket', compact('venta', 'final_items', 'pagos', 'domicilio'));
+    }
+
+    /**
+     * Procesa la cancelación de una venta.
+     */
+    public function cancelar(Request $request)
+    {
+        $id_venta = $request->id_venta;
+        $motivo = $request->motivo;
+        $usuario = auth()->user()->nombre ?? 'Admin';
+
+        // Marcamos como cancelado y añadimos el motivo a los comentarios
+        DB::table('Venta')->where('id_venta', $id_venta)->update([
+            'status' => 3,
+            'comentarios' => DB::raw("CONCAT(COALESCE(comentarios, ''), ' | CANCELADO - Motivo: $motivo | Por: $usuario')")
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }

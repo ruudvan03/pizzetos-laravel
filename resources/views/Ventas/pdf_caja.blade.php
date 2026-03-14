@@ -41,9 +41,9 @@
         <table>
             <tr>
                 <td class="brand-container">
-                    {{-- Logo de la Pizzería --}}
                     <img src="{{ public_path('pizzetos.png') }}" class="logo">
-                    <div class="report-title">Acta de Cierre de Caja #{{ $caja->id_caja }}</div>
+                    {{-- MODIFICADO: USANDO FOLIO VIRTUAL DE CAJA --}}
+                    <div class="report-title">Acta de Cierre de Caja #{{ $caja->folio_virtual }}</div>
                 </td>
                 <td style="text-align: right; vertical-align: top;">
                     <div style="font-weight: bold; font-size: 8px; color: #94a3b8;">FECHA DE EMISIÓN</div>
@@ -159,16 +159,17 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th width="10%">Folio</th>
-                <th width="35%">Cliente / Servicio</th>
-                <th width="35%">Pagos / Referencias</th>
+                <th width="15%">Folio</th>
+                <th width="32%">Cliente / Servicio</th>
+                <th width="33%">Pagos / Referencias</th>
                 <th width="20%" style="text-align: right;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             @foreach($ventas as $v)
             <tr>
-                <td><b>#{{ $v->id_venta }}</b></td>
+                {{-- MODIFICADO: USANDO FOLIO VIRTUAL DE PEDIDO --}}
+                <td><b>#{{ $v->folio_virtual }}</b></td>
                 <td>{{ $v->nombreClie }}</td>
                 <td>
                     {{ $v->metodos }} 

@@ -55,7 +55,12 @@
         <img src="{{ asset('pizzetos.png') }}" alt="Pizzetos Logo" class="ticket-logo">
         
         <div style="font-size: 12px;">TICKET DE VENTA</div>
-        <div class="font-bold mt-1">FOLIO: {{ $venta->id_venta }}</div>
+        
+        {{-- ACTUALIZACIÓN: USANDO FOLIO VIRTUAL CRONOLÓGICO --}}
+        <div class="font-bold mt-1" style="font-size: 16px;">
+            FOLIO: {{ $venta->folio_virtual }}
+        </div>
+        
         <div style="font-size: 12px;">{{ \Carbon\Carbon::parse($venta->fecha_hora)->format('d/m/Y h:i A') }}</div>
         
         <div class="font-bold text-lg mt-1 mb-1 border-top border-bottom py-1" style="padding: 5px 0;">

@@ -44,7 +44,6 @@ class PuntoVentaController extends Controller
         $paquetes = DB::table('Paquetes')->get();
         $ingredientes = DB::table('Ingredientes')->get();
         
-        // --- AQUÍ ESTÁ EL ARREGLO PARA QUE SALGAN LOS TAMAÑOS ---
         $tamanos_base = DB::table('TamanosPizza')
             ->whereIn('tamano', ['Chica', 'Mediana', 'Grande', 'Familiar', 'CHICA', 'MEDIANA', 'GRANDE', 'FAMILIAR'])
             ->orWhere('tamano', 'like', '%Especial%')
@@ -288,6 +287,9 @@ class PuntoVentaController extends Controller
     {
         $venta = DB::table('Venta')->where('id_venta', $id)->first();
         if(!$venta) abort(404);
+
+        // --- NUEVO: GENERACIÓN DE FOLIO VIRTUAL PARA EL TICKET ---
+        $venta->folio_virtual = Carbon::parse($venta->fecha_hora)->format('d-m-y') . ' ' . str_pad($venta->id_venta, 3, '0', STR_PAD_LEFT);
 
         // --- INICIO LIMPIEZA DE COMENTARIOS PARA EL TICKET ---
         $comentarios_limpios = [];

@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class FlujoCajaController extends Controller
 {
     /**
-     * Muestra el panel de control de caja con nombres de cliente claros y cuadre exacto.
+     * Muestra el panel de control de caja con folios cronológicos virtuales.
      */
     public function index()
     {
@@ -29,7 +29,10 @@ class FlujoCajaController extends Controller
             return view('Ventas.flujo_caja', ['cajaAbierta' => null]);
         }
 
-        // 1. GASTOS DETALLADOS (Con extracción de responsable inteligente)
+        // GENERAR FOLIO VIRTUAL DE CAJA (Ej: 14-03-26 0012)
+        $cajaAbierta->folio_virtual = Carbon::parse($cajaAbierta->fecha_apertura)->format('d-m-y') . ' ' . str_pad($cajaAbierta->id_caja, 4, '0', STR_PAD_LEFT);
+
+        // 1. GASTOS DETALLADOS
         try {
             $gastos_detalle = DB::table('Gastos')
                 ->leftJoin('Empleados', 'Gastos.id_emp', '=', 'Empleados.id_emp')
@@ -37,17 +40,11 @@ class FlujoCajaController extends Controller
                 ->select('Gastos.*', 'Empleados.nickName as responsable')
                 ->get();
         } catch (\Exception $e) {
-            // Si falta id_emp, extraemos el nombre de la descripción
-            $gastos_raw = DB::table('Gastos')
-                ->where('id_caja', $cajaAbierta->id_caja)
-                ->get();
-
+            $gastos_raw = DB::table('Gastos')->where('id_caja', $cajaAbierta->id_caja)->get();
             $gastos_detalle = $gastos_raw->map(function($g) {
                 if (Str::contains($g->descripcion, 'Registró:')) {
                     $partes = explode('|', $g->descripcion);
-                    $responsable = str_replace('Registró:', '', $partes[0]);
-                    $g->responsable = trim($responsable);
-                    // Dejamos solo el concepto en la descripción para que se vea limpio
+                    $g->responsable = trim(str_replace('Registró:', '', $partes[0]));
                     $g->descripcion = trim($partes[1] ?? $g->descripcion);
                 } else {
                     $g->responsable = 'N/A';
@@ -57,7 +54,7 @@ class FlujoCajaController extends Controller
         }
         $total_gastos = $gastos_detalle->sum('precio');
 
-        // 2. VENTAS CON LÓGICA DE NOMBRES Y DESGLOSE
+        // 2. VENTAS CON FOLIO VIRTUAL (Ej: 14-03-26 001)
         $ventas_detalle = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
             ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
@@ -80,6 +77,11 @@ class FlujoCajaController extends Controller
             ->orderBy('Venta.id_venta', 'desc')
             ->get();
 
+        // Aplicar formato de Folio Virtual a cada venta para la vista
+        foreach($ventas_detalle as $v) {
+            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+        }
+
         // 3. TOTALES POR MÉTODO
         $pagos = DB::table('Pago')
             ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
@@ -90,7 +92,6 @@ class FlujoCajaController extends Controller
             ->groupBy('MetodosPago.metodo')
             ->pluck('total_monto', 'metodo');
 
-        // Mapeo de variables
         $tickets_validos = $ventas_detalle->where('status', '!=', 3);
         $stats = [
             'num_ventas' => $tickets_validos->count(),
@@ -102,14 +103,13 @@ class FlujoCajaController extends Controller
             'transferencia' => $pagos['Transferencia'] ?? 0,
         ];
 
-        // CUADRE: Los gastos solo restan al Efectivo
         $stats['efectivo_real_en_sobre'] = $stats['efectivo_ventas'] - $stats['total_gastos'];
 
         return view('Ventas.flujo_caja', compact('cajaAbierta', 'stats', 'ventas_detalle', 'gastos_detalle'));
     }
 
     /**
-     * Reporte PDF de Cierre con extracción de responsable corregida.
+     * Reporte PDF de Cierre con folios virtuales.
      */
     public function descargarPdf($id)
     {
@@ -119,6 +119,9 @@ class FlujoCajaController extends Controller
             ->where('id_caja', $id)->first();
 
         if (!$caja) abort(404);
+
+        // Folio virtual para el PDF
+        $caja->folio_virtual = Carbon::parse($caja->fecha_apertura)->format('d-m-y') . ' ' . str_pad($caja->id_caja, 4, '0', STR_PAD_LEFT);
 
         try {
             $gastos = DB::table('Gastos')
@@ -146,7 +149,7 @@ class FlujoCajaController extends Controller
             ->where('Venta.id_caja', $id)
             ->where('Venta.status', '!=', 3)
             ->select(
-                'Venta.id_venta', 'Venta.total', 
+                'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 
                 DB::raw("CASE 
                     WHEN Venta.tipo_servicio = 2 THEN 'PARA LLEVAR'
                     WHEN Venta.tipo_servicio = 1 THEN CONCAT('MESA ', COALESCE(Venta.mesa, ''), ' - ', COALESCE(Venta.nombreClie, 'CLIENTE'))
@@ -155,8 +158,13 @@ class FlujoCajaController extends Controller
                 DB::raw("GROUP_CONCAT(MetodosPago.metodo SEPARATOR ', ') as metodos"),
                 DB::raw("GROUP_CONCAT(COALESCE(Pago.referencia, '-') SEPARATOR ' / ') as refs")
             )
-            ->groupBy('Venta.id_venta', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie')
+            ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie')
             ->get();
+
+        // Aplicar folios virtuales a ventas en PDF
+        foreach($ventas as $v) {
+            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+        }
 
         $pagos_pdf = DB::table('Pago')
             ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
@@ -176,7 +184,7 @@ class FlujoCajaController extends Controller
             'transferencia' => $pagos_pdf['Transferencia'] ?? 0,
             'efectivo_esperado' => ($pagos_pdf['Efectivo'] ?? 0) - $gastos->sum('precio'),
             'arqueo_real' => $caja->monto_final,
-            'diferencia' => $caja->monto_final - (($pagos_pdf['Efectivo'] ?? 0) - $gastos->sum('precio'))
+            'diferencia' => ($caja->monto_final ?? 0) - (($pagos_pdf['Efectivo'] ?? 0) - $gastos->sum('precio'))
         ];
 
         $pdf = Pdf::loadView('Ventas.pdf_caja', compact('caja', 'stats', 'gastos', 'ventas'));
@@ -193,6 +201,11 @@ class FlujoCajaController extends Controller
             ->where('Caja.status', 0)
             ->orderBy('Caja.fecha_cierre', 'desc')
             ->paginate(15);
+
+        // Añadir folios virtuales al historial
+        foreach($cajas as $c) {
+            $c->folio_virtual = Carbon::parse($c->fecha_apertura)->format('d-m-y') . ' ' . str_pad($c->id_caja, 4, '0', STR_PAD_LEFT);
+        }
 
         return view('Ventas.historial_cajas', compact('cajas'));
     }

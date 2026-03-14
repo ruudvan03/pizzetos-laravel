@@ -78,11 +78,12 @@
 <div class="w-full space-y-8 pb-12 px-2">
 
     @if($cajaAbierta)
-        {{-- HEADER --}}
+        {{-- HEADER CON FOLIO VIRTUAL --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
                 <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-[10px] pizzetos-title border border-green-200">Terminal Online</span>
-                <h1 class="text-6xl pizzetos-title text-slate-900 mt-4 leading-none">Caja #{{ $cajaAbierta->id_caja }}</h1>
+                {{-- USANDO FOLIO VIRTUAL --}}
+                <h1 class="text-6xl pizzetos-title text-slate-900 mt-4 leading-none">Caja {{ $cajaAbierta->folio_virtual }}</h1>
                 <p class="text-sm font-bold text-slate-400 uppercase italic">Responsable: <span class="text-amber-500">{{ $cajaAbierta->cajero_nombre }}</span></p>
             </div>
             
@@ -140,7 +141,7 @@
                         <table class="w-full text-left italic">
                             <thead class="bg-slate-50">
                                 <tr class="pizzetos-label">
-                                    <th class="px-8 py-5">Orden</th>
+                                    <th class="px-8 py-5">Orden (Folio)</th>
                                     <th class="px-8 py-5">Cliente / Servicio</th>
                                     <th class="px-8 py-5">Métodos y Cantidades</th>
                                     <th class="px-8 py-5 text-right">Monto</th>
@@ -149,7 +150,8 @@
                             <tbody class="divide-y divide-slate-50">
                                 @foreach($ventas_detalle as $venta)
                                     <tr class="{{ $venta->status == 3 ? 'opacity-30' : '' }}">
-                                        <td class="px-8 py-6 font-black text-slate-900 text-lg">#{{ $venta->id_venta }}</td>
+                                        {{-- USANDO FOLIO VIRTUAL DE PEDIDO --}}
+                                        <td class="px-8 py-6 font-black text-slate-900 text-lg">#{{ $venta->folio_virtual }}</td>
                                         <td class="px-8 py-6 leading-tight">
                                             <div class="flex flex-col">
                                                 <span class="text-slate-800 font-black uppercase text-sm tracking-tighter">{{ $venta->nombre_cliente_formateado }}</span>
@@ -210,25 +212,25 @@
                             <div class="text-center">
                                 <label class="pizzetos-label block mb-3">Conteo Físico Real</label>
                                 <input type="number" step="0.01" name="monto_final" x-model="contado" required 
-                                       style="width: 100%; background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 1rem; text-align: center; font-size: 2.5rem; font-weight: 900; font-style: italic; outline: none;">
+                                       style="width: 100%; background: #fff; border: 2px solid #f1f5f9; border-radius: 20px; padding: 1.2rem; text-align: center; font-size: 2.5rem; font-weight: 900; font-style: italic; outline: none;">
                             </div>
 
-                            <div style="background: #fff; padding: 1.2rem; border-radius: 20px; border: 1px solid #f1f5f9;">
-                                <div class="flex justify-between text-[9px] font-black uppercase italic mb-2">
-                                    <span class="text-slate-400">Balance Sistema:</span>
+                            <div style="background: #fff; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9;">
+                                <div class="flex justify-between pizzetos-label mb-3">
+                                    <span>Balance Sistema:</span>
                                     <span class="text-slate-700">${{ number_format($stats['efectivo_real_en_sobre'], 2) }}</span>
                                 </div>
-                                <div class="flex justify-between font-black italic border-t border-slate-100 pt-3 items-center">
+                                <div class="flex justify-between pizzetos-title border-t border-slate-100 pt-4 items-center">
                                     <span class="text-amber-500 text-[10px]">DIFERENCIA:</span>
-                                    <span style="font-size: 1.3rem;" :class="(contado - esperado) > 0 ? 'text-green-500' : ((contado - esperado) < 0 ? 'text-red-500' : 'text-slate-700')" x-text="contado === '' ? '$0.00' : '$' + (contado - esperado).toFixed(2)"></span>
+                                    <span style="font-size: 1.4rem;" :class="(contado - esperado) > 0 ? 'text-green-500' : ((contado - esperado) < 0 ? 'text-red-500' : 'text-slate-700')" x-text="contado === '' ? '$0.00' : '$' + (contado - esperado).toFixed(2)"></span>
                                 </div>
                             </div>
 
-                            {{-- BOTÓN DE PDF --}}
+                            {{-- BOTÓN DE PDF (AVANCE) --}}
                             <a href="{{ route('flujo.caja.pdf', $cajaAbierta->id_caja) }}" target="_blank" 
-                               class="flex items-center justify-center gap-2 w-full py-4 font-black uppercase italic rounded-xl bg-slate-100 text-slate-500 text-[10px] hover:bg-slate-200 transition-all">
+                               class="flex items-center justify-center gap-2 w-full py-4 font-black uppercase italic rounded-xl bg-slate-100 text-slate-500 text-[10px] hover:bg-slate-200 transition-all mb-2">
                                 <svg style="width:16px;height:16px" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16l-4-4h3V4h2v8h3l-4 4zm9-4h-2v4H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4z"/></svg>
-                                Descargar Cierre
+                                Imprimir Avance
                             </a>
 
                             <button type="button" @click="if(contado !== '') { modal = true } else { alert('Ingresa el monto.') }" 
