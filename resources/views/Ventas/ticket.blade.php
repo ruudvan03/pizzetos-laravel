@@ -34,6 +34,15 @@
         
         .flex-between { display: flex; justify-content: space-between; }
         
+        /* Estilo para el logo en ticket */
+        .ticket-logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 5px;
+            /* Filtro opcional para mejorar impresión en térmicas blanco y negro */
+            filter: grayscale(100%) contrast(1.2);
+        }
+
         @media print {
             body { padding: 0; width: 100%; }
         }
@@ -42,7 +51,9 @@
 <body onload="window.print()">
 
     <div class="text-center mb-1">
-        <div class="font-bold text-xl mb-1">PIZZETOS</div>
+        {{-- LOGO DE LA PIZZERÍA --}}
+        <img src="{{ asset('pizzetos.png') }}" alt="Pizzetos Logo" class="ticket-logo">
+        
         <div style="font-size: 12px;">TICKET DE VENTA</div>
         <div class="font-bold mt-1">FOLIO: {{ $venta->id_venta }}</div>
         <div style="font-size: 12px;">{{ \Carbon\Carbon::parse($venta->fecha_hora)->format('d/m/Y h:i A') }}</div>
@@ -135,12 +146,12 @@
                 <div style="margin-bottom: 4px;">
                     @if($pago->id_metpago == 1)
                         <div class="flex-between font-bold">
-                            <span>TARJETA</span>
+                            <span>TARJETAS (VOUCHERS)</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                     @elseif($pago->id_metpago == 2)
                         <div class="flex-between font-bold">
-                            <span>EFECTIVO</span>
+                            <span>EFECTIVO (CONTADO)</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                         @if($pago->referencia && is_numeric($pago->referencia) && $pago->referencia > $pago->monto)
@@ -155,7 +166,7 @@
                         @endif
                     @elseif($pago->id_metpago == 3)
                         <div class="flex-between font-bold">
-                            <span>TRANSFERENCIA</span>
+                            <span>TRANSFERENCIA ELECTRÓNICA</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                         @if($pago->referencia)

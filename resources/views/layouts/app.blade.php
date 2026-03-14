@@ -4,14 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizzetos - ERP</title>
+    
+    {{-- 1. FAVICON: El icono de la pestaña --}}
+    <link rel="icon" type="image/png" href="{{ asset('pizzetos.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <style>
         [x-cloak] { display: none !important; }
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         svg { flex-shrink: 0; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animación suave para el hover del logo */
+        .logo-container:hover img { transform: rotate(-5deg) scale(1.1); }
+        .logo-container img { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-900 overflow-x-hidden">
@@ -39,7 +48,7 @@
             
             {{-- Logo Area --}}
             <div class="h-24 flex items-center justify-between px-6 border-b border-black/5 shrink-0">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 logo-container">
                     <div class="bg-white p-2 rounded-2xl shadow-sm">
                         <img src="{{ asset('pizzetos.png') }}" alt="Logo" class="h-8 w-8 object-contain">
                     </div>
@@ -95,7 +104,7 @@
 
                     {{-- Config Submenu --}}
                     <div x-data="{ open: {{ (request()->is('recursos/*') || request()->is('empleados*')) ? 'true' : 'false' }} }">
-                        <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-black/5 font-bold transition-all">
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-black/5 font-bold transition-all text-slate-900">
                             <div class="flex items-center gap-3">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
                                 <span class="text-sm font-bold uppercase italic tracking-tighter">Ajustes</span>
@@ -103,9 +112,9 @@
                             <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="open" x-cloak x-collapse class="pl-12 pr-4 space-y-1 pb-2">
-                            <a href="{{ route('empleados.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:text-white transition-colors">Personal</a>
-                            <a href="{{ route('sucursales.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:text-white transition-colors">Sucursales</a>
-                            <a href="{{ route('ventas.configuracion') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:text-white transition-colors">Sistema</a>
+                            <a href="{{ route('empleados.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Personal</a>
+                            <a href="{{ route('sucursales.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Sucursales</a>
+                            <a href="{{ route('ventas.configuracion') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Sistema</a>
                         </div>
                     </div>
                 @endif
@@ -124,14 +133,14 @@
         </aside>
 
         {{-- HEADER --}}
-        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 lg:px-10 shrink-0 sticky top-0 z-30">
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 lg:px-10 shrink-0 sticky top-0 z-30 shadow-sm">
             <div class="flex items-center gap-4">
                 <button @click="sidebarOpen = true" class="p-2.5 bg-amber-400 rounded-2xl text-slate-900 shadow-sm hover:scale-105 transition-all active:scale-95">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M4 6h16M4 12h16m-7 6h7"/></svg>
                 </button>
                 <div class="hidden md:block">
-                    <h2 class="text-[10px] font-black text-slate-400  tracking-[0.3em] italic leading-none uppercase">Pizzetos Management</h2>
-                    <p class="text-xs font-bold text-slate-600 mt-1  italic tracking-tighter">By Ollintem Sistema POS</p>
+                    <h2 class="text-[10px] font-black text-slate-400 tracking-[0.3em] italic leading-none uppercase">Pizzetos Management</h2>
+                    <p class="text-xs font-bold text-slate-600 mt-1 italic tracking-tighter">By Ollintem Sistema POS</p>
                 </div>
             </div>
 

@@ -10,18 +10,19 @@
         /* Encabezado Estilo Pizzetos */
         .header { background-color: #f8fafc; padding: 20px; border-bottom: 3px solid #f59e0b; margin-bottom: 20px; }
         .header table { width: 100%; }
-        .brand { font-size: 24px; font-weight: 900; font-style: italic; text-transform: uppercase; color: #0f172a; letter-spacing: -1px; }
-        .report-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; letter-spacing: 2px; }
+        .brand-container { vertical-align: middle; }
+        .logo { height: 50px; width: auto; }
+        .report-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; letter-spacing: 2px; margin-top: 5px; }
         
         /* Bloques de Información */
-        .section-title { font-size: 11px; font-weight: 900; text-transform: uppercase; font-style: italic; color: #0f172a; border-left: 4px solid #f59e0b; padding-left: 8px; margin: 20px 0 10px 0; }
+        .section-title { font-size: 11px; font-weight: 900; text-transform: uppercase; font-style: italic; color: #000; border-left: 4px solid #f59e0b; padding-left: 8px; margin: 20px 0 10px 0; }
         
-        /* Grid de Resumen */
+        /* Grid de Resumen Financiero */
         .kpi-container { width: 100%; margin-bottom: 20px; }
-        .kpi-box { width: 23%; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; display: inline-block; vertical-align: top; margin-right: 1%; text-align: center; }
-        .kpi-title { font-size: 8px; font-weight: bold; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
-        .kpi-value { font-size: 13px; font-weight: 900; color: #1e293b; }
-        .bg-amber { background-color: #fef3c7; border-color: #f59e0b; }
+        .kpi-box { width: 23%; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; display: inline-block; vertical-align: top; margin-right: 1%; text-align: center; }
+        .kpi-title { font-size: 7px; font-weight: bold; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
+        .kpi-value { font-size: 12px; font-weight: 900; color: #1e293b; font-style: italic; }
+        .bg-amber-light { background-color: #fef3c7; border-color: #f59e0b; }
         .text-green { color: #166534; }
         .text-red { color: #991b1b; }
 
@@ -39,13 +40,14 @@
     <div class="header">
         <table>
             <tr>
-                <td>
-                    <div class="brand">PIZZETOS</div>
+                <td class="brand-container">
+                    {{-- Logo de la Pizzería --}}
+                    <img src="{{ public_path('pizzetos.png') }}" class="logo">
                     <div class="report-title">Acta de Cierre de Caja #{{ $caja->id_caja }}</div>
                 </td>
-                <td style="text-align: right;">
-                    <div style="font-weight: bold; font-size: 9px;">FECHA DE REPORTE</div>
-                    <div>{{ date('d/m/Y H:i:s') }}</div>
+                <td style="text-align: right; vertical-align: top;">
+                    <div style="font-weight: bold; font-size: 8px; color: #94a3b8;">FECHA DE EMISIÓN</div>
+                    <div style="font-weight: 900; font-style: italic;">{{ date('d/m/Y H:i:s') }}</div>
                 </td>
             </tr>
         </table>
@@ -56,24 +58,28 @@
         <tr>
             <td style="width: 50%; border:none;">
                 <div class="section-title">Datos de Apertura</div>
-                <div><b>Responsable:</b> {{ $caja->responsable_apertura ?? 'N/A' }}</div>
-                <div><b>Fecha/Hora:</b> {{ \Carbon\Carbon::parse($caja->fecha_apertura)->format('d/m/Y h:i a') }}</div>
-                <div><b>Fondo inicial:</b> ${{ number_format($caja->monto_inicial, 2) }}</div>
+                <div style="margin-left: 10px;">
+                    <div><b>Iniciado por:</b> {{ $caja->responsable_apertura ?? 'Admin' }}</div>
+                    <div><b>Fecha/Hora:</b> {{ \Carbon\Carbon::parse($caja->fecha_apertura)->format('d/m/Y h:i a') }}</div>
+                    <div><b>Comentarios:</b> {{ $caja->observaciones_apertura ?? 'Sin notas' }}</div>
+                </div>
             </td>
             <td style="width: 50%; border:none;">
                 <div class="section-title">Datos de Cierre</div>
-                <div><b>Fecha/Hora:</b> {{ $caja->fecha_cierre ? \Carbon\Carbon::parse($caja->fecha_cierre)->format('d/m/Y h:i a') : 'SIN CERRAR' }}</div>
-                <div><b>Efectivo contado:</b> ${{ number_format($caja->monto_final ?? 0, 2) }}</div>
-                <div><b>Observaciones:</b> {{ $caja->observaciones_cierre ?? 'Ninguna' }}</div>
+                <div style="margin-left: 10px;">
+                    <div><b>Finalizado el:</b> {{ $caja->fecha_cierre ? \Carbon\Carbon::parse($caja->fecha_cierre)->format('d/m/Y h:i a') : 'OPERACIÓN EN CURSO' }}</div>
+                    <div><b>Efectivo contado:</b> ${{ number_format($caja->monto_final ?? 0, 2) }}</div>
+                    <div><b>Notas de cierre:</b> {{ $caja->observaciones_cierre ?? 'Sin observaciones' }}</div>
+                </div>
             </td>
         </tr>
     </table>
 
-    {{-- 2. RESUMEN FINANCIERO --}}
+    {{-- 2. INDICADORES FINANCIEROS --}}
     <div class="section-title">Resumen Financiero</div>
     <div class="kpi-container">
-        <div class="kpi-box bg-amber">
-            <div class="kpi-title">Fondo de Reserva</div>
+        <div class="kpi-box bg-amber-light">
+            <div class="kpi-title">Fondo Inicial</div>
             <div class="kpi-value">${{ number_format($stats['fondo'], 2) }}</div>
         </div>
         <div class="kpi-box">
@@ -85,7 +91,7 @@
             <div class="kpi-value text-red">-${{ number_format($stats['total_gastos'], 2) }}</div>
         </div>
         <div class="kpi-box">
-            <div class="kpi-title">Efectivo Real</div>
+            <div class="kpi-title">Efectivo Real (Sistema)</div>
             <div class="kpi-value text-green">${{ number_format($stats['arqueo_real'] ?? $stats['efectivo_esperado'], 2) }}</div>
         </div>
     </div>
@@ -95,27 +101,27 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th>Método</th>
-                <th>Monto Bruto</th>
+                <th>Método de Pago</th>
+                <th>Venta Bruta</th>
                 <th>Egresos Aplicados</th>
-                <th style="text-align: right;">Total Neto Esperado</th>
+                <th style="text-align: right;">Monto Neto en Caja</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td><b>EFECTIVO</b></td>
+                <td><b>EFECTIVO (SENCILLEZ Y VENTA)</b></td>
                 <td>${{ number_format($stats['efectivo'], 2) }}</td>
                 <td class="text-red">-${{ number_format($stats['total_gastos'], 2) }}</td>
                 <td style="text-align: right;" class="text-green"><b>${{ number_format($stats['efectivo_esperado'], 2) }}</b></td>
             </tr>
             <tr>
-                <td><b>TARJETA (VOUCHERS)</b></td>
+                <td><b>TARJETA (VOUCHERS BANCARIOS)</b></td>
                 <td>${{ number_format($stats['tarjeta'], 2) }}</td>
                 <td>$0.00</td>
                 <td style="text-align: right;">${{ number_format($stats['tarjeta'], 2) }}</td>
             </tr>
             <tr>
-                <td><b>TRANSFERENCIA</b></td>
+                <td><b>TRANSFERENCIAS ELECTRÓNICAS</b></td>
                 <td>${{ number_format($stats['transferencia'], 2) }}</td>
                 <td>$0.00</td>
                 <td style="text-align: right;">${{ number_format($stats['transferencia'], 2) }}</td>
@@ -128,9 +134,9 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th>Descripción del Gasto</th>
-                <th>Responsable</th>
-                <th style="text-align: right;">Monto</th>
+                <th width="60%">Descripción / Concepto</th>
+                <th width="20%">Responsable</th>
+                <th width="20%" style="text-align: right;">Monto</th>
             </tr>
         </thead>
         <tbody>
@@ -142,7 +148,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="3" style="text-align: center; color: #94a3b8;">No se registraron egresos en este turno.</td>
+                <td colspan="3" style="text-align: center; color: #94a3b8;">No hay egresos registrados en este turno.</td>
             </tr>
             @endforelse
         </tbody>
@@ -153,10 +159,10 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th>Folio</th>
-                <th>Cliente / Servicio</th>
-                <th>Métodos de Pago / Refs</th>
-                <th style="text-align: right;">Total</th>
+                <th width="10%">Folio</th>
+                <th width="35%">Cliente / Servicio</th>
+                <th width="35%">Pagos / Referencias</th>
+                <th width="20%" style="text-align: right;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -164,9 +170,9 @@
             <tr>
                 <td><b>#{{ $v->id_venta }}</b></td>
                 <td>{{ $v->nombreClie }}</td>
-                <td style="font-size: 8px;">
+                <td>
                     {{ $v->metodos }} 
-                    @if($v->refs && $v->refs != '-') <br><i>Ref: {{ $v->refs }}</i> @endif
+                    @if($v->refs && $v->refs != '-') <br><span style="font-size: 7px; color: #64748b;">Ref: {{ $v->refs }}</span> @endif
                 </td>
                 <td style="text-align: right;"><b>${{ number_format($v->total, 2) }}</b></td>
             </tr>
@@ -174,16 +180,17 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3" style="text-align: right; padding: 10px; font-weight: 900;">Diferencia Final de Arqueo:</td>
-                <td style="text-align: right; padding: 10px; font-weight: 900;" class="{{ $stats['diferencia'] < 0 ? 'text-red' : 'text-green' }}">
-                    ${{ number_format($stats['diferencia'], 2) }}
+                <td colspan="3" style="text-align: right; padding: 10px; font-weight: 900; font-style: italic;">Diferencia de Arqueo (Sistema vs Físico):</td>
+                <td style="text-align: right; padding: 10px; font-weight: 900;" class="{{ ($stats['diferencia'] ?? 0) < 0 ? 'text-red' : 'text-green' }}">
+                    ${{ number_format($stats['diferencia'] ?? 0, 2) }}
                 </td>
             </tr>
         </tfoot>
     </table>
 
     <div class="footer">
-        Este documento es un comprobante oficial de Pizzetos. Generado el {{ date('d/m/Y H:i') }}.
+        Este documento es un comprobante oficial de Pizzetos. Generado por Ollintem ERP.<br>
+        © {{ date('Y') }} Pizzetos - Todos los derechos reservados.
     </div>
 
 </body>
