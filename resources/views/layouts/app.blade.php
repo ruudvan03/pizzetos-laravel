@@ -6,7 +6,7 @@
     <title>Pizzetos - ERP</title>
     
     {{-- FAVICON --}}
-    <link rel="icon" type="image/png" href="{{ asset('pizzetos.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('pizzetos2.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

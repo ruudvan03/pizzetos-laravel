@@ -77,6 +77,7 @@
 <div class="w-full space-y-8 pb-12 px-2">
 
     @if(!$cajaAbierta)
+        {{-- VISTA DE APERTURA --}}
         <div class="flex flex-col items-center justify-center min-h-[70vh]">
             <div class="pizzetos-card w-full max-w-md text-center border-t-[10px] border-amber-400">
                 <div class="bg-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -96,6 +97,13 @@
                         Iniciar Operaciones
                     </button>
                 </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <a href="{{ route('flujo.caja.historial') }}" class="inline-flex items-center gap-2 text-slate-500 hover:text-black font-black uppercase italic text-xs transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Ver Historial de Cortes
+                    </a>
+                </div>
             </div>
         </div>
     @else
@@ -107,9 +115,15 @@
                 <p class="text-sm font-bold text-slate-400 uppercase italic">Responsable: <span class="text-amber-500">{{ $cajaAbierta->cajero_nombre }}</span></p>
             </div>
             
-            <div class="pizzetos-card" style="min-width: 250px; text-align: center; border-bottom: 8px solid var(--pizzetos-amber) !important; padding: 1.5rem !important;">
-                <span class="pizzetos-label">Fondo de Inicio</span>
-                <div class="text-4xl pizzetos-title text-slate-800 italic">${{ number_format($cajaAbierta->monto_inicial, 2) }}</div>
+            <div class="flex gap-4">
+                <a href="{{ route('flujo.caja.historial') }}" class="pizzetos-card" style="padding: 1rem 1.5rem !important; text-align: center; border: 2px solid #f1f5f9 !important;">
+                    <span class="pizzetos-label">Registros</span>
+                    <div class="text-xs font-black uppercase italic text-slate-400">Historial</div>
+                </a>
+                <div class="pizzetos-card" style="min-width: 250px; text-align: center; border-bottom: 8px solid var(--pizzetos-amber) !important; padding: 1.5rem !important;">
+                    <span class="pizzetos-label">Fondo de Inicio</span>
+                    <div class="text-4xl pizzetos-title text-slate-800 italic">${{ number_format($cajaAbierta->monto_inicial, 2) }}</div>
+                </div>
             </div>
         </div>
 
@@ -144,13 +158,14 @@
                 <div class="text-3xl pizzetos-title text-red-500 italic">-${{ number_format($stats['total_gastos'], 2) }}</div>
             </div>
             <div class="pizzetos-card" style="border-bottom: 8px solid #10b981 !important;">
-                <span class="pizzetos-label text-green-500">Efectivo en Caja</span>
+                <span class="pizzetos-label text-green-500">Efectivo Real</span>
                 <div class="text-4xl pizzetos-title text-green-600 italic">${{ number_format($stats['efectivo_real_en_sobre'], 2) }}</div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2 space-y-8">
+                {{-- TABLA PEDIDOS DEL TURNO --}}
                 <div class="pizzetos-card" style="padding: 0 !important; overflow: hidden;">
                     <div class="p-8 border-b border-gray-50 flex justify-between items-center">
                         <h3 class="text-2xl pizzetos-title text-slate-800 italic uppercase">Pedidos del Turno</h3>
@@ -187,11 +202,50 @@
                                                 <div class="pay-badge-split w-fit"><span class="pay-method {{ $clase }}">{{ $metodo }}</span><span class="pay-amount">{{ $monto }}</span></div>
                                             @endforeach
                                         </td>
-                                        <td class="px-8 py-6 text-right font-black text-2xl text-slate-900 tracking-tighter italic">
-                                            ${{ number_format($venta->total, 2) }}
-                                        </td>
+                                        <td class="px-8 py-6 text-right font-black text-2xl text-slate-900 tracking-tighter italic">${{ number_format($venta->total, 2) }}</td>
                                     </tr>
                                 @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- TABLA DETALLES DE GASTOS CON RESPONSABLE --}}
+                <div class="pizzetos-card" style="padding: 0 !important; overflow: hidden; border-top: 5px solid #ef4444 !important;">
+                    <div class="p-8 border-b border-gray-50 flex justify-between items-center">
+                        <h3 class="text-2xl pizzetos-title text-red-600 italic uppercase">Detalles de Gastos</h3>
+                        <div style="width: 80px; height: 6px; background: #fca5a5; border-radius: 10px;"></div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left italic">
+                            <thead class="bg-red-50">
+                                <tr class="pizzetos-label">
+                                    <th class="px-8 py-5">Motivo / Concepto</th>
+                                    <th class="px-8 py-5">Responsable</th>
+                                    <th class="px-8 py-5 text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50 text-sm">
+                                @forelse($gastos_detalle as $g)
+                                    <tr>
+                                        <td class="px-8 py-6 leading-tight">
+                                            <div class="flex flex-col">
+                                                <span class="text-slate-800 font-black uppercase text-sm tracking-tighter">{{ $g->descripcion }}</span>
+                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ \Carbon\Carbon::parse($g->fecha_hora)->format('h:i a') }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-black uppercase italic border border-slate-200">
+                                                {{ $g->responsable }}
+                                            </span>
+                                        </td>
+                                        <td class="px-8 py-6 text-right font-black text-2xl text-red-500 italic">-${{ number_format($g->precio, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-8 py-10 text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">Sin gastos registrados</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -224,7 +278,6 @@
                             Cerrar Caja y Turno
                         </button>
                         
-                        {{-- MODAL --}}
                         <div x-show="modal" x-cloak style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.5rem;">
                             <div class="pizzetos-card" style="max-width: 450px; text-align: center;">
                                 <h3 class="text-3xl pizzetos-title text-slate-900 mb-4 italic uppercase">¿Confirmar Cierre?</h3>
