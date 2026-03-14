@@ -26,6 +26,7 @@ use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\PuntoVentaController;
+use App\Http\Controllers\DashboardController; // <--- IMPORTANTE: Importar el nuevo controlador
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -51,47 +52,8 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 // =====================================================================
 Route::middleware(['auth'])->group(function () {
     
-    // DASHBOARD CON MÉTRICAS REALES (Ajustado a tu SQL real)
-    Route::get('/dashboard', function () {
-        $hoy = Carbon::today();
-
-        // 1. Ventas Totales de Hoy (Tabla: Venta, Columna: fecha_hora)
-        $ventasHoy = DB::table('Venta')
-            ->whereDate('fecha_hora', $hoy)
-            ->where('status', 1) 
-            ->sum('total');
-
-        // 2. Pedidos Pendientes (Status 0 = Pendiente según tu tabla)
-        $pedidosPendientes = DB::table('Venta')
-            ->whereDate('fecha_hora', $hoy)
-            ->where('status', 0)
-            ->count();
-
-        // 3. Producto Estrella (Histórico global ya que DetalleVenta no tiene fecha)
-        $topProducto = DB::table('DetalleVenta')
-            ->select('id_pizza', DB::raw('SUM(cantidad) as total_cantidad'))
-            ->groupBy('id_pizza')
-            ->orderByDesc('total_cantidad')
-            ->first();
-
-        $nombreEstrella = "Sin ventas";
-        if ($topProducto && $topProducto->id_pizza) {
-            $pizza = DB::table('Pizzas')
-                ->join('Especialidades', 'Pizzas.id_esp', '=', 'Especialidades.id_esp')
-                ->where('Pizzas.id_pizza', $topProducto->id_pizza)
-                ->select('Especialidades.nombre')
-                ->first();
-            $nombreEstrella = $pizza->nombre ?? "Pizza #" . $topProducto->id_pizza;
-        }
-
-        // 4. Últimas 5 ventas (Folio: id_venta, Cliente: nombreClie)
-        $ultimasVentas = DB::table('Venta')
-            ->orderByDesc('id_venta')
-            ->limit(5)
-            ->get();
-
-        return view('dashboard', compact('ventasHoy', 'pedidosPendientes', 'nombreEstrella', 'ultimasVentas', 'topProducto'));
-    })->name('dashboard');
+    // DASHBOARD CONECTADO AL CONTROLADOR (Ya no es una Closure que daba error 500)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // --- PUNTO DE VENTA (POS) ---
     Route::get('/venta/pos', [PuntoVentaController::class, 'index'])->name('ventas.pos');
@@ -115,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/clientes/crear', [ClientesController::class, 'create'])->name('clientes.create');
     Route::post('/clientes', [ClientesController::class, 'store'])->name('clientes.store');
 
-    // --- GASTOS (Actualización: Habilitado para Cajeros y Admin) ---
+    // --- GASTOS (Visible para Cajeros y Admin) ---
     Route::get('/venta/gastos', [GastosController::class, 'index'])->name('gastos.index');
     Route::post('/venta/gastos', [GastosController::class, 'store'])->name('gastos.store');
     Route::delete('/venta/gastos/{id}', [GastosController::class, 'destroy'])->name('gastos.destroy');
@@ -124,7 +86,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 // =====================================================================
-// SECCIÓN 2: ACCESO RESTRINGIDO (Solo Administrador - Middleware 'admin')
+// SECCIÓN 2: ACCESO RESTRINGIDO (Solo Administrador)
 // =====================================================================
 Route::middleware(['auth', 'admin'])->group(function () {
 
@@ -178,4 +140,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // --- CONFIGURACIÓN ---
     Route::get('/Conf/configuracion', [ConfiguracionController::class, 'index'])->name('ventas.configuracion');
 
-}); // Fin Grupo Admin
+});

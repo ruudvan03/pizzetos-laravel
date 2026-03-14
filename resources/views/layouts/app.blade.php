@@ -73,7 +73,6 @@
                     <span class="text-sm font-bold uppercase italic tracking-tighter">Venta POS</span>
                 </a>
 
-                {{-- REPARTIDOR CON EL ICONO DE COHETE QUE PASASTE --}}
                 <a href="{{ route('ventas.pedidos') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('ventas.pedidos') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
@@ -86,18 +85,20 @@
                     <span class="text-sm font-bold uppercase italic tracking-tighter">Flujo Caja</span>
                 </a>
 
+                {{-- GASTOS: Ahora accesible para todos los usuarios logueados (Cajeros y Admin) --}}
+                <a href="{{ route('gastos.index') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('gastos.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.5 1M12 8V7m0 1c-1.11 0-2.08-.407-2.5-1M12 8V9m0 7v1m0-1c-1.11 0-2.08-.407-2.5-1M12 16v-1m0 1c1.11 0 2.08.407 2.5 1M12 16V15" /><circle cx="12" cy="12" r="10" /></svg>
+                    <span class="text-sm font-bold uppercase italic tracking-tighter">Gastos</span>
+                </a>
+
                 <a href="{{ route('ventas.resume') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('ventas.resume') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                     <span class="text-sm font-bold uppercase italic tracking-tighter">Historial</span>
                 </a>
 
+                {{-- SECCIÓN DE ADMINISTRACIÓN RESTRINGIDA --}}
                 @if(Auth::user()->id_ca == 1)
                     <p class="px-4 py-4 text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Administración</p>
-
-                    <a href="{{ route('gastos.index') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('gastos.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.5 1M12 8V7m0 1c-1.11 0-2.08-.407-2.5-1M12 8V9m0 7v1m0-1c-1.11 0-2.08-.407-2.5-1M12 16v-1m0 1c1.11 0 2.08.407 2.5 1M12 16V15" /><circle cx="12" cy="12" r="10" /></svg>
-                        <span class="text-sm font-bold uppercase italic tracking-tighter">Gastos</span>
-                    </a>
 
                     <a href="{{ route('corte.index') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('corte.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>

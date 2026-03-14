@@ -116,10 +116,6 @@
             </div>
             
             <div class="flex gap-4">
-                <a href="{{ route('flujo.caja.historial') }}" class="pizzetos-card" style="padding: 1rem 1.5rem !important; text-align: center; border: 2px solid #f1f5f9 !important;">
-                    <span class="pizzetos-label">Registros</span>
-                    <div class="text-xs font-black uppercase italic text-slate-400">Historial</div>
-                </a>
                 <div class="pizzetos-card" style="min-width: 250px; text-align: center; border-bottom: 8px solid var(--pizzetos-amber) !important; padding: 1.5rem !important;">
                     <span class="pizzetos-label">Fondo de Inicio</span>
                     <div class="text-4xl pizzetos-title text-slate-800 italic">${{ number_format($cajaAbierta->monto_inicial, 2) }}</div>

@@ -1,175 +1,93 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-10" x-data="dashboardApp()" x-init="initRealtime()">
-     
-    {{-- ENCABEZADO --}}
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div class="max-w-7xl mx-auto space-y-10">
+    
+    {{-- HEADER --}}
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-100 pb-8">
         <div>
-            <h2 class="text-4xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
-                Panel de Control
-            </h2>
-            <p class="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] italic mt-2">
-                Sincronizado: <span class="text-amber-500" x-text="currentTime"></span>
+            <h1 class="text-6xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
+                RESUMEN <span class="text-amber-400 text-7xl">.</span>
+            </h1>
+            <p class="text-slate-400 font-bold uppercase tracking-[0.4em] text-[10px] italic mt-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Operación en vivo: {{ now()->format('d M, Y | h:i A') }}
             </p>
         </div>
-        
-        <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
-            <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <span class="text-[9px] font-black text-slate-500 uppercase italic tracking-widest">En Vivo</span>
+        <div class="flex gap-4">
+            <div class="text-right">
+                <span class="block text-[10px] font-black text-slate-400 uppercase italic">Tickets de hoy</span>
+                <span class="text-3xl font-black text-slate-900 italic">{{ $numVentas }}</span>
+            </div>
         </div>
     </div>
 
-    {{-- GRID PRINCIPAL --}}
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    {{-- GRID DE MÉTRICAS PRINCIPALES --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         
-        {{-- CARD: EFECTIVO REAL (Sustituye al fondo negro) --}}
-        <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                <svg class="w-24 h-24 text-slate-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+        {{-- CARD: CAJA REAL --}}
+        <div class="bg-gradient-to-br from-white to-slate-50 p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
+            <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:rotate-12 transition-transform duration-700">
+                <svg class="w-40 h-40 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
             </div>
-            <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] italic">Dinero Real en Caja</span>
-            <div class="flex items-baseline gap-2 mt-2">
-                <span class="text-6xl font-black text-slate-900 italic tracking-tighter" x-text="'$' + formatMoney(stats.efectivoCaja)"></span>
-            </div>
-            <div class="mt-6 flex items-center gap-4">
-                <div class="flex-1 h-2 bg-slate-50 rounded-full overflow-hidden">
-                    <div class="h-full bg-amber-400 rounded-full" style="width: 70%"></div>
-                </div>
-                <span class="text-[9px] font-black text-slate-400 uppercase italic">Balance de Turno</span>
+            <span class="text-[10px] font-black uppercase text-slate-400 italic tracking-widest block mb-4">Efectivo Real en Caja</span>
+            <h2 class="text-6xl font-black text-slate-900 italic tracking-tighter leading-none">
+                ${{ number_format($efectivoCaja, 2) }}
+            </h2>
+            <div class="mt-8 flex items-center gap-2">
+                <span class="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase italic">Ventas - Gastos</span>
             </div>
         </div>
 
         {{-- CARD: VENTAS TOTALES --}}
-        <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-            <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] italic">Venta Bruta</span>
-            <h3 class="text-4xl font-black text-slate-900 mt-2 tracking-tighter italic" x-text="'$' + formatMoney(stats.ventasHoy)"></h3>
-            <p class="text-[9px] font-bold text-green-500 mt-2 uppercase italic">+ Ingresos totales</p>
+        <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500">
+            <span class="text-[10px] font-black uppercase text-slate-400 italic tracking-widest block mb-4">Venta Total Bruta</span>
+            <h2 class="text-6xl font-black text-slate-900 italic tracking-tighter leading-none">
+                ${{ number_format($ventasHoy, 2) }}
+            </h2>
+            <div class="mt-8 h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-400 rounded-full" style="width: 100%"></div>
+            </div>
         </div>
 
         {{-- CARD: GASTOS --}}
-        <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-            <span class="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] italic">Gastos</span>
-            <h3 class="text-4xl font-black text-red-500 mt-2 tracking-tighter italic" x-text="'-$' + formatMoney(stats.gastosHoy)"></h3>
-            <p class="text-[9px] font-bold text-slate-300 mt-2 uppercase italic text-right">Salidas registradas</p>
+        <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500">
+            <span class="text-[10px] font-black uppercase text-red-400 italic tracking-widest block mb-4 text-nowrap">Salidas de Dinero</span>
+            <h2 class="text-6xl font-black text-red-500 italic tracking-tighter leading-none">
+                -${{ number_format($gastosHoy, 2) }}
+            </h2>
+            <p class="text-[9px] font-bold text-slate-300 mt-8 uppercase italic tracking-widest">Total de gastos registrados hoy</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {{-- GRÁFICA DE MÉTODOS DE PAGO --}}
-        <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col items-center">
-            <h4 class="text-sm font-black text-slate-800 italic uppercase tracking-widest mb-8 text-center w-full">Distribución de Pagos</h4>
-            <div class="relative w-48 h-48">
-                <canvas id="chartPagos"></canvas>
+    {{-- SECCIÓN: MÉTODOS DE PAGO (ESTILO CARDS FLUJO DE VENTA) --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {{-- Card Efectivo --}}
+        <div class="bg-emerald-500 p-8 rounded-[2.5rem] text-white shadow-lg shadow-emerald-100 relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-20 translate-y-4 translate-x-4">
+                <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 1.13-1.12 1.92-2.8 1.92-1.98 0-2.85-.93-3-2.3H4.21c.15 2.11 1.74 3.41 3.79 3.91V21h3v-2.15c2.02-.42 3.51-1.6 3.51-3.66 0-2.35-1.9-3.61-4.71-4.29z"/></svg>
             </div>
-            <div class="mt-8 space-y-2 w-full">
-                <div class="flex justify-between text-[10px] font-black uppercase italic">
-                    <span class="text-green-500">Efectivo</span>
-                    <span x-text="'$' + formatMoney(stats.efectivoVentas)"></span>
-                </div>
-                <div class="flex justify-between text-[10px] font-black uppercase italic">
-                    <span class="text-blue-500">Tarjeta</span>
-                    <span x-text="'$' + formatMoney(stats.tarjetasHoy)"></span>
-                </div>
-                <div class="flex justify-between text-[10px] font-black uppercase italic">
-                    <span class="text-purple-500">Transf.</span>
-                    <span x-text="'$' + formatMoney(stats.transferenciasHoy)"></span>
-                </div>
-            </div>
+            <span class="text-[9px] font-black uppercase italic tracking-widest opacity-80">Cobros en Efectivo</span>
+            <h3 class="text-4xl font-black italic mt-2">${{ number_format($efectivoVentas, 2) }}</h3>
         </div>
 
-        {{-- ACTIVIDAD RECIENTE --}}
-        <div class="lg:col-span-2 bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-8">
-                <h4 class="text-2xl font-black text-slate-800 italic uppercase tracking-tighter">Últimos Movimientos</h4>
-                <div class="h-1 w-16 bg-amber-400 rounded-full"></div>
+        {{-- Card Tarjeta --}}
+        <div class="bg-blue-600 p-8 rounded-[2.5rem] text-white shadow-lg shadow-blue-100 relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-20 translate-y-4 translate-x-4">
+                <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
             </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <tbody class="divide-y divide-slate-50">
-                        <template x-for="venta in stats.ultimasVentas" :key="venta.id_venta">
-                            <tr class="group">
-                                <td class="py-4 font-black text-xs text-slate-900 italic" x-text="'#' + (venta.folio_virtual || venta.id_venta)"></td>
-                                <td class="py-4 text-xs text-slate-500 font-bold uppercase" x-text="venta.nombreClie || 'Mostrador'"></td>
-                                <td class="py-4 font-black text-sm text-slate-900 text-right" x-text="'$' + formatMoney(venta.total)"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+            <span class="text-[9px] font-black uppercase italic tracking-widest opacity-80">Cobros con Tarjeta</span>
+            <h3 class="text-4xl font-black italic mt-2">${{ number_format($tarjetasHoy, 2) }}</h3>
+        </div>
+
+        {{-- Card Transferencia --}}
+        <div class="bg-purple-600 p-8 rounded-[2.5rem] text-white shadow-lg shadow-purple-100 relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-20 translate-y-4 translate-x-4">
+                <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V9h2v7zm4 0h-2V7h2v9z"/></svg>
             </div>
+            <span class="text-[9px] font-black uppercase italic tracking-widest opacity-80">Cobros Transferencia</span>
+            <h3 class="text-4xl font-black italic mt-2">${{ number_format($transferenciasHoy, 2) }}</h3>
         </div>
     </div>
 </div>
-
-{{-- Cargamos Chart.js desde CDN --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-function dashboardApp() {
-    return {
-        stats: {
-            ventasHoy: {{ $ventasHoy }},
-            gastosHoy: {{ $gastosHoy ?? 0 }},
-            efectivoCaja: {{ $efectivoCaja ?? 0 }},
-            efectivoVentas: {{ $efectivoVentas ?? 0 }}, // Asegúrate de enviar esta
-            tarjetasHoy: {{ $tarjetasHoy ?? 0 }},
-            transferenciasHoy: {{ $transferenciasHoy ?? 0 }},
-            ultimasVentas: @json($ultimasVentas)
-        },
-        currentTime: '',
-        chart: null,
-
-        initRealtime() {
-            this.updateClock();
-            setInterval(() => this.updateClock(), 1000);
-            this.initChart();
-            
-            setInterval(() => this.fetchStats(), 30000);
-        },
-
-        initChart() {
-            const ctx = document.getElementById('chartPagos').getContext('2d');
-            this.chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [this.stats.efectivoVentas, this.stats.tarjetasHoy, this.stats.transferenciasHoy],
-                        backgroundColor: ['#10b981', '#3b82f6', '#a855f7'],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    cutout: '80%',
-                    plugins: { legend: { display: false } }
-                }
-            });
-        },
-
-        async fetchStats() {
-            try {
-                let response = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                this.stats = await response.json();
-                
-                // Actualizar gráfica
-                this.chart.data.datasets[0].data = [this.stats.efectivoVentas, this.stats.tarjetasHoy, this.stats.transferenciasHoy];
-                this.chart.update();
-            } catch (e) { console.warn('Error sync'); }
-        },
-
-        updateClock() {
-            this.currentTime = new Date().toLocaleTimeString('es-MX', { hour12: true });
-        },
-
-        formatMoney(amount) {
-            return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-    }
-}
-</script>
 @endsection
