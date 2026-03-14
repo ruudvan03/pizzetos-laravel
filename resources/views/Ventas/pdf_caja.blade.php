@@ -5,7 +5,7 @@
     <title>Reporte de Cierre de Caja - Pizzetos</title>
     <style>
         @page { margin: 1cm; }
-        body { font-family: 'Helvetica', sans-serif; color: #1e293b; line-height: 1.4; margin: 0; padding: 0; font-size: 11px; }
+        body { font-family: 'Helvetica', sans-serif; color: #1e293b; line-height: 1.4; margin: 0; padding: 0; font-size: 10px; }
         
         /* Encabezado Estilo Pizzetos */
         .header { background-color: #f8fafc; padding: 20px; border-bottom: 3px solid #f59e0b; margin-bottom: 20px; }
@@ -14,13 +14,13 @@
         .report-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; letter-spacing: 2px; }
         
         /* Bloques de Información */
-        .section-title { font-size: 12px; font-weight: 900; text-transform: uppercase; font-style: italic; color: #0f172a; border-left: 4px solid #f59e0b; padding-left: 8px; margin: 20px 0 10px 0; }
+        .section-title { font-size: 11px; font-weight: 900; text-transform: uppercase; font-style: italic; color: #0f172a; border-left: 4px solid #f59e0b; padding-left: 8px; margin: 20px 0 10px 0; }
         
         /* Grid de Resumen */
         .kpi-container { width: 100%; margin-bottom: 20px; }
-        .kpi-box { width: 23%; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; display: inline-block; vertical-align: top; margin-right: 1%; }
+        .kpi-box { width: 23%; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; display: inline-block; vertical-align: top; margin-right: 1%; text-align: center; }
         .kpi-title { font-size: 8px; font-weight: bold; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
-        .kpi-value { font-size: 14px; font-weight: 900; color: #1e293b; }
+        .kpi-value { font-size: 13px; font-weight: 900; color: #1e293b; }
         .bg-amber { background-color: #fef3c7; border-color: #f59e0b; }
         .text-green { color: #166534; }
         .text-red { color: #991b1b; }
@@ -32,11 +32,6 @@
         
         /* Footer */
         .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8px; color: #94a3b8; padding: 10px 0; border-top: 1px solid #f1f5f9; }
-        
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: bold; text-transform: uppercase; display: inline-block; }
-        .badge-efectivo { background: #dcfce7; color: #166534; }
-        .badge-tarjeta { background: #dbeafe; color: #1e40af; }
-        .badge-transfer { background: #f3e8ff; color: #6b21a8; }
     </style>
 </head>
 <body>
@@ -59,21 +54,22 @@
     {{-- 1. INFORMACIÓN DE OPERACIÓN --}}
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
-            <td style="width: 50%;">
+            <td style="width: 50%; border:none;">
                 <div class="section-title">Datos de Apertura</div>
-                <div><b>Iniciado por:</b> {{ $caja->responsable_apertura }}</div>
+                <div><b>Responsable:</b> {{ $caja->responsable_apertura ?? 'N/A' }}</div>
                 <div><b>Fecha/Hora:</b> {{ \Carbon\Carbon::parse($caja->fecha_apertura)->format('d/m/Y h:i a') }}</div>
-                <div><b>Comentarios:</b> {{ $caja->observaciones_apertura ?? 'Sin notas' }}</div>
+                <div><b>Fondo inicial:</b> ${{ number_format($caja->monto_inicial, 2) }}</div>
             </td>
-            <td style="width: 50%;">
+            <td style="width: 50%; border:none;">
                 <div class="section-title">Datos de Cierre</div>
-                <div><b>Finalizado el:</b> {{ \Carbon\Carbon::parse($caja->fecha_cierre)->format('d/m/Y h:i a') }}</div>
-                <div><b>Comentarios:</b> {{ $caja->observaciones_cierre ?? 'Sin notas adicionales' }}</div>
+                <div><b>Fecha/Hora:</b> {{ $caja->fecha_cierre ? \Carbon\Carbon::parse($caja->fecha_cierre)->format('d/m/Y h:i a') : 'SIN CERRAR' }}</div>
+                <div><b>Efectivo contado:</b> ${{ number_format($caja->monto_final ?? 0, 2) }}</div>
+                <div><b>Observaciones:</b> {{ $caja->observaciones_cierre ?? 'Ninguna' }}</div>
             </td>
         </tr>
     </table>
 
-    {{-- 2. INDICADORES GENERALES --}}
+    {{-- 2. RESUMEN FINANCIERO --}}
     <div class="section-title">Resumen Financiero</div>
     <div class="kpi-container">
         <div class="kpi-box bg-amber">
@@ -86,15 +82,15 @@
         </div>
         <div class="kpi-box">
             <div class="kpi-title">Egresos (Gastos)</div>
-            <div class="kpi-value text-red">-${{ number_format($stats['gastos_total'], 2) }}</div>
+            <div class="kpi-value text-red">-${{ number_format($stats['total_gastos'], 2) }}</div>
         </div>
         <div class="kpi-box">
-            <div class="kpi-title">Efectivo en Sobre</div>
-            <div class="kpi-value text-green">${{ number_format($stats['arqueo_real'], 2) }}</div>
+            <div class="kpi-title">Efectivo Real</div>
+            <div class="kpi-value text-green">${{ number_format($stats['arqueo_real'] ?? $stats['efectivo_esperado'], 2) }}</div>
         </div>
     </div>
 
-    {{-- 3. DESGLOSE POR MÉTODO --}}
+    {{-- 3. CONCILIACIÓN POR MÉTODO --}}
     <div class="section-title">Conciliación por Métodos de Pago</div>
     <table class="data-table">
         <thead>
@@ -102,38 +98,38 @@
                 <th>Método</th>
                 <th>Monto Bruto</th>
                 <th>Egresos Aplicados</th>
-                <th>Total Neto Esperado</th>
+                <th style="text-align: right;">Total Neto Esperado</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><b>EFECTIVO</b></td>
                 <td>${{ number_format($stats['efectivo'], 2) }}</td>
-                <td class="text-red">-${{ number_format($stats['gastos_total'], 2) }}</td>
-                <td class="text-green"><b>${{ number_format($stats['efectivo_esperado'], 2) }}</b></td>
+                <td class="text-red">-${{ number_format($stats['total_gastos'], 2) }}</td>
+                <td style="text-align: right;" class="text-green"><b>${{ number_format($stats['efectivo_esperado'], 2) }}</b></td>
             </tr>
             <tr>
                 <td><b>TARJETA (VOUCHERS)</b></td>
                 <td>${{ number_format($stats['tarjeta'], 2) }}</td>
                 <td>$0.00</td>
-                <td>${{ number_format($stats['tarjeta'], 2) }}</td>
+                <td style="text-align: right;">${{ number_format($stats['tarjeta'], 2) }}</td>
             </tr>
             <tr>
                 <td><b>TRANSFERENCIA</b></td>
                 <td>${{ number_format($stats['transferencia'], 2) }}</td>
                 <td>$0.00</td>
-                <td>${{ number_format($stats['transferencia'], 2) }}</td>
+                <td style="text-align: right;">${{ number_format($stats['transferencia'], 2) }}</td>
             </tr>
         </tbody>
     </table>
 
-    {{-- 4. DETALLE DE GASTOS UNO POR UNO --}}
+    {{-- 4. DETALLE DE GASTOS --}}
     <div class="section-title">Detalle de Gastos (Egresos)</div>
     <table class="data-table">
         <thead>
             <tr>
                 <th>Descripción del Gasto</th>
-                <th>Registró</th>
+                <th>Responsable</th>
                 <th style="text-align: right;">Monto</th>
             </tr>
         </thead>
@@ -152,14 +148,14 @@
         </tbody>
     </table>
 
-    {{-- 5. AUDITORÍA DE VENTAS --}}
-    <div class="section-title">Auditoría de Folios Procesados</div>
+    {{-- 5. HISTORIAL DE PEDIDOS --}}
+    <div class="section-title">Historial de Pedidos Procesados</div>
     <table class="data-table">
         <thead>
             <tr>
                 <th>Folio</th>
-                <th>Cliente</th>
-                <th>Métodos de Pago / Referencias</th>
+                <th>Cliente / Servicio</th>
+                <th>Métodos de Pago / Refs</th>
                 <th style="text-align: right;">Total</th>
             </tr>
         </thead>
@@ -167,10 +163,10 @@
             @foreach($ventas as $v)
             <tr>
                 <td><b>#{{ $v->id_venta }}</b></td>
-                <td>{{ $v->nombreClie ?? 'Público General' }}</td>
-                <td>
+                <td>{{ $v->nombreClie }}</td>
+                <td style="font-size: 8px;">
                     {{ $v->metodos }} 
-                    @if($v->refs && $v->refs != '-') <br><span style="color: #64748b; font-size: 7px;">Ref: {{ $v->refs }}</span> @endif
+                    @if($v->refs && $v->refs != '-') <br><i>Ref: {{ $v->refs }}</i> @endif
                 </td>
                 <td style="text-align: right;"><b>${{ number_format($v->total, 2) }}</b></td>
             </tr>
@@ -187,8 +183,7 @@
     </table>
 
     <div class="footer">
-        Este documento es un comprobante oficial de cierre de turno para el sistema Pizzetos.<br>
-        Generado por Ollintem ERP.
+        Este documento es un comprobante oficial de Pizzetos. Generado el {{ date('d/m/Y H:i') }}.
     </div>
 
 </body>
