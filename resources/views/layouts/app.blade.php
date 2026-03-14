@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizzetos - ERP</title>
     
-    {{-- 1. FAVICON: El icono de la pestaña --}}
+    {{-- FAVICON --}}
     <link rel="icon" type="image/png" href="{{ asset('pizzetos.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -18,7 +18,6 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animación suave para el hover del logo */
         .logo-container:hover img { transform: rotate(-5deg) scale(1.1); }
         .logo-container img { transition: all 0.3s ease; }
     </style>
@@ -74,8 +73,11 @@
                     <span class="text-sm font-bold uppercase italic tracking-tighter">Venta POS</span>
                 </a>
 
+                {{-- REPARTIDOR CON EL ICONO DE COHETE QUE PASASTE --}}
                 <a href="{{ route('ventas.pedidos') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('ventas.pedidos') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                    </svg>
                     <span class="text-sm font-bold uppercase italic tracking-tighter">Repartidor</span>
                 </a>
 
@@ -93,7 +95,7 @@
                     <p class="px-4 py-4 text-[10px] font-black text-black/40 uppercase tracking-[0.2em]">Administración</p>
 
                     <a href="{{ route('gastos.index') }}" @click="sidebarOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('gastos.*') ? 'bg-black text-amber-400 shadow-xl' : 'hover:bg-black/5 font-bold' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.5 1M12 8V7m0 1c-1.11 0-2.08-.407-2.5-1M12 8V9m0 7v1m0-1c-1.11 0-2.08-.407-2.5-1M12 16v-1m0 1c1.11 0 2.08.407 2.5 1M12 16V15" /><circle cx="12" cy="12" r="10" /></svg>
                         <span class="text-sm font-bold uppercase italic tracking-tighter">Gastos</span>
                     </a>
 
@@ -102,8 +104,7 @@
                         <span class="text-sm font-bold uppercase italic tracking-tighter">Corte Mensual</span>
                     </a>
 
-                    {{-- Config Submenu --}}
-                    <div x-data="{ open: {{ (request()->is('recursos/*') || request()->is('empleados*')) ? 'true' : 'false' }} }">
+                    <div x-data="{ open: {{ (request()->is('recursos/*') || request()->is('empleados*') || request()->is('cargos*')) ? 'true' : 'false' }} }">
                         <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-black/5 font-bold transition-all text-slate-900">
                             <div class="flex items-center gap-3">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
@@ -113,6 +114,7 @@
                         </button>
                         <div x-show="open" x-cloak x-collapse class="pl-12 pr-4 space-y-1 pb-2">
                             <a href="{{ route('empleados.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Personal</a>
+                            <a href="{{ route('cargos.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Cargos</a>
                             <a href="{{ route('sucursales.index') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Sucursales</a>
                             <a href="{{ route('ventas.configuracion') }}" @click="sidebarOpen = false" class="block py-2 text-xs font-black uppercase tracking-widest hover:translate-x-1 transition-transform">Sistema</a>
                         </div>
