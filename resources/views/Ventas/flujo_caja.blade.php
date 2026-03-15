@@ -227,7 +227,7 @@
                                         <td class="px-8 py-6 leading-tight">
                                             <div class="flex flex-col">
                                                 <span class="text-slate-800 font-black uppercase text-sm tracking-tighter">{{ $g->descripcion }}</span>
-                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ \Carbon\Carbon::parse($g->fecha_hora)->format('h:i a') }}</span>
+                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ \Carbon\Carbon::parse($g->fecha)->format('h:i a') }}</span>
                                             </div>
                                         </td>
                                         <td class="px-8 py-6">
