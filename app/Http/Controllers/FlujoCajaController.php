@@ -55,10 +55,13 @@ class FlujoCajaController extends Controller
         $total_gastos = $gastos_detalle->sum('precio');
 
         // 2. VENTAS CON FOLIO VIRTUAL (Ej: 14-03-26 001)
+        // Se mantiene filtrando status != 3 para la vista en vivo de la caja,
+        // a menos que también quieras ver las canceladas en la tabla del sistema.
         $ventas_detalle = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
             ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
             ->where('Venta.id_caja', $cajaAbierta->id_caja)
+            ->where('Venta.status', '!=', 3) // Aquí no se modificó, asumiendo que solo se querían en PDF. Si las quieres aquí también, quita esta línea.
             ->select(
                 'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status', 'Venta.mesa', 'Venta.tipo_servicio',
                 DB::raw("CASE 
@@ -109,7 +112,7 @@ class FlujoCajaController extends Controller
     }
 
     /**
-     * Reporte PDF de Cierre con folios virtuales.
+     * Reporte PDF de Cierre con folios virtuales Y tickets cancelados.
      */
     public function descargarPdf($id)
     {
@@ -143,13 +146,14 @@ class FlujoCajaController extends Controller
             });
         }
 
+        // VENTAS PARA EL PDF: SE QUITÓ EL ->where('Venta.status', '!=', 3) 
+        // Para que traiga absolutamente todos los tickets del turno
         $ventas = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
             ->leftJoin('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
             ->where('Venta.id_caja', $id)
-            ->where('Venta.status', '!=', 3)
             ->select(
-                'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 
+                'Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.status',
                 DB::raw("CASE 
                     WHEN Venta.tipo_servicio = 2 THEN 'PARA LLEVAR'
                     WHEN Venta.tipo_servicio = 1 THEN CONCAT('MESA ', COALESCE(Venta.mesa, ''), ' - ', COALESCE(Venta.nombreClie, 'CLIENTE'))
@@ -158,7 +162,7 @@ class FlujoCajaController extends Controller
                 DB::raw("GROUP_CONCAT(MetodosPago.metodo SEPARATOR ', ') as metodos"),
                 DB::raw("GROUP_CONCAT(COALESCE(Pago.referencia, '-') SEPARATOR ' / ') as refs")
             )
-            ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie')
+            ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie', 'Venta.status')
             ->get();
 
         // Aplicar folios virtuales a ventas en PDF
@@ -166,6 +170,7 @@ class FlujoCajaController extends Controller
             $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
         }
 
+        // TOTALES PARA EL PDF (Solo dinero real, se excluyen los cancelados status = 3)
         $pagos_pdf = DB::table('Pago')
             ->join('Venta', 'Pago.id_venta', '=', 'Venta.id_venta')
             ->join('MetodosPago', 'Pago.id_metpago', '=', 'MetodosPago.id_metpago')
@@ -176,8 +181,9 @@ class FlujoCajaController extends Controller
 
         $stats = [
             'fondo' => $caja->monto_inicial,
-            'num_ventas' => $ventas->count(),
-            'venta_total' => $ventas->sum('total'),
+            // Se calcula el conteo y la suma usando la collection de Laravel, filtrando los no cancelados
+            'num_ventas' => $ventas->where('status', '!=', 3)->count(),
+            'venta_total' => $ventas->where('status', '!=', 3)->sum('total'),
             'total_gastos' => $gastos->sum('precio'),
             'efectivo' => $pagos_pdf['Efectivo'] ?? 0,
             'tarjeta' => $pagos_pdf['Tarjeta'] ?? 0,

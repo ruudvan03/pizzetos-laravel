@@ -33,6 +33,10 @@
         
         /* Footer */
         .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8px; color: #94a3b8; padding: 10px 0; border-top: 1px solid #f1f5f9; }
+        
+        /* Estilos para tickets cancelados */
+        .row-cancelada { color: #dc2626; text-decoration: line-through; background-color: #fef2f2; }
+        .badge-cancelado { color: #dc2626; font-size: 7px; font-weight: bold; text-decoration: none !important; display: inline-block; margin-top: 2px; border: 1px solid #dc2626; padding: 1px 3px; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -42,7 +46,6 @@
             <tr>
                 <td class="brand-container">
                     <img src="{{ public_path('pizzetos.png') }}" class="logo">
-                    {{-- MODIFICADO: USANDO FOLIO VIRTUAL DE CAJA --}}
                     <div class="report-title">Acta de Cierre de Caja #{{ $caja->folio_virtual }}</div>
                 </td>
                 <td style="text-align: right; vertical-align: top;">
@@ -83,7 +86,7 @@
             <div class="kpi-value">${{ number_format($stats['fondo'], 2) }}</div>
         </div>
         <div class="kpi-box">
-            <div class="kpi-title">Venta Bruta (Total)</div>
+            <div class="kpi-title">Venta Bruta (Válida)</div>
             <div class="kpi-value">${{ number_format($stats['venta_total'], 2) }}</div>
         </div>
         <div class="kpi-box">
@@ -156,6 +159,10 @@
 
     {{-- 5. HISTORIAL DE PEDIDOS --}}
     <div class="section-title">Historial de Pedidos Procesados</div>
+    <div style="font-size: 8px; color: #64748b; margin-bottom: 8px; font-style: italic;">
+        * Los pedidos cancelados se muestran tachados por motivos de auditoría y su monto <b>no suma</b> al balance de caja.
+    </div>
+    
     <table class="data-table">
         <thead>
             <tr>
@@ -167,10 +174,15 @@
         </thead>
         <tbody>
             @foreach($ventas as $v)
-            <tr>
-                {{-- MODIFICADO: USANDO FOLIO VIRTUAL DE PEDIDO --}}
+            {{-- IDENTIFICACIÓN DE TICKET CANCELADO --}}
+            <tr class="{{ isset($v->status) && $v->status == 3 ? 'row-cancelada' : '' }}">
                 <td><b>#{{ $v->folio_virtual }}</b></td>
-                <td>{{ $v->nombreClie }}</td>
+                <td>
+                    {{ $v->nombreClie }}
+                    @if(isset($v->status) && $v->status == 3)
+                        <br><span class="badge-cancelado">CANCELADO</span>
+                    @endif
+                </td>
                 <td>
                     {{ $v->metodos }} 
                     @if($v->refs && $v->refs != '-') <br><span style="font-size: 7px; color: #64748b;">Ref: {{ $v->refs }}</span> @endif

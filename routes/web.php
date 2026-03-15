@@ -26,7 +26,7 @@ use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\PuntoVentaController;
-use App\Http\Controllers\DashboardController; // <--- Importación verificada
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -53,7 +53,6 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     
     // DASHBOARD CONECTADO AL CONTROLADOR
-    // Se eliminó la Closure vieja que causaba el error de variable indefinida
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // --- PUNTO DE VENTA (POS) ---
@@ -69,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
 
     // --- FLUJO DE CAJA ---
     Route::get('/venta/flujo-caja', [FlujoCajaController::class, 'index'])->name('flujo.caja.index');
+    // 👇 RUTA MOVIDA: Ahora los cajeros tienen acceso al historial de cajas
+    Route::get('/venta/flujo-caja/historial', [FlujoCajaController::class, 'historial'])->name('flujo.caja.historial');
     Route::post('/venta/flujo-caja/abrir', [FlujoCajaController::class, 'abrirCaja'])->name('flujo.caja.abrir');
     Route::post('/venta/flujo-caja/cerrar/{id}', [FlujoCajaController::class, 'cerrarCaja'])->name('flujo.caja.cerrar');
     Route::get('/venta/flujo-caja/pdf/{id}', [FlujoCajaController::class, 'descargarPdf'])->name('flujo.caja.pdf');
@@ -79,7 +80,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store'])->name('clientes.store');
 
     // --- GASTOS (Visible para Cajeros y Admin) ---
-    // Se movió aquí para que los cajeros puedan registrar salidas de dinero
     Route::get('/venta/gastos', [GastosController::class, 'index'])->name('gastos.index');
     Route::post('/venta/gastos', [GastosController::class, 'store'])->name('gastos.store');
     Route::delete('/venta/gastos/{id}', [GastosController::class, 'destroy'])->name('gastos.destroy');
@@ -116,7 +116,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // --- REPORTES Y CORTES CRÍTICOS ---
     Route::get('/corte-mensual', [CorteController::class, 'index'])->name('corte.index');
     Route::get('/corte-mensual/dia/{fecha}', [CorteController::class, 'getDetalleDia'])->name('corte.dia');
-    Route::get('/venta/flujo-caja/historial', [FlujoCajaController::class, 'historial'])->name('flujo.caja.historial');
+    // 👆 Se eliminó el historial de cajas de aquí para que no choque
 
     // --- CATÁLOGO DE PRODUCTOS ---
     Route::prefix('productos')->group(function () {
