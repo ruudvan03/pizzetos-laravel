@@ -26,7 +26,7 @@ use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\PuntoVentaController;
-use App\Http\Controllers\DashboardController; // <--- IMPORTANTE: Importar el nuevo controlador
+use App\Http\Controllers\DashboardController; // <--- Importación verificada
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -52,7 +52,8 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 // =====================================================================
 Route::middleware(['auth'])->group(function () {
     
-    // DASHBOARD CONECTADO AL CONTROLADOR (Ya no es una Closure que daba error 500)
+    // DASHBOARD CONECTADO AL CONTROLADOR
+    // Se eliminó la Closure vieja que causaba el error de variable indefinida
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // --- PUNTO DE VENTA (POS) ---
@@ -62,7 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/venta/resume', [VentasController::class, 'resume'])->name('ventas.resume');
     Route::post('/venta/pagar', [PuntoVentaController::class, 'pagarOrden'])->name('ventas.pagar');
 
-    // --- MONITOR DE PEDIDOS ---
+    // --- MONITOR DE PEDIDOS / REPARTIDOR ---
     Route::get('/venta/pedidos', [PedidosController::class, 'index'])->name('ventas.pedidos');
     Route::put('/venta/pedidos/{id}/status', [PedidosController::class, 'cambiarStatus'])->name('ventas.pedidos.status');
 
@@ -78,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store'])->name('clientes.store');
 
     // --- GASTOS (Visible para Cajeros y Admin) ---
+    // Se movió aquí para que los cajeros puedan registrar salidas de dinero
     Route::get('/venta/gastos', [GastosController::class, 'index'])->name('gastos.index');
     Route::post('/venta/gastos', [GastosController::class, 'store'])->name('gastos.store');
     Route::delete('/venta/gastos/{id}', [GastosController::class, 'destroy'])->name('gastos.destroy');
