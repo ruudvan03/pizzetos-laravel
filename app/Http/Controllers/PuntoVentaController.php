@@ -248,8 +248,26 @@ class PuntoVentaController extends Controller
                 ]);
             }
 
+// VARIABLES PARA RETORNAR LOS OBJETOS CREADOS A LA VISTA (PARCHE PARA REFRESH)
+            $nuevoClient_resp = null;
+            $nuevaDir_resp = null;
+
+            // Si se creó cliente, obtener sus datos
+            if (isset($id_clie) && $request->has('nuevo_cliente')) {
+                $nuevoClient_resp = DB::table('Clientes')->where('id_clie', $id_clie)->first();
+            }
+            // Si se creó dirección, obtener sus datos
+            if (isset($id_dir) && $request->has('nueva_direccion')) {
+                $nuevaDir_resp = DB::table('Direcciones')->where('id_dir', $id_dir)->first();
+            }
+
             DB::commit();
-            return response()->json(['success' => true, 'id_venta' => $id_venta]);
+            return response()->json([
+                'success' => true, 
+                'id_venta' => $id_venta,
+                'nuevo_cliente' => $nuevoClient_resp,
+                'nueva_direccion' => $nuevaDir_resp
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();

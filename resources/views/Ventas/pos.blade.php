@@ -990,24 +990,31 @@
                     return d;
                 },
                 
+                getClienteNombre(cl) {
+                    let nom = cl.nombre || cl.Nombre || '';
+                    let ape = cl.apellido || cl.Apellido || '';
+                    
+                    if (!nom && cl.cliente) nom = cl.cliente;
+                    
+                    return (nom + ' ' + ape).trim() || 'Sin Nombre';
+                },
+
                 getClientesFiltrados() {
                     let listaSegura = Array.isArray(dbClientes) ? dbClientes : [];
                     if(!this.searchClienteText || this.searchClienteText.trim() === '') return listaSegura; 
                     
                     let txt = this.searchClienteText.toLowerCase().trim();
+                    
                     return listaSegura.filter(c => {
-                        let nom = (c.nombre || '').toLowerCase();
-                        let ape = (c.apellido || '').toLowerCase();
-                        let tel = (c.telefono || '').toLowerCase();
-                        let full = nom + ' ' + ape;
+                        // Obtenemos los valores blindados (checa todas las posibilidades de nombre de columna)
+                        let nom = (c.nombre || c.Nombre || '').toLowerCase();
+                        let ape = (c.apellido || c.Apellido || '').toLowerCase();
+                        let tel = (c.telefono || c.Telefono || '').toLowerCase();
+                        let full = (nom + ' ' + ape).trim();
+                        
+                        // Comparamos contra el texto de búsqueda
                         return full.includes(txt) || tel.includes(txt);
                     });
-                },
-
-                getClienteNombre(cl) {
-                    let ape = cl.apellido || cl.Apellido || '';
-                    let nom = cl.nombre || cl.Nombre || cl.nombre_cliente || cl.cliente || 'Sin Nombre';
-                    return (nom + ' ' + ape).trim();
                 },
                 getClienteTelefono(cl) {
                     return cl.telefono || cl.Telefono || cl.celular || cl.numero || 'Sin Teléfono';
@@ -1546,6 +1553,20 @@
                     return r.json();
                 }).then(res => {
                     if(res.success) { 
+                        if (res.nuevo_cliente) {
+                        // Verificar si el cliente ya existe por ID
+                        const existeClie = dbClientes.find(c => (c.id_clie || c.id_cliente) == res.nuevo_cliente.id_clie);
+                        if (!existeClie) {
+                            dbClientes.push(res.nuevo_cliente);
+                        }
+                    }
+                    if (res.nueva_direccion) {
+                        // Verificar si la dirección ya existe por ID
+                        const existeDir = dbDirecciones.find(d => (d.id_dir || d.id_direccion) == res.nueva_direccion.id_dir);
+                        if (!existeDir) {
+                            dbDirecciones.push(res.nueva_direccion);
+                        }
+                    }
                         // 1. Limpiar variables locales
                         this.cart = []; 
                         this.actualizarCarrito(); 
