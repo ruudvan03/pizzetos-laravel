@@ -126,7 +126,7 @@
         {{-- DESGLOSE POR MÉTODO DE PAGO --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="pizzetos-card" style="border-left: 8px solid #16a34a !important; padding: 1.5rem !important;">
-                <span class="pizzetos-label">Efectivo (Ventas)</span>
+                <span class="pizzetos-label">Efectivo</span>
                 <div class="text-3xl pizzetos-title text-green-600 italic">${{ number_format($stats['efectivo_ventas'], 2) }}</div>
             </div>
             <div class="pizzetos-card" style="border-left: 8px solid #2563eb !important; padding: 1.5rem !important;">
@@ -142,7 +142,7 @@
         {{-- MÉTRICAS RESUMEN --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="pizzetos-card">
-                <span class="pizzetos-label">Venta Bruta Total</span>
+                <span class="pizzetos-label">Venta Total</span>
                 <div class="text-3xl pizzetos-title text-slate-900 italic">${{ number_format($stats['venta_total_bruta'], 2) }}</div>
             </div>
             <div class="pizzetos-card">
@@ -151,10 +151,10 @@
             </div>
             <div class="pizzetos-card">
                 <span class="pizzetos-label text-red-400">Gastos</span>
-                <div class="text-3xl pizzetos-title text-red-500 italic">-${{ number_format($stats['total_gastos'], 2) }}</div>
+                <div class="text-3xl pizzetos-title text-red-500 italic">${{ number_format($stats['total_gastos'], 2) }}</div>
             </div>
             <div class="pizzetos-card" style="border-bottom: 8px solid #10b981 !important;">
-                <span class="pizzetos-label text-green-500">Efectivo Real</span>
+                <span class="pizzetos-label text-green-500">Efectivo</span>
                 <div class="text-4xl pizzetos-title text-green-600 italic">${{ number_format($stats['efectivo_real_en_sobre'], 2) }}</div>
             </div>
         </div>
@@ -230,12 +230,12 @@
                 {{-- TABLA DETALLES DE GASTOS CON RESPONSABLE --}}
                 <div class="pizzetos-card" style="padding: 0 !important; overflow: hidden; border-top: 5px solid #ef4444 !important;">
                     <div class="p-8 border-b border-gray-50 flex justify-between items-center">
-                        <h3 class="text-2xl pizzetos-title text-red-600 italic uppercase">Detalles de Gastos</h3>
+                        <h3 class="text-2xl pizzetos-title text-white-600 italic uppercase">Detalles de Gastos</h3>
                         <div style="width: 80px; height: 6px; background: #fca5a5; border-radius: 10px;"></div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left italic">
-                            <thead class="bg-red-50">
+                            <thead class="bg-white-50">
                                 <tr class="pizzetos-label">
                                     <th class="px-8 py-5">Motivo / Concepto</th>
                                     <th class="px-8 py-5">Responsable</th>

@@ -10,22 +10,43 @@ class VentasController extends Controller
 {
     /**
      * Muestra el historial de pedidos con Folios Virtuales (Sin fecha).
+     * ACTUALIZADO: Solo muestra las ventas pertenecientes a la CAJA ABIERTA.
      */
     public function resume(Request $request)
     {
+        $id_sucursal = 1; // SUCURSAL MIRAFLORES
+
+        // 1. Buscar si hay una caja abierta
+        $cajaAbierta = DB::table('Caja')
+            ->where('status', 1)
+            ->where('id_suc', $id_sucursal)
+            ->first();
+
+        // Manejo de Filtros
+        $filtroFecha = $request->input('fecha', 'hoy');
+        $filtroEstado = $request->input('estado', 'todos');
+
+        // 2. Si no hay caja abierta, regresamos la vista vacía inmediatamente (se limpia el historial)
+        if (!$cajaAbierta) {
+            return view('Ventas.resume', [
+                'ventas' => collect([]), 
+                'filtroFecha' => $filtroFecha, 
+                'filtroEstado' => $filtroEstado
+            ]);
+        }
+
+        // 3. Si hay caja abierta, traemos SOLO los pedidos de esa caja
         $query = DB::table('Venta')
             ->leftJoin('PDomicilio', 'Venta.id_venta', '=', 'PDomicilio.id_venta')
             ->leftJoin('Clientes', 'PDomicilio.id_clie', '=', 'Clientes.id_clie')
+            ->where('Venta.id_suc', $id_sucursal)
+            ->where('Venta.id_caja', $cajaAbierta->id_caja) // <-- EL FILTRO MÁGICO PARA EL RESET DE TURNO
             ->select(
                 'Venta.*', 
                 'Clientes.nombre as cnombre', 
                 'Clientes.apellido as capellido'
             )
             ->orderBy('Venta.fecha_hora', 'desc');
-
-        // Manejo de Filtros
-        $filtroFecha = $request->input('fecha', 'hoy');
-        $filtroEstado = $request->input('estado', 'todos');
 
         if ($filtroFecha == 'hoy') {
             $query->whereDate('Venta.fecha_hora', Carbon::today());

@@ -34,7 +34,6 @@
         
         .flex-between { display: flex; justify-content: space-between; }
         
-        /* Estilo para el logo en ticket */
         .ticket-logo {
             width: 150px;
             height: auto;
@@ -200,10 +199,7 @@
             window.close();
         };
 
-        // Seguridad para navegadores que no soportan onafterprint
-        // Si el usuario no interactuó con la impresión en 1 minuto, intentar cerrar.
         setTimeout(() => {
-            // window.close(); 
         }, 60000);
     </script>
 
