@@ -545,17 +545,18 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <template x-if="paq2Tipo === 'hamb'">
-                            <button @click="paq2Extra = 'Sencilla de Pollo'" :class="paq2Extra === 'Sencilla de Pollo' ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200'" class="border rounded-[8px] p-3 text-[13px] font-bold">Sencilla de Pollo</button>
-                        </template>
-                        <template x-if="paq2Tipo === 'hamb'">
-                            <button @click="paq2Extra = 'Sencilla de Res'" :class="paq2Extra === 'Sencilla de Res' ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200'" class="border rounded-[8px] p-3 text-[13px] font-bold">Sencilla de Res</button>
-                        </template>
-                        <template x-if="paq2Tipo === 'alitas'">
-                            <button @click="paq2Extra = 'Alitas BBQ'" :class="paq2Extra === 'Alitas BBQ' ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200'" class="border rounded-[8px] p-3 text-[13px] font-bold">Alitas BBQ</button>
-                        </template>
-                        <template x-if="paq2Tipo === 'alitas'">
-                            <button @click="paq2Extra = 'Alitas Adobadas'" :class="paq2Extra === 'Alitas Adobadas' ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200'" class="border rounded-[8px] p-3 text-[13px] font-bold">Alitas Adobadas</button>
+                        <template x-for="p in dbDirectos.filter(d => {
+                            if (paq2Tipo === 'hamb') {
+                                return d.cat === 6 && d.nombre.toLowerCase().includes('sencilla');
+                            } else {
+                                return d.cat === 5;
+                            }
+                        })" :key="p.id">
+                            <button @click="paq2Extra = p.nombre" 
+                                    :class="paq2Extra === p.nombre ? 'border-[#ffc107] bg-[#fff9c4]' : 'bg-white border-gray-200'" 
+                                    class="border rounded-[8px] p-3 text-[13px] font-bold transition-all hover:border-[#ffc107]">
+                                <span x-text="p.nombre"></span>
+                            </button>
                         </template>
                     </div>
                     <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-hide pb-2">
@@ -1260,13 +1261,26 @@
                     if(p.cat === 11) return this.abrirRectangularGeneral();
                     if(p.cat === 10) return this.abrirBarraGeneral();
 
-                    let idx = this.cart.findIndex(i => i.db_id === p.id && !i.es_pizza);
+                    let idx = this.cart.findIndex(i => 
+                        i.db_id === p.id && 
+                        i.col === p.col && 
+                        !i.es_pizza
+                    );
+
                     if(idx > -1) { 
                         this.cart[idx].qty++; 
                     } else { 
                         this.cart.push({ 
-                            db_id: p.id, col: p.col, tipo: 'directo', nombre_base: p.nombre, variante: '', 
-                            precioBase: parseFloat(p.precio), qty: 1, es_pizza: false, is_magno: false, uid: this.generateUID() 
+                            db_id: p.id, 
+                            col: p.col, 
+                            tipo: 'directo', 
+                            nombre_base: p.nombre, 
+                            variante: '', 
+                            precioBase: parseFloat(p.precio), 
+                            qty: 1, 
+                            es_pizza: false, 
+                            is_magno: false, 
+                            uid: this.generateUID() 
                         }); 
                     }
                     this.actualizarCarrito();
