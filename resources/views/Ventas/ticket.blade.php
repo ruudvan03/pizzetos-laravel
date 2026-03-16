@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket #{{ $venta->id_venta }}</title>
+    <title>Ticket #{{ str_pad($venta->id_venta, 5, '0', STR_PAD_LEFT) }}</title>
     <style>
         @page { margin: 0; }
         body { 
@@ -56,9 +56,9 @@
         
         <div style="font-size: 12px;">TICKET DE VENTA</div>
         
-        {{-- ACTUALIZACIÓN: USANDO FOLIO VIRTUAL CRONOLÓGICO --}}
+        {{-- ACTUALIZACIÓN: FOLIO DE 5 DÍGITOS SIN FECHA --}}
         <div class="font-bold mt-1" style="font-size: 16px;">
-            FOLIO: {{ $venta->folio_virtual ?? $venta->id_venta }}
+            FOLIO: {{ str_pad($venta->id_venta, 5, '0', STR_PAD_LEFT) }}
         </div>
         
         <div style="font-size: 12px;">{{ \Carbon\Carbon::parse($venta->fecha_hora)->format('d/m/Y h:i A') }}</div>
@@ -151,12 +151,12 @@
                 <div style="margin-bottom: 4px;">
                     @if($pago->id_metpago == 1)
                         <div class="flex-between font-bold">
-                            <span>TARJETAS (VOUCHERS)</span>
+                            <span>TARJETA</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                     @elseif($pago->id_metpago == 2)
                         <div class="flex-between font-bold">
-                            <span>EFECTIVO (CONTADO)</span>
+                            <span>EFECTIVO</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                         @if($pago->referencia && is_numeric($pago->referencia) && $pago->referencia > $pago->monto)
@@ -171,7 +171,7 @@
                         @endif
                     @elseif($pago->id_metpago == 3)
                         <div class="flex-between font-bold">
-                            <span>TRANSFERENCIA ELECTRÓNICA</span>
+                            <span>TRANSFERENCIA</span>
                             <span>${{ number_format($pago->monto, 2) }}</span>
                         </div>
                         @if($pago->referencia)

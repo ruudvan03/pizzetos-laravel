@@ -29,8 +29,8 @@ class FlujoCajaController extends Controller
             return view('Ventas.flujo_caja', ['cajaAbierta' => null]);
         }
 
-        // GENERAR FOLIO VIRTUAL DE CAJA (Ej: 14-03-26 0012)
-        $cajaAbierta->folio_virtual = Carbon::parse($cajaAbierta->fecha_apertura)->format('d-m-y') . ' ' . str_pad($cajaAbierta->id_caja, 4, '0', STR_PAD_LEFT);
+        // GENERAR FOLIO VIRTUAL DE CAJA SIN FECHA (Ej: 00012)
+        $cajaAbierta->folio_virtual = str_pad($cajaAbierta->id_caja, 5, '0', STR_PAD_LEFT);
 
         // 1. GASTOS DETALLADOS
         try {
@@ -54,7 +54,7 @@ class FlujoCajaController extends Controller
         }
         $total_gastos = $gastos_detalle->sum('precio');
 
-        // 2. VENTAS CON FOLIO VIRTUAL (Ej: 14-03-26 001)
+        // 2. VENTAS CON FOLIO VIRTUAL
         // Se quitó el filtro de status != 3 para que los cancelados aparezcan en la vista del turno
         $ventas_detalle = DB::table('Venta')
             ->leftJoin('Pago', 'Venta.id_venta', '=', 'Pago.id_venta')
@@ -78,9 +78,9 @@ class FlujoCajaController extends Controller
             ->orderBy('Venta.id_venta', 'desc')
             ->get();
 
-        // Aplicar formato de Folio Virtual a cada venta para la vista
+        // Aplicar formato de Folio Virtual a cada venta para la vista SIN FECHA
         foreach($ventas_detalle as $v) {
-            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+            $v->folio_virtual = str_pad($v->id_venta, 5, '0', STR_PAD_LEFT);
         }
 
         // 3. TOTALES POR MÉTODO
@@ -121,8 +121,8 @@ class FlujoCajaController extends Controller
 
         if (!$caja) abort(404);
 
-        // Folio virtual para el PDF
-        $caja->folio_virtual = Carbon::parse($caja->fecha_apertura)->format('d-m-y') . ' ' . str_pad($caja->id_caja, 4, '0', STR_PAD_LEFT);
+        // Folio virtual para el PDF SIN FECHA
+        $caja->folio_virtual = str_pad($caja->id_caja, 5, '0', STR_PAD_LEFT);
 
         try {
             $gastos = DB::table('Gastos')
@@ -165,9 +165,9 @@ class FlujoCajaController extends Controller
             ->groupBy('Venta.id_venta', 'Venta.fecha_hora', 'Venta.total', 'Venta.tipo_servicio', 'Venta.mesa', 'Venta.nombreClie', 'Venta.status')
             ->get();
 
-        // Aplicar folios virtuales a ventas en PDF
+        // Aplicar folios virtuales a ventas en PDF SIN FECHA
         foreach($ventas as $v) {
-            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+            $v->folio_virtual = str_pad($v->id_venta, 5, '0', STR_PAD_LEFT);
         }
 
         // TOTALES PARA EL PDF (Solo dinero real, se excluyen los cancelados status = 3)
@@ -208,9 +208,9 @@ class FlujoCajaController extends Controller
             ->orderBy('Caja.fecha_cierre', 'desc')
             ->paginate(15);
 
-        // Añadir folios virtuales al historial
+        // Añadir folios virtuales al historial SIN FECHA
         foreach($cajas as $c) {
-            $c->folio_virtual = Carbon::parse($c->fecha_apertura)->format('d-m-y') . ' ' . str_pad($c->id_caja, 4, '0', STR_PAD_LEFT);
+            $c->folio_virtual = str_pad($c->id_caja, 5, '0', STR_PAD_LEFT);
         }
 
         return view('Ventas.historial_cajas', compact('cajas'));

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class VentasController extends Controller
 {
     /**
-     * Muestra el historial de pedidos con Folios Virtuales.
+     * Muestra el historial de pedidos con Folios Virtuales (Sin fecha).
      */
     public function resume(Request $request)
     {
@@ -43,8 +43,8 @@ class VentasController extends Controller
         $ventas = $query->get();
 
         foreach ($ventas as $v) {
-            // GENERACIÓN DE FOLIO VIRTUAL (Para la vista Historial)
-            $v->folio_virtual = Carbon::parse($v->fecha_hora)->format('d-m-y') . ' ' . str_pad($v->id_venta, 3, '0', STR_PAD_LEFT);
+            // GENERACIÓN DE FOLIO VIRTUAL SIN FECHA (Ej: 00015)
+            $v->folio_virtual = str_pad($v->id_venta, 5, '0', STR_PAD_LEFT);
 
             $v->total_productos = DB::table('DetalleVenta')
                 ->where('id_venta', $v->id_venta)
@@ -64,15 +64,15 @@ class VentasController extends Controller
     }
 
     /**
-     * Genera la vista del Ticket con el Folio Virtual corregido.
+     * Genera la vista del Ticket con el Folio Virtual sin fecha.
      */
     public function ticket($id)
     {
         $venta = DB::table('Venta')->where('id_venta', $id)->first();
         if (!$venta) abort(404);
 
-        // AQUÍ ESTÁ EL TRUCO: Creamos el folio virtual antes de enviarlo al ticket
-        $venta->folio_virtual = Carbon::parse($venta->fecha_hora)->format('d-m-y') . ' ' . str_pad($venta->id_venta, 3, '0', STR_PAD_LEFT);
+        // AQUÍ ESTÁ EL TRUCO: Creamos el folio virtual SIN FECHA antes de enviarlo al ticket
+        $venta->folio_virtual = str_pad($venta->id_venta, 5, '0', STR_PAD_LEFT);
 
         $final_items = DB::table('DetalleVenta')
             ->where('id_venta', $id)
